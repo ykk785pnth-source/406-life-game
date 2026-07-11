@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v6.0</title><style>
+<title>406 Life v6.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -34,6 +34,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #taskTitle{font-size:11px;font-weight:950;letter-spacing:.12em;color:#f3ad67;margin-bottom:7px}
 .taskLine{font-size:12px;line-height:1.35;margin:4px 0;color:#eadac9}.taskLine.done{color:#8fbf91;text-decoration:line-through}.taskLine.current{color:#fff;font-weight:850}.taskDot{display:inline-block;width:15px}
 @media(max-width:700px){#taskPanel{top:92px;left:10px;width:64vw;padding:9px 11px}.taskLine{font-size:11px}}
+
+#posModal{position:fixed;z-index:55;inset:0;background:#000a;display:none;align-items:center;justify-content:center;pointer-events:auto}
+#posCard{width:min(560px,92vw);max-height:86vh;overflow:auto;background:#211712;border:2px solid #f3ad67;border-radius:20px;padding:18px}
+#posCard h2{margin:0 0 6px;color:#f3ad67}.posGuest{background:#ffffff0b;border:1px solid #ffffff18;border-radius:13px;padding:11px;margin:10px 0}.posGuest label{display:block;font-size:11px;color:#e9c7a3;margin-top:8px}.posGuest select,.posGuest input{width:100%;margin-top:4px;padding:10px;background:#100d0b;color:#fff;border:1px solid #ffffff2a;border-radius:9px}
+#posSubmit{width:100%;padding:13px;border:0;border-radius:11px;background:#e78a43;font-weight:950}#posCancel{width:100%;margin-top:8px;padding:9px;border:0;background:transparent;color:#d5b99e}
 </style></head><body><canvas id="g"></canvas>
 <div id="creator"><div id="creatorCard">
 <div style="color:#f3ad67;font-weight:900;letter-spacing:.15em">YOUR WHITEFISH STORY STARTS HERE</div>
@@ -73,9 +78,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
  <div id="appView"><button class="phoneBack">← PHONE</button><div id="appContent"></div></div>
  <button id="closePhone" style="width:100%;margin-top:18px;padding:11px;border-radius:12px;border:0;background:#ffffff18;color:white">CLOSE PHONE</button>
 </div></div>
+
+<div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · FRIDAY SERVER SHIFT v6.0</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · DETAILED SERVER SHIFT v6.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -159,11 +166,13 @@ function taskRows(){
  }
  if(gameDay==='FRIDAY_SHIFT'){
   const labels=[
-   'Clock in at POS 2','Check seating chart at host stand','Greet Table 31','Greet Table 32',
-   'Ring both drink orders','Pick up drinks','Deliver Table 31 drinks','Deliver Table 32 drinks',
-   'Acknowledge Table 33','Take Table 31 order','Take Table 32 order','Ring Tables 31 & 32',
-   'Take Table 33 order','Ring Table 33','Answer HANDS','Run Table 31 food',
-   'Run Table 32 food','Check back Table 31','Close checks at POS 2','Get Friday review'
+   'Clock in at POS 2','Check seating chart','Greet Table 31','Greet Table 32','Acknowledge Table 33',
+   'Ring drinks','Pick up drinks & supplies','Deliver Table 31 drinks','Deliver Table 32 drinks','Deliver Table 33 supplies',
+   'Take Table 31 order','Ring Table 31 at POS','Take Table 32 order','Ring Table 32 at POS','Take Table 33 order',
+   'Ring Table 33 at POS','Get needy-table refills','Deliver refills','Answer HANDS','Run Table 31 food',
+   'Prebus Table 31','Drop dishes at bussing station','Pick up Tables 32 & 33','Run Table 32','Run Table 33',
+   'Handle ranch incident','Get cleanup supplies','Clean broken dishes','Check Table 31','Check Table 32','Check Table 33',
+   'Enter tips and close checks','Get Friday review'
   ];
   const current=Math.max(0,fridayShift.step-1);
   return labels.map((t,i)=>[t,i<current]);
@@ -344,7 +353,7 @@ function drawCharacter(n,col,label){
  if(n===p&&carryItem){
   if(carryItem==='drinks'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+7,18,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#743b24';ctx.fillRect(sx+13,sy-6,5,12);ctx.fillRect(sx+22,sy-6,5,12);ctx.fillStyle='#cfeaff';ctx.fillRect(sx+31,sy-6,5,12)}
   if(carryItem==='food'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+6,19,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c68039';ctx.beginPath();ctx.arc(sx+22,sy+3,8,0,Math.PI*2);ctx.fill()}
-  if(carryItem==='ranch'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}
+  if(carryItem==='ranch'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}if(carryItem==='towel'){ctx.fillStyle='#d7ecf2';ctx.fillRect(sx+13,sy-7,24,15)}
  }
  if(label)L(label,n.x,n.y-58*scale,12);
 }
@@ -515,8 +524,38 @@ function postShiftInteract(){
  return false;
 }
 
+
+const craggyMenu={
+ burgers:['Classic Cheese','Craggy Burger','Smokestack Burger','Black Bean Burger','Bison Burger','Mushroom Swiss','Smashburger'],
+ handhelds:['Fried Chicken Sandwich','Bison Patty Melt','Huckleberry Pulled Pork','Luci’s Grilled Turkey','Range Dip','Greek Gyro','Philly Cheesesteak'],
+ tacos:['Baja Tacos','Tried & True Tacos','Mr. Mojo Risin’ Tacos','Shredder Tacos'],
+ entrees:['Chicken Tender Basket','Fish & Chips','Chicken Fiesta Bowl','Teriyaki Beef Bowl','Bourbon BBQ Ribs','Brew Pub Mac and Cheese','Bison Chili'],
+ sides:['Fries','Tater Tots +$1.50','Sweet Potato Fries +$1.50','House Salad +$3','Caesar Salad +$3','Soup +$3']
+};
+let posCallback=null;
+function posOptions(items,selected=''){return items.map(v=>`<option ${v===selected?'selected':''}>${v}</option>`).join('')}
+function openOrderPOS(config,callback){
+ posCallback=()=>callback(readPOSValues());
+ document.getElementById('posTitle').textContent=config.title;
+ document.getElementById('posInstructions').innerHTML=config.instructions||'';
+ document.getElementById('posFields').innerHTML=config.guests.map((g,i)=>`<div class="posGuest"><b>Guest ${i+1}</b>
+  <label>Item<select id="posItem${i}">${posOptions(g.items)}</select></label>
+  <label>Side<select id="posSide${i}">${posOptions(g.sides||craggyMenu.sides)}</select></label>
+  <label>Modifier<select id="posMod${i}">${posOptions(g.mods||['No modification','No onion','No cheese','Add bacon','Plain'])}</select></label>
+ </div>`).join('');
+ document.getElementById('posSubmit').textContent=config.submit||'SEND ORDER';
+ document.getElementById('posModal').style.display='flex';
+}
+function readPOSValues(){
+ const guests=[...document.querySelectorAll('#posFields .posGuest')];
+ return guests.map((_,i)=>({item:document.getElementById('posItem'+i).value,side:document.getElementById('posSide'+i).value,mod:document.getElementById('posMod'+i).value}));
+}
+document.getElementById('posSubmit').onclick=()=>{document.getElementById('posModal').style.display='none';if(posCallback)posCallback()};
+document.getElementById('posCancel').onclick=()=>document.getElementById('posModal').style.display='none';
+function posMatches(values,expected){return expected.every((e,i)=>values[i]&&values[i].item===e.item&&values[i].side===e.side&&values[i].mod===e.mod)}
+
 const fridayShift={
- active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,
+ active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,incident:false,cleanup:false,
  tables:[
   {id:'31',x:760,y:820,status:'EMPTY',happiness:100},
   {id:'32',x:980,y:820,status:'EMPTY',happiness:100},
@@ -552,135 +591,252 @@ Rotation: 31 → 32 → 33`;
 }
 function fridayShiftInteract(){
  if(!fridayShift.active||dialogue)return false;
- const T31=fridayTable('31'),T32=fridayTable('32'),T33=fridayTable('33');
+ const A=fridayTable('31'),B=fridayTable('32'),C=fridayTable('33');
+
  if(fridayShift.step===1&&Math.hypot(p.x-500,p.y-720)<140){
   clockedIn=true;life.minutes=16*60;fridayShift.step=2;fridayGood(2,'On time for Friday');
   setFridayObjective('Check your section on the host seating chart');
   say('TIME CLOCK','CLOCKED IN · FRIDAY 4:00 PM',[['Go to the host stand.',null]]);return true;
  }
  if(fridayShift.step===2&&dist(p,host)<150){showSeatingChart();return true}
- if(fridayShift.step===3&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
-  T31.status='DRINKS';fridayShift.step=4;fridayGood(3,'Prompt greeting');
-  T32.status='SAT';setFridayObjective('Greet Table 32 before ringing both drink orders');
-  say('TABLE 31','Two guests want a Coke and an iced tea.',[
-   ['Warm greeting, repeat drinks, mention the special.',()=>fridayGood(2,'Strong first greet')],
-   ['“Coke. Tea. Got it.”',()=>fridayMistake(1,'Bare minimum greeting')],
-   ['Tell them soup day is a sacred Montana institution.',()=>fridayGood(1,'Charming nonsense')]
+
+ if(fridayShift.step===3&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  A.status='DRINKS';B.status='SAT';fridayShift.step=4;fridayGood(3,'Prompt greeting');
+  setFridayObjective('Greet Table 32');
+  say('TABLE 31','A relaxed two-top orders a Coke and iced tea. They say they are in no rush.',[
+   ['Warm greeting and mention the Southwest Rolls.',()=>fridayGood(2,'Suggested an appetizer')],
+   ['“Coke and tea. Easy people. I love you already.”',()=>fridayGood(1,'Charmed the easy table')]
   ]);return true;
  }
- if(fridayShift.step===4&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
-  T32.status='DRINKS';fridayShift.step=5;setFridayObjective('Ring drinks for Tables 31 and 32 at POS 2');
-  say('TABLE 32','Four guests order two waters, one lemonade, and one beer.',[
-   ['Repeat the entire order back.',()=>fridayGood(2,'Confirmed four-top drinks')],
-   ['Nod confidently and remember maybe half.',()=>fridayMistake(2,'Risky memory choice')]
+ if(fridayShift.step===4&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='DRINKS';C.status='SAT';fridayShift.step=5;setFridayObjective('Acknowledge needy Table 33');
+  say('TABLE 32','A four-top orders two waters, lemonade and a beer. They are friendly but ask several menu questions.',[
+   ['Explain burger side substitutions accurately.',()=>fridayGood(3,'Menu knowledge')],
+   ['Say every substitution is “probably free.”',()=>fridayMistake(3,'Invented pricing')]
   ]);return true;
  }
- if(fridayShift.step===5&&Math.hypot(p.x-500,p.y-720)<150){
-  say('POS 2 — DRINKS','Choose the combined ticket.',[
-   ['31: Coke + iced tea · 32: 2 waters + lemonade + beer',()=>{fridayGood(4,'Accurate drink tickets');fridayShift.step=6;setFridayObjective('Pick up drinks at the service well')}],
-   ['31: 2 Cokes · 32: water + 2 beers + lemonade',()=>{fridayMistake(4,'Wrong drink tickets');fridayShift.step=6;setFridayObjective('Pick up corrected drinks at the service well')}],
-   ['Everyone gets ranch.',()=>{fridayMistake(3,'Ranch is not a beverage');fridayShift.step=6;setFridayObjective('Pick up actual drinks at the service well')}]
+ if(fridayShift.step===5&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  C.status='DRINKS';fridayShift.step=6;setFridayObjective('Ring all drinks at POS 2');
+  say('TABLE 33','A needy three-top orders three waters, lemon, extra napkins, side plates and ranch “for the table.”',[
+   ['Write every request down.',()=>fridayGood(3,'Captured needy-table requests')],
+   ['Only remember the waters.',()=>fridayMistake(4,'Ignored extra requests')]
   ]);return true;
  }
- if(fridayShift.step===6&&Math.hypot(p.x-800,p.y-430)<165){
-  fridayShift.carrying='drinks';fridayShift.step=7;setFridayObjective('Deliver drinks to Table 31, then Table 32');
-  say('JELENA — BARTENDER','Full tray. Table 31 on the left, 32 in the middle. Use two hands and your remaining dignity.',[['Take tray.',null]]);return true;
+ if(fridayShift.step===6&&Math.hypot(p.x-500,p.y-720)<150){
+  fridayShift.step=7;setFridayObjective('Pick up drinks and supplies');
+  say('POS 2 — DRINKS','All drink tickets sent. Table 33’s supply list prints long enough to qualify as a novella.',[['Go to the service well.',null]]);return true;
  }
- if(fridayShift.step===7&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
-  T31.status='ORDER';fridayShift.step=8;fridayGood(2,'Delivered first drinks');setFridayObjective('Deliver the rest of the drinks to Table 32');
-  say('TABLE 31','Drinks landed safely. They are ready to order soon.',[['Keep moving.',null]]);return true;
+ if(fridayShift.step===7&&Math.hypot(p.x-800,p.y-430)<165){
+  fridayShift.carrying='drinks';fridayShift.step=8;setFridayObjective('Deliver Table 31 drinks');
+  say('JELENA — BARTENDER','Full tray, extra napkins, side plates, lemons and an upsetting amount of ranch. Godspeed.',[['Take everything.',null]]);return true;
  }
- if(fridayShift.step===8&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
-  fridayShift.carrying='';T32.status='ORDER';T33.status='SAT';fridayShift.step=9;fridayGood(2,'Delivered second drinks');
-  setFridayObjective('Table 33 was just seated — acknowledge them');
-  say('TABLE 32','Drinks delivered. Behind you, Table 33 has just sat down.',[['Acknowledge Table 33 immediately.',null]]);return true;
+ if(fridayShift.step===8&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  A.status='ORDER';fridayShift.step=9;fridayGood(2,'Delivered easy-table drinks');setFridayObjective('Deliver Table 32 drinks');
+  say('TABLE 31','They thank you and continue being suspiciously low-maintenance.',[['Treasure them.',null]]);return true;
  }
- if(fridayShift.step===9&&Math.hypot(p.x-T33.x,p.y-T33.y)<155){
-  T33.status='DRINKS';fridayShift.step=10;setFridayObjective('Take food orders from Tables 31 and 32');
-  say('TABLE 33','Three guests order waters and say they need a minute.',[
-   ['Drop waters soon and promise to return.',()=>fridayGood(3,'Acknowledged new table')],
-   ['Say “Perfect, take forever.”',()=>fridayGood(1,'Made them laugh')],
-   ['Pretend you did not see them.',()=>fridayMistake(4,'Ignored newly seated table')]
+ if(fridayShift.step===9&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='ORDER';fridayShift.step=10;fridayGood(2,'Delivered four-top drinks');setFridayObjective('Deliver Table 33 drinks and supplies');
+  say('TABLE 32','One guest asks whether the Bison Burger can be gluten-free.',[
+   ['Explain that the mix contains panko breadcrumbs.',()=>fridayGood(3,'Correct allergy knowledge')],
+   ['Say removing the bun makes it gluten-free.',()=>fridayMistake(5,'Dangerous allergy answer')]
   ]);return true;
  }
- if(fridayShift.step===10&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
-  T31.status='RING';fridayShift.step=11;setFridayObjective('Take Table 32’s food order');
-  say('TABLE 31 — FOOD','Burger no onion and fish tacos.',[
-   ['Write modifiers and repeat everything.',()=>fridayGood(3,'Accurate two-top order')],
-   ['Remember “burger and fish-ish.”',()=>fridayMistake(3,'Weak order notes')]
+ if(fridayShift.step===10&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.carrying='';C.status='ORDER';fridayShift.step=11;fridayGood(2,'Delivered needy-table setup');
+  setFridayObjective('Take Table 31’s food order');
+  say('TABLE 33','They immediately ask for two more lemons and “fresh ranch, not the ranch you just brought.”',[
+   ['Smile and say you’ll grab it.',()=>fridayGood(1,'Maintained composure')],
+   ['Ask whether the first ranch committed a crime.',()=>fridayGood(2,'Made the table laugh')],
+   ['Tell them ranch has no vintage year.',()=>fridayMistake(1,'Tiny attitude leak')]
   ]);return true;
  }
- if(fridayShift.step===11&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
-  T32.status='RING';fridayShift.step=12;setFridayObjective('Ring Tables 31 and 32 at POS 2');
-  say('TABLE 32 — FOOD','Chicken sandwich, bison burger medium, Caesar salad, fries with ranch.',[
-   ['Clarify burger temperature and ranch.',()=>fridayGood(3,'Handled modifiers')],
-   ['Tell them all bison is legally well-done.',()=>fridayMistake(2,'Invented a policy')]
-  ]);return true;
+ if(fridayShift.step===11&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  A.status='RING';fridayShift.step=12;setFridayObjective('Ring Table 31 accurately at POS 2');
+  say('TABLE 31 — ORDER','Guest 1: Classic Cheese, fries, no onion. Guest 2: Baja Tacos, fries, no modification.',[['Enter the order.',null]]);return true;
  }
  if(fridayShift.step===12&&Math.hypot(p.x-500,p.y-720)<150){
-  T31.status='COOKING';T32.status='COOKING';fridayShift.step=13;setFridayObjective('Take Table 33’s order while food cooks');
-  say('POS 2 — FOOD','Ring both tickets.',[
-   ['Enter every modifier carefully.',()=>fridayGood(4,'Accurate food tickets')],
-   ['Mash buttons until something prints.',()=>fridayMistake(5,'Catastrophic POS energy')]
-  ]);return true;
+  openOrderPOS({
+   title:'POS 2 · TABLE 31',
+   instructions:'Select each item, side and modifier.',
+   guests:[
+    {items:['Classic Cheese','Craggy Burger','Mushroom Swiss'],sides:['Fries','Tater Tots +$1.50','House Salad +$3'],mods:['No onion','No modification','Add bacon']},
+    {items:['Baja Tacos','Shredder Tacos','Tried & True Tacos'],sides:['Fries','Tater Tots +$1.50','Soup +$3'],mods:['No modification','No cilantro','No crema']}
+   ]
+  },vals=>{
+   const ok=posMatches(vals,[{item:'Classic Cheese',side:'Fries',mod:'No onion'},{item:'Baja Tacos',side:'Fries',mod:'No modification'}]);
+   ok?fridayGood(5,'Perfect Table 31 ticket'):fridayMistake(5,'Incorrect Table 31 ticket');
+   A.status='COOKING';fridayShift.step=13;setFridayObjective('Take Table 32’s order');
+  });return true;
  }
- if(fridayShift.step===13&&Math.hypot(p.x-T33.x,p.y-T33.y)<155){
-  T33.status='RING';fridayShift.step=14;setFridayObjective('Ring Table 33, then answer HANDS at the kitchen pass');
-  say('TABLE 33 — FOOD','Three burgers: one no cheese, one add bacon, one plain.',[
-   ['Repeat each burger separately.',()=>fridayGood(3,'Controlled a modifier-heavy order')],
-   ['Write “three burgs.”',()=>fridayMistake(4,'Dangerously vague notes')]
+ if(fridayShift.step===13&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='RING';fridayShift.step=14;setFridayObjective('Ring Table 32 at POS 2');
+  say('TABLE 32 — ORDER','Fried Chicken Sandwich with fries; Bison Burger with fries; Caesar Salad with crispy chicken; Fish & Chips.',[
+   ['Clarify every side and modifier.',()=>fridayGood(3,'Controlled four-top order')],
+   ['Write “chicken, bison, salad, fish.”',()=>fridayMistake(3,'Terrible shorthand')]
   ]);return true;
  }
  if(fridayShift.step===14&&Math.hypot(p.x-500,p.y-720)<150){
-  T33.status='COOKING';fridayShift.step=15;setFridayObjective('Answer HANDS at the kitchen pass');
-  say('POS 2','Table 33 sent. Expo immediately yells for hands.',[['I NEED HANDS!!',null]]);return true;
+  openOrderPOS({
+   title:'POS 2 · TABLE 32',
+   instructions:'Four guests. This one is intentionally harder.',
+   guests:[
+    {items:['Fried Chicken Sandwich','Range Dip','Bison Patty Melt'],sides:['Fries','Tater Tots +$1.50','Caesar Salad +$3'],mods:['No modification','No coleslaw','No bacon ranch']},
+    {items:['Bison Burger','Smashburger','Craggy Burger'],sides:['Fries','Sweet Potato Fries +$1.50','House Salad +$3'],mods:['No modification','No sage mayo','No cheese']},
+    {items:['Caesar Salad','Canyon Creek Cobb','Asian Ahi Salad'],sides:['No side','Fries','Soup +$3'],mods:['Add crispy chicken','Add grilled chicken','No croutons']},
+    {items:['Fish & Chips','Chicken Tender Basket','Bourbon BBQ Ribs'],sides:['Fries','Tater Tots +$1.50','House Salad +$3'],mods:['No modification','Extra tartar','No coleslaw']}
+   ]
+  },vals=>{
+   const expected=[
+    {item:'Fried Chicken Sandwich',side:'Fries',mod:'No modification'},
+    {item:'Bison Burger',side:'Fries',mod:'No modification'},
+    {item:'Caesar Salad',side:'No side',mod:'Add crispy chicken'},
+    {item:'Fish & Chips',side:'Fries',mod:'No modification'}
+   ];
+   posMatches(vals,expected)?fridayGood(7,'Perfect four-top ticket'):fridayMistake(7,'Incorrect Table 32 ticket');
+   B.status='COOKING';fridayShift.step=15;setFridayObjective('Take needy Table 33’s order');
+  });return true;
  }
- if(fridayShift.step===15&&Math.hypot(p.x-350,p.y-500)<165){
-  fridayShift.carrying='food';fridayShift.step=16;setFridayObjective('Run hot food to Tables 31 and 32');
+ if(fridayShift.step===15&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  C.status='RING';fridayShift.step=16;setFridayObjective('Ring Table 33 at POS 2');
+  say('TABLE 33 — ORDER','Three Smashburgers: one plain, one no pickles, one add bacon. Tots for all three.',[
+   ['Repeat each burger separately.',()=>fridayGood(3,'Controlled modifier-heavy table')],
+   ['Write “3 smash, weird stuff.”',()=>fridayMistake(4,'Modifier disaster brewing')]
+  ]);return true;
+ }
+ if(fridayShift.step===16&&Math.hypot(p.x-500,p.y-720)<150){
+  openOrderPOS({
+   title:'POS 2 · TABLE 33',
+   instructions:'Same entrée. Different modifiers. Pay attention.',
+   guests:[
+    {items:['Smashburger','Classic Cheese','Craggy Burger'],sides:['Tater Tots +$1.50','Fries','Sweet Potato Fries +$1.50'],mods:['Plain','No pickles','Add bacon']},
+    {items:['Smashburger','Classic Cheese','Craggy Burger'],sides:['Tater Tots +$1.50','Fries','Sweet Potato Fries +$1.50'],mods:['No pickles','Plain','Add bacon']},
+    {items:['Smashburger','Classic Cheese','Craggy Burger'],sides:['Tater Tots +$1.50','Fries','Sweet Potato Fries +$1.50'],mods:['Add bacon','No pickles','Plain']}
+   ]
+  },vals=>{
+   const expected=[
+    {item:'Smashburger',side:'Tater Tots +$1.50',mod:'Plain'},
+    {item:'Smashburger',side:'Tater Tots +$1.50',mod:'No pickles'},
+    {item:'Smashburger',side:'Tater Tots +$1.50',mod:'Add bacon'}
+   ];
+   posMatches(vals,expected)?fridayGood(7,'Perfect needy-table ticket'):fridayMistake(7,'Mixed up Smashburger modifiers');
+   C.status='COOKING';fridayShift.step=17;setFridayObjective('Get Table 33 refills and fresh ranch');
+  });return true;
+ }
+ if(fridayShift.step===17&&Math.hypot(p.x-500,p.y-720)<150){
+  fridayShift.carrying='ranch';fridayShift.step=18;setFridayObjective('Deliver refills and ranch to Table 33');
+  say('POS 2 — SIDE STATION','Two lemons, water pitcher, napkins and ranch. You are now a mobile convenience store.',[['Carry supplies.',null]]);return true;
+ }
+ if(fridayShift.step===18&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.carrying='';fridayShift.step=19;setFridayObjective('Answer HANDS at the kitchen pass');
+  say('TABLE 33','They receive everything and ask whether the ranch is “the good ranch.”',[
+   ['“It is our finest vintage.”',()=>fridayGood(2,'Stayed funny under pressure')],
+   ['“It came from the exact same container.”',()=>fridayMistake(1,'Destroyed the ranch illusion')]
+  ]);return true;
+ }
+ if(fridayShift.step===19&&Math.hypot(p.x-350,p.y-500)<165){
+  fridayShift.carrying='food';fridayShift.step=20;setFridayObjective('Run Table 31 food');
   achievement('FRIDAY HANDS','Answer the pass during your first real rush.');
-  say('EXPO','31 and 32 are both up. Check every modifier before you move.',[
-   ['Verify plates and split the run logically.',()=>fridayGood(4,'Protected food accuracy')],
-   ['Stack everything and pray.',()=>fridayMistake(3,'Chaotic food run')]
+  say('EXPO','31 is up. Classic Cheese no onion and Baja Tacos. Read the ticket before you move.',[
+   ['Verify both plates.',()=>fridayGood(3,'Verified Table 31')],
+   ['Grab first, read later.',()=>fridayMistake(2,'Skipped plate verification')]
   ]);return true;
  }
- if(fridayShift.step===16&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
-  T31.status='EATING';fridayShift.step=17;setFridayObjective('Deliver the remaining food to Table 32');
-  fridayGood(2,'Ran Table 31 food');say('TABLE 31','Food delivered correctly.',[['Move to 32.',null]]);return true;
- }
- if(fridayShift.step===17&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
-  T32.status='EATING';fridayShift.carrying='';fridayShift.step=18;setFridayObjective('Check back on Table 31');
-  fridayGood(2,'Ran Table 32 food');say('TABLE 32','Food delivered. They immediately ask for another ranch.',[['Of course they do.',null]]);return true;
- }
- if(fridayShift.step===18&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
-  fridayShift.step=19;setFridayObjective('Get ranch at POS 2, then finish the shift');
-  say('TABLE 31','Everything is good. They ask for the check.',[
-   ['Prebus and promise the check.',()=>fridayGood(3,'Strong check-back and prebus')],
-   ['Drop the check and flee.',()=>fridayMistake(2,'Skipped prebus')]
+ if(fridayShift.step===20&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  A.status='EATING';fridayShift.carrying='';fridayShift.step=21;setFridayObjective('Prebus Table 31 to the bussing station');
+  say('TABLE 31','Food is perfect. Their empty appetizer plate and glasses are ready to clear.',[
+   ['Prebus now.',()=>fridayGood(3,'Proactive prebussing')],
+   ['Leave everything until they are done.',()=>fridayMistake(2,'Skipped easy prebus')]
   ]);return true;
  }
- if(fridayShift.step===19&&Math.hypot(p.x-500,p.y-720)<150){
-  fridayShift.step=20;setFridayObjective('Return to Desarae for your Friday review');
-  const base=38,tip=Math.max(8,Math.round(base+fridayShift.score*1.6-fridayShift.mistakes*3));
-  fridayShift.tips=tip;life.cash+=tip;life.checking+=46;updateLifeHud();
-  T31.status='PAID';T32.status='PAID';T33.status='PAID';
-  say('SHIFT TOTALS','Hourly wages deposited: $46 · Cash tips: $'+tip,[['Find Desarae.',null]]);return true;
+ if(fridayShift.step===21&&Math.hypot(p.x-180,p.y-980)<150){
+  fridayShift.step=22;setFridayObjective('Run Tables 32 and 33 food');
+  say('BUSSING STATION','Dishes dropped safely. Somewhere, a dishwasher briefly believes in teamwork.',[['Answer the next HANDS call.',null]]);return true;
  }
- if(fridayShift.step===20&&dist(p,desarae)<180){
-  finishFridayShift();return true;
+ if(fridayShift.step===22&&Math.hypot(p.x-350,p.y-500)<165){
+  fridayShift.carrying='food';fridayShift.step=23;setFridayObjective('Run Table 32 food');
+  say('EXPO','32 and 33 are both up. Table 32 first. Protect the salad modifier and the bison burger.',[['Verify everything.',()=>fridayGood(4,'Protected complex tickets')]]);return true;
  }
+ if(fridayShift.step===23&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='EATING';fridayShift.step=24;setFridayObjective('Run Table 33 food');
+  say('TABLE 32','Food landed. They need ketchup, extra tartar and one refill.',[
+   ['Acknowledge every request.',()=>fridayGood(2,'Handled follow-up needs')],
+   ['Say “anything else?” with visible fear.',()=>fridayGood(1,'Honest hospitality')]
+  ]);return true;
+ }
+ if(fridayShift.step===24&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.carrying='';C.status='EATING';fridayShift.incident=true;fridayShift.step=25;setFridayObjective('Respond to the broken-plate incident at Table 33');
+  say('NARRATOR','A busser turns too tightly beside Table 33. Plates crash. A cup of ranch flips directly onto a guest’s pants.',[
+   ['React immediately.',null]
+  ]);return true;
+ }
+ if(fridayShift.step===25&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.step=26;setFridayObjective('Get towels from the bussing station');
+  say('TABLE 33 — RANCH INCIDENT','The guest is startled but not hurt. Broken dishes are on the floor.',[
+   ['Apologize, check for injury, block the area and get towels.',()=>fridayGood(6,'Excellent incident response')],
+   ['Say “At least ranch matches everything.”',()=>{fridayMistake(4,'Bad incident joke');achievement('RANCH PANTS','Make the worst possible joke during the ranch incident.')}],
+   ['Blame the busser immediately.',()=>fridayMistake(6,'Threw coworker under the bus')]
+  ]);return true;
+ }
+ if(fridayShift.step===26&&Math.hypot(p.x-180,p.y-980)<150){
+  fridayShift.carrying='towel';fridayShift.step=27;setFridayObjective('Return with towels and clean Table 33 area');
+  say('BUSSING STATION','You grab towels, a wet-floor cone, gloves and a bus tub.',[['Return to Table 33.',null]]);return true;
+ }
+ if(fridayShift.step===27&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.carrying='';fridayShift.cleanup=true;fridayShift.step=28;setFridayObjective('Check back on all three tables');
+  say('TABLE 33','The guest accepts the towels. Desarae comps an appetizer and thanks you for handling it without making things worse.',[
+   ['Finish cleaning broken dishes safely.',()=>fridayGood(4,'Completed cleanup safely')],
+   ['Kick one shard under the table.',()=>fridayMistake(7,'Absolutely unacceptable cleanup')]
+  ]);return true;
+ }
+ if(fridayShift.step===28&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  A.status='CHECK';fridayShift.step=29;setFridayObjective('Check back on Table 32');
+  say('TABLE 31','They loved everything and are ready for the check.',[['Present check and thank them.',()=>fridayGood(2,'Closed easy table cleanly')]]);return true;
+ }
+ if(fridayShift.step===29&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='CHECK';fridayShift.step=30;setFridayObjective('Check back on Table 33');
+  say('TABLE 32','They are ready to pay and compliment your menu knowledge.',[['Thank them and prebus.',()=>fridayGood(3,'Closed four-top well')]]);return true;
+ }
+ if(fridayShift.step===30&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  C.status='CHECK';fridayShift.step=31;setFridayObjective('Process checks and enter tips at POS 2');
+  say('TABLE 33','Despite the ranch incident, they thank you for handling it and leave their signed receipt.',[['Collect all three checks.',null]]);return true;
+ }
+ if(fridayShift.step===31&&Math.hypot(p.x-500,p.y-720)<150){
+  openTipEntry();return true;
+ }
+ if(fridayShift.step===32&&dist(p,desarae)<180){finishFridayShift();return true}
  return false;
+}
+function openTipEntry(){
+ document.getElementById('posTitle').textContent='POS 2 · CLOSEOUT';
+ document.getElementById('posInstructions').innerHTML='Enter the handwritten tip from each signed receipt. Pay attention to decimal placement.';
+ document.getElementById('posFields').innerHTML=`
+ <div class="posGuest"><b>Table 31 · Check $48.20</b><label>Signed tip<input id="tip31" type="number" step="0.01" placeholder="10.00"></label></div>
+ <div class="posGuest"><b>Table 32 · Check $96.40</b><label>Signed tip<input id="tip32" type="number" step="0.01" placeholder="19.00"></label></div>
+ <div class="posGuest"><b>Table 33 · Check $71.75</b><label>Signed tip<input id="tip33" type="number" step="0.01" placeholder="14.00"></label></div>`;
+ document.getElementById('posSubmit').textContent='ENTER TIPS & CLOSE CHECKS';
+ posCallback=()=>{
+  const vals=[Number(document.getElementById('tip31').value),Number(document.getElementById('tip32').value),Number(document.getElementById('tip33').value)];
+  const actual=[10,19,14],correct=vals.every((v,i)=>Math.abs(v-actual[i])<.01);
+  if(correct)fridayGood(8,'Entered tips accurately');else fridayMistake(8,'Incorrect tip entry');
+  const entered=vals.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
+  fridayShift.tips=Math.max(0,Math.round(entered*100)/100);
+  life.cash+=fridayShift.tips;life.checking+=62;updateLifeHud();
+  fridayShift.tables.forEach(t=>t.status='PAID');fridayShift.step=32;setFridayObjective('Return to Desarae for Friday review');
+  say('CLOSEOUT COMPLETE','Hourly wages deposited: $62 · Tips entered: $'+fridayShift.tips.toFixed(2),[['Find Desarae.',null]]);
+ };
+ document.getElementById('posModal').style.display='flex';
 }
 function finishFridayShift(){
  fridayShift.active=false;clockedIn=false;const s=fridayShift.score,m=fridayShift.mistakes;
- const grade=s>=32?'A':s>=23?'B':s>=14?'C':'NEEDS ANOTHER TRAINING SHIFT';
- if(s>=32)achievement('SECTION SURVIVOR','Complete your first Friday section with an A.');
- else achievement('FIRST FRIDAY DOWN','Survive your first real Friday shift.');
+ const grade=s>=55?'A':s>=40?'B':s>=25?'C':'NEEDS ANOTHER TRAINING SHIFT';
+ if(s>=55)achievement('SECTION SURVIVOR','Complete your detailed Friday section with an A.');
+ else achievement('FIRST FRIDAY DOWN','Survive your first detailed Friday shift.');
  saveCheckpoint('FRIDAY_DONE');
- document.getElementById('obj').textContent='FRIDAY COMPLETE · Grade '+grade+' · Tips $'+fridayShift.tips;
- say('DESARAE — SUPERVISOR','Friday score: '+s+' · Mistakes: '+m+' · Grade: '+grade+'. You managed three tables, protected the important modifiers, and nobody left crying. That counts.',[
-  ['Did I level up?',()=>say('DESARAE — SUPERVISOR',s>=23?'Your Craggy reputation moved up. Keep this consistent and better sections unlock.':'Not yet. Promotions are built from patterns, not one brave little Friday.',[['Fair.',null]])],
-  ['How weeded did I look?',()=>say('DESARAE — SUPERVISOR',m<3?'Busy, but in control.':'Like a baby deer carrying ranch. We will work on it.',[['😂',null]])],
-  ['What comes next?',()=>say('DESARAE — SUPERVISOR','Another server shift with more independence: real table timers, guest moods, side work, comps, and getting cut—or not getting cut—based on performance.',[['Let’s go.',null]])]
+ document.getElementById('obj').textContent='FRIDAY COMPLETE · Grade '+grade+' · Tips $'+fridayShift.tips.toFixed(2);
+ say('DESARAE — SUPERVISOR','Friday score: '+s+' · Mistakes: '+m+' · Grade: '+grade+'. You handled three tables, real modifiers, a needy table, prebussing, closeout, and a ranch-related workplace disaster.',[
+  ['Did I level up?',()=>say('DESARAE — SUPERVISOR',s>=40?'Your reputation moved up. Better sections and less supervision are getting closer.':'Not yet. Promotions are built from patterns, accuracy and teamwork—not surviving one ranch tornado.',[['Fair.',null]])],
+  ['How weeded did I look?',()=>say('DESARAE — SUPERVISOR',m<3?'Busy, but controlled.':'Like a baby deer carrying a tray through an earthquake. We will work on it.',[['😂',null]])],
+  ['What comes next?',()=>say('DESARAE — SUPERVISOR','A replayable server shift with timers, rotating parties, random guest needs, side work and getting cut based on performance.',[['Let’s go.',null]])]
  ]);
 }
 
@@ -969,6 +1125,11 @@ L('BOOTH ROW',1660,275,13,'#f5d2a9');
 R(620,1080,720,90,'#5f8d9d');for(let x=630;x<1330;x+=115){R(x,1088,105,72,'#88b9c8');R(x,1088,4,72,'#dce7e8')}
 L('PATIO GARAGE DOORS',980,1130,15,'#f7e4c9');
 
+
+// bussing station beside future kitchen/dish area
+R(105,930,150,95,'#4b5559',7);R(115,940,130,28,'#9aa4a7',4);R(125,978,45,32,'#747d80',4);R(180,978,55,32,'#747d80',4);
+L('BUSSING',180,957,10,'#eef4f5');L('STATION',180,1018,9,'#eef4f5');
+
 // west wall 406 sign
 R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
 ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',195,860,9,'#f1d0a4');
@@ -976,7 +1137,10 @@ ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.sh
 // decor
 for(const tv of [[850,300],[1050,300],[1250,300]]){R(tv[0],tv[1],120,62,'#15191c',5);R(tv[0]+6,tv[1]+6,108,50,'#334b59',3);L('LIVE SPORTS',tv[0]+60,tv[1]+35,9,'#d8edf5')}
 R(1420,520,90,110,'#24201d',5);R(1430,530,70,90,'#b9aa85',4);L('VGK',1465,582,18,'#2b2925');
-R(1420,650,100,78,'#2a2521',5);R(1430,660,80,58,'#d8e3e6',3);L('SKI',1470,692,15,'#65777d');
+R(1420,650,100,78,'#2a2521',5);R(1430,660,80,58,'#d8e3e6',3);
+ctx.fillStyle='#8da4b0';ctx.beginPath();ctx.moveTo(1436-cam.x,712-cam.y);ctx.lineTo(1470-cam.x,670-cam.y);ctx.lineTo(1504-cam.x,712-cam.y);ctx.fill();
+ctx.strokeStyle='#30363b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1474-cam.x,682-cam.y);ctx.lineTo(1464-cam.x,698-cam.y);ctx.lineTo(1480-cam.x,704-cam.y);ctx.stroke();
+L('SKI PHOTO',1470,722,8,'#65777d');
 
 // ambient staff/guests
 [[1400,800],[620,340],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
@@ -997,6 +1161,14 @@ if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
    if(ft.id!=='31')person({x:ft.x,y:ft.y-50},'#65754c','');
   }
  }
+}
+
+
+if(fridayShift.incident&&!fridayShift.cleanup){
+ const C=fridayTable('33');ctx.fillStyle='#e8e2d7';
+ for(const d of [[-22,18],[6,25],[28,11],[-4,8]]){ctx.beginPath();ctx.moveTo(C.x+d[0]-cam.x,C.y+d[1]-cam.y);ctx.lineTo(C.x+d[0]+8-cam.x,C.y+d[1]+5-cam.y);ctx.lineTo(C.x+d[0]-3-cam.x,C.y+d[1]+10-cam.y);ctx.fill()}
+ ctx.fillStyle='#f4efe0';ctx.beginPath();ctx.ellipse(C.x+45-cam.x,C.y+16-cam.y,22,11,.3,0,Math.PI*2);ctx.fill();
+ L('BROKEN DISHES',C.x,C.y+82,9,'#ff8e73');
 }
 
 if(serverTraining.active||serverTraining.finished){
@@ -1044,6 +1216,12 @@ function blocked(nx,ny){
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
+ if(Math.hypot(p.x-1470,p.y-690)<120){
+  say('SKI PHOTO','This photo of the skier hiking the mountain is absolutely Nick Winn.',[
+   ['That is definitely Nick Winn.',null],
+   ['Enhance.',()=>say('SKI PHOTO','The pixels refuse to cooperate, but spiritually? Nick Winn.',[['Case closed.',null]])]
+  ]);return;
+ }
  if(fridayShiftInteract())return;
  if(postShiftInteract())return;
  if(serverTrainingInteract())return;
@@ -1204,7 +1382,7 @@ function update(dt){
 updateTaskPanel();
 updateWorkers(dt);
 if(clockedIn&&!dialogue){
- life.minutes+=dt*1.4;
+ life.minutes+=dt*.55;
  life.energy=clamp(life.energy-dt*.10,0,100);
  life.hunger=clamp(life.hunger-dt*.075,0,100);
  if(life.energy<20)life.stress=clamp(life.stress+dt*.04,0,100);
@@ -1228,16 +1406,17 @@ if(follow){let tx=1490,ty=1015,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(
 cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
 let pr='';
 if(fridayShift.active){
- const F=fridayShift,T31=fridayTable('31'),T32=fridayTable('32'),T33=fridayTable('33');
- if(F.step===1&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Clock in for Friday';
- else if(F.step===2&&dist(p,host)<155)pr='INTERACT · View seating chart';
- else if([3,7,10,16,18].includes(F.step)&&Math.hypot(p.x-T31.x,p.y-T31.y)<160)pr='INTERACT · Table 31';
- else if([4,8,11,17].includes(F.step)&&Math.hypot(p.x-T32.x,p.y-T32.y)<160)pr='INTERACT · Table 32';
- else if([9,13].includes(F.step)&&Math.hypot(p.x-T33.x,p.y-T33.y)<160)pr='INTERACT · Table 33';
- else if([5,12,14,19].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
- else if(F.step===6&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
- else if(F.step===15&&Math.hypot(p.x-350,p.y-500)<170)pr='INTERACT · Answer HANDS';
- else if(F.step===20&&dist(p,desarae)<180)pr='INTERACT · Friday review';
+ const F=fridayShift,A=fridayTable('31'),B=fridayTable('32'),C=fridayTable('33');
+ if(F.step===1&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Clock in';
+ else if(F.step===2&&dist(p,host)<155)pr='INTERACT · Seating chart';
+ else if([3,8,11,20,28].includes(F.step)&&Math.hypot(p.x-A.x,p.y-A.y)<160)pr='INTERACT · Table 31';
+ else if([4,9,13,23,29].includes(F.step)&&Math.hypot(p.x-B.x,p.y-B.y)<160)pr='INTERACT · Table 32';
+ else if([5,10,15,18,24,25,27,30].includes(F.step)&&Math.hypot(p.x-C.x,p.y-C.y)<160)pr='INTERACT · Table 33';
+ else if([6,12,14,16,17,31].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
+ else if(F.step===7&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
+ else if([19,22].includes(F.step)&&Math.hypot(p.x-350,p.y-500)<170)pr='INTERACT · Kitchen pass';
+ else if([21,26].includes(F.step)&&Math.hypot(p.x-180,p.y-980)<155)pr='INTERACT · Bussing station';
+ else if(F.step===32&&dist(p,desarae)<180)pr='INTERACT · Friday review';
 }
 
 if(postShiftStep===1&&Math.hypot(p.x-500,p.y-720)<140)pr='INTERACT · Clock out at POS 2';
@@ -1258,7 +1437,7 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep>=6&&orientationStep<=11){const ts=tourStops[tourIndex];if(ts&&Math.hypot(p.x-ts.x,p.y-ts.y)<150)pr='INTERACT · Learn about '+ts.name}
  else if(orientationStep===12&&dist(p,getTrainer())<150)pr='INTERACT · Start training with '+getTrainer().name;
 }
-if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
+if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1470,p.y-690)<120)pr='INTERACT · Inspect ski photo';const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 </script></body></html>
