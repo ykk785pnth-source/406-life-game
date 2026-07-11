@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v2.4</title><style>
+<title>406 Life v2.5</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -11,18 +11,18 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #speaker{color:#f3ad67;font-size:12px;font-weight:900;letter-spacing:.12em}.choice{display:block;width:100%;margin-top:8px;padding:12px;background:#493125;color:#fff;border:1px solid #ffffff22;border-radius:10px;text-align:left;font-weight:700}
 #error{position:absolute;top:90px;left:16px;right:16px;background:#8b1f1f;padding:12px;border-radius:10px;display:none}
 
-#creator{position:fixed;inset:0;background:radial-gradient(circle at 70% 20%,#4b3324,#15110e 58%);z-index:20;display:flex;align-items:center;justify-content:center;padding:18px}
+#creator{position:fixed;inset:0;overflow:auto;background:radial-gradient(circle at 70% 20%,#4b3324,#15110e 58%);z-index:20;display:flex;align-items:center;justify-content:center;padding:18px}
 #creatorCard{width:min(760px,94vw);background:#251a15f5;border:1px solid #ffffff22;border-radius:24px;padding:22px;box-shadow:0 20px 70px #000b}
 #creator h1{margin:0 0 5px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.cg label{font-size:12px;color:#efc99f}.cg input,.cg select{width:100%;margin-top:5px;padding:12px;background:#120e0c;color:#fff;border:1px solid #ffffff2a;border-radius:10px}
 #preview{height:160px;display:flex;align-items:center;justify-content:center;background:#ffffff08;border-radius:16px;margin:14px 0}
-#previewPerson{position:relative;width:70px;height:120px}.pvHead{position:absolute;left:20px;top:5px;width:32px;height:38px;border-radius:45%;background:#d69a70}.pvHair{position:absolute;left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;background:#2b1a13}.pvBody{position:absolute;left:8px;top:40px;width:56px;height:66px;border-radius:16px;background:#3f607f}.pvEye{position:absolute;top:20px;width:3px;height:3px;border-radius:50%;background:#211}.pvEye.l{left:28px}.pvEye.r{left:40px}
+#previewPerson{position:relative;width:70px;height:120px}.pvHead{position:absolute;left:20px;top:5px;width:32px;height:38px;border-radius:45%;background:#d69a70}.pvHair{position:absolute;left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;background:#2b1a13}.pvBody{position:absolute;left:8px;top:40px;width:56px;height:66px;border-radius:16px;background:#3f607f}.pvEye{position:absolute;top:20px;width:3px;height:3px;border-radius:50%;background:#211}.pvEye.l{left:28px}.pvEye.r{left:40px}.pvAccessory{position:absolute;z-index:8;pointer-events:none}
 #enterGame{position:relative;z-index:30;width:100%;padding:14px;border:0;border-radius:12px;background:#e78a43;color:#1a100a;font-weight:950;font-size:17px;touch-action:manipulation;cursor:pointer}
-@media(max-width:650px){.cg{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.cg{grid-template-columns:1fr 1fr}#creator{align-items:flex-start}#creatorCard{margin:10px 0 30px}#preview{height:130px}}
 </style></head><body><canvas id="g"></canvas>
 <div id="creator"><div id="creatorCard">
 <div style="color:#f3ad67;font-weight:900;letter-spacing:.15em">YOUR WHITEFISH STORY STARTS HERE</div>
 <h1>Create Your Character</h1><div style="color:#cfb9a3">You check your reflection before walking into Craggy to turn in an application.</div>
-<div id="preview"><div id="previewPerson"><div class="pvBody"></div><div class="pvHead"></div><div class="pvHair"></div><div class="pvEye l"></div><div class="pvEye r"></div></div></div>
+<div id="preview"><div id="previewPerson"><div class="pvBody"></div><div class="pvHead"></div><div class="pvHair"></div><div class="pvEye l"></div><div class="pvEye r"></div><div class="pvAccessory"></div></div></div>
 <div class="cg">
 <label>First name<input id="charName" value="" placeholder="What should Tuff call you?"></label>
 <label>Pronouns<select id="charPronouns"><option>he/him</option><option>she/her</option><option>they/them</option><option>he/they</option><option>she/they</option></select></label>
@@ -34,7 +34,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 </div><button id="enterGame">LOOK GOOD. GO GET THE JOB →</button>
 </div></div>
 <div id="hud">
-<div id="top"><b>406 LIFE · WORLD BUILD v2.4</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · WORLD BUILD v2.5</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -82,6 +82,53 @@ function playerPerson(n){
  L(n.name,n.x,n.y-52,12);
 }
 
+
+const workers=[
+ {id:'bartender1',role:'BARTENDER',name:'JELENA',x:760,y:520,col:'#6c4b3b',route:[[760,520],[900,500],[1080,500],[1180,570],[1080,650],[850,650]],ri:0,s:58,line:'If you need Tuff, he is probably walking very fast toward a problem.'},
+ {id:'bartender2',role:'BARTENDER',name:'BARTENDER',x:1120,y:620,col:'#455f72',route:[[1120,620],[1180,560],[1080,500],[900,500],[720,560]],ri:0,s:48,line:'First day? My professional advice is: learn where the ranch is and never say “it’s slow.”'},
+ {id:'barback',role:'BARBACK',name:'BARBACK',x:980,y:710,col:'#76545c',route:[[980,700],[760,690],[660,610],[760,470],[1050,470],[1210,600]],ri:0,s:72,line:'I have ice, glassware, and seventeen things to do. What’s up?'},
+ {id:'server',role:'SERVER',name:'SERVER',x:520,y:820,col:'#4b657b',route:[[520,820],[520,700],[360,610],[470,525],[520,700],[850,850],[720,850]],ri:0,s:78,carry:true,line:'I’m running food. If you see someone standing at the pass staring into space, yell “HANDS!”'},
+ {id:'busser',role:'BUSSER',name:'BUSSER',x:1350,y:800,col:'#526f5c',route:[[1350,800],[1450,670],[1620,670],[1450,490],[1200,820],[980,850],[720,850]],ri:0,s:70,bus:true,line:'I’m bussing this whole planet one ranch cup at a time.'}
+];
+function updateWorkers(dt){
+ for(const n of workers){
+  const t=n.route[n.ri],dx=t[0]-n.x,dy=t[1]-n.y,m=Math.hypot(dx,dy);
+  if(m<8){n.ri=(n.ri+1)%n.route.length;continue}
+  n.x+=dx/m*n.s*dt;n.y+=dy/m*n.s*dt;
+ }
+}
+function drawWorker(n){
+ person(n,n.col,n.name);
+ const sx=n.x-cam.x,sy=n.y-cam.y;
+ if(n.carry){
+  ctx.fillStyle='#d8d8d8';ctx.beginPath();ctx.ellipse(sx+17,sy+2,13,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#d69b45';ctx.beginPath();ctx.arc(sx+17,sy,6,0,Math.PI*2);ctx.fill();
+ }
+ if(n.bus){
+  ctx.fillStyle='#888';ctx.fillRect(sx+11,sy-2,18,12);ctx.fillStyle='#eee';ctx.beginPath();ctx.arc(sx+16,sy-3,5,0,Math.PI*2);ctx.fill();
+ }
+}
+function nearestWorker(max=125){
+ let best=null,bd=max;
+ for(const n of workers){let d=dist(p,n);if(d<bd){bd=d;best=n}}
+ return best;
+}
+function talkWorker(n){
+ const lines={
+  BARTENDER:[
+   n.line,
+   'Tuff? Try the west side. If he says “quick question,” clear your schedule.',
+   'Welcome to Craggy. We have sports, ranch, and emotional damage.'
+  ],
+  BARBACK:[n.line,'Please tell me you know how to refill ice without putting the scoop inside the bin.'],
+  SERVER:[n.line,'Table 42 needs ranch. They always need ranch.'],
+  BUSSER:[n.line,'If you help me reset a table, we are legally best friends now.']
+ };
+ const arr=lines[n.role]||[n.line];
+ const line=arr[Math.floor(Math.random()*arr.length)];
+ say(n.name+' — '+n.role,line,[['Where can I find Tuff?',()=>say(n.name+' — '+n.role,'Head west around the bar toward the glowing 406 sign. If he has already moved, follow the sound of someone saying “what happened?”',[['Thanks!',null]])],['Good luck out there.',null]]);
+}
+
 function draw(){
 ctx.fillStyle='#4a4d4e';ctx.fillRect(0,0,W,H);
 R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
@@ -100,7 +147,7 @@ R(40,680,90,250,'#78a8b7');for(let gy=700;gy<920;gy+=45)R(45,gy,80,4,'#d9e4e7');
 R(900,320,100,58,'#5c3d2b',8);L('HOST STAND',950,355,11,'#ffe0bd');
 [[1130,340],[520,350],[1400,800],[750,850],[1180,930]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
 person(host,'#8b5c45','HOST');
-person({x:760,y:520},'#6c4b3b','BARTENDER');person({x:1120,y:620},'#455f72','BARTENDER');person({x:980,y:710},'#76545c','BARBACK');
+workers.forEach(drawWorker);
 person(tuff,'#5b7658','TUFF');playerPerson(p);
 }
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -121,6 +168,7 @@ function blocked(nx,ny){
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
+ const nw=nearestWorker(); if(nw){talkWorker(nw);return;}
  if(stage===1&&dist(p,host)<145){
    stage=2;document.getElementById('obj').textContent='Objective: Ask the host where to find Tuff';
    say('HOST — FRONT DESK','Hey! Welcome to Craggy. Are you here to eat, or can I help you find somebody?',[
@@ -175,16 +223,34 @@ function hire(job,trainer){stage=6;document.getElementById('obj').textContent='O
 function saveHire(job){localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit,style:p.style,accessory:p.accessory}));say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[['Finish Phase 1',null]])}
 
 function syncPreview(){
- const skin=document.getElementById('charSkin').value,hair=document.getElementById('charHair').value,outfit=document.getElementById('charOutfit').value,style=document.getElementById('charStyle').value;
- document.querySelector('.pvHead').style.background=skin;
- document.querySelector('.pvHair').style.background=hair==='tie-dye'?'linear-gradient(90deg,#ff69b4,#ffd84d,#32d6c7,#8a5cff)':hair;
- document.querySelector('.pvBody').style.background=outfit==='tie-dye'?'linear-gradient(135deg,#ff69b4,#ffd84d,#32d6c7,#8a5cff)':outfit;
- const h=document.querySelector('.pvHair');
- h.style.display=style==='Bald'?'none':'block';
- h.style.height=style==='Mohawk'?'34px':style==='Long'?'62px':style==='Afro'?'42px':'17px';
- h.style.width=style==='Mohawk'?'12px':style==='Afro'?'52px':'36px';
- h.style.left=style==='Mohawk'?'30px':style==='Afro'?'10px':'18px';
- h.style.borderRadius=style==='Afro'?'50%':style==='Mohawk'?'8px 8px 2px 2px':'18px 18px 8px 8px';
+ const skin=document.getElementById('charSkin').value;
+ const hair=document.getElementById('charHair').value;
+ const outfit=document.getElementById('charOutfit').value;
+ const style=document.getElementById('charStyle').value;
+ const acc=document.getElementById('charAccessory').value;
+ const head=document.querySelector('.pvHead'), h=document.querySelector('.pvHair'), body=document.querySelector('.pvBody'), a=document.querySelector('.pvAccessory');
+ head.style.background=skin;
+ body.style.background=outfit==='tie-dye'?'linear-gradient(135deg,#ff69b4,#ffd84d,#32d6c7,#8a5cff)':outfit;
+ h.style.cssText='position:absolute;z-index:5;background:'+(hair==='tie-dye'?'linear-gradient(90deg,#ff69b4,#ffd84d,#32d6c7,#8a5cff)':hair)+';';
+ const hs={
+  Short:'left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px',
+  Fade:'left:20px;top:3px;width:32px;height:11px;border-radius:18px 18px 5px 5px',
+  Curly:'left:13px;top:-3px;width:46px;height:25px;border-radius:50%',
+  Long:'left:14px;top:0;width:44px;height:58px;border-radius:22px 22px 14px 14px;clip-path:polygon(0 0,100% 0,100% 100%,78% 100%,76% 28%,24% 28%,22% 100%,0 100%)',
+  Bun:'left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;box-shadow:0 -12px 0 -3px currentColor',
+  Mohawk:'left:30px;top:-16px;width:12px;height:30px;border-radius:8px 8px 2px 2px',
+  Braids:'left:17px;top:0;width:38px;height:18px;border-radius:18px 18px 8px 8px;box-shadow:-8px 20px 0 -5px currentColor,8px 20px 0 -5px currentColor',
+  Afro:'left:8px;top:-10px;width:56px;height:46px;border-radius:50%',
+  Ponytail:'left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;box-shadow:18px 18px 0 0 currentColor',
+  Shaggy:'left:13px;top:-1px;width:46px;height:27px;border-radius:18px 18px 12px 12px',
+  Bald:'display:none'
+ };
+ h.style.cssText+='color:'+(hair==='tie-dye'?'#ff69b4':hair)+';'+hs[style];
+ a.style.cssText='position:absolute;z-index:8;pointer-events:none;';
+ if(acc==='Sunglasses') a.style.cssText+='left:19px;top:19px;width:34px;height:10px;border-top:4px solid #111;border-left:8px solid #111;border-right:8px solid #111;box-sizing:border-box';
+ if(acc==='Round glasses') a.style.cssText+='left:20px;top:16px;width:13px;height:13px;border:2px solid #332;border-radius:50%;box-shadow:17px 0 0 -2px transparent,17px 0 0 0 #332';
+ if(acc==='Gold chain') a.style.cssText+='left:27px;top:48px;width:18px;height:12px;border:2px solid #e7c34c;border-top:0;border-radius:0 0 50% 50%';
+ if(acc==='Pink cowboy hat') a.style.cssText+='left:10px;top:-12px;width:52px;height:10px;background:#ff69b4;border-radius:50%;box-shadow:12px -8px 0 2px #ff69b4';
 }
 function enterWorld(e){
  if(e){e.preventDefault();e.stopPropagation();}
@@ -214,11 +280,12 @@ const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
 function update(dt){
+updateWorkers(dt);
 if(!dialogue){let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x,dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+joy.y,m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}let nx=p.x+dx*p.s*dt,ny=p.y+dy*p.s*dt;if(!blocked(nx,p.y))p.x=nx;if(!blocked(p.x,ny))p.y=ny}
 if(stage===0&&p.y>220){stage=1;document.getElementById('obj').textContent='Objective: Turn in your application at the host stand';say('NARRATOR','You step inside Craggy Range. TVs glow over the bar, silverware clatters, and somebody is already in the weeds.',[['Find the host stand.',null]])}
 if(follow){let tx=1480,ty=1000,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(m>10){tuff.x+=dx/m*115*dt;tuff.y+=dy/m*115*dt}else{follow=false;stage=4;document.getElementById('obj').textContent='Objective: Sit with Tuff for your interview'}}
 cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
-let pr='';if(stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(stage===2&&dist(p,tuff)<145)pr='INTERACT · Talk to Tuff';if(stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
+let pr='';if(stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(stage===2&&dist(p,tuff)<145)pr='INTERACT · Talk to Tuff';if(stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 </script></body></html>
