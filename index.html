@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v2.3.1</title><style>
+<title>406 Life v2.4</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -26,21 +26,22 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div class="cg">
 <label>First name<input id="charName" value="" placeholder="What should Tuff call you?"></label>
 <label>Pronouns<select id="charPronouns"><option>he/him</option><option>she/her</option><option>they/them</option><option>he/they</option><option>she/they</option></select></label>
-<label>Skin tone<select id="charSkin"><option value="#f1c5a4">Light</option><option value="#d69a70" selected>Medium light</option><option value="#b87650">Medium</option><option value="#855139">Deep</option><option value="#583326">Very deep</option></select></label>
-<label>Hair color<select id="charHair"><option value="#2b1a13">Dark brown</option><option value="#111111">Black</option><option value="#80502f">Brown</option><option value="#c99855">Blonde</option><option value="#a94f37">Copper</option></select></label>
-<label>Hair style<select id="charStyle"><option>Short</option><option>Fade</option><option>Curly</option><option>Long</option><option>Bun</option></select></label>
-<label>Interview outfit<select id="charOutfit"><option value="#3f607f">Blue casual</option><option value="#5b7658">Mountain green</option><option value="#4b4542">All black</option><option value="#7c4f55">Burgundy</option></select></label>
+<label>Skin tone<select id="charSkin"><option value="#f7e8df">Albino / porcelain</option><option value="#f1c5a4">Light</option><option value="#d69a70" selected>Medium light</option><option value="#b87650">Medium</option><option value="#855139">Deep</option><option value="#583326">Very deep</option><option value="#3c241d">Rich deep</option></select></label>
+<label>Hair color<select id="charHair"><option value="#2b1a13">Dark brown</option><option value="#111111">Black</option><option value="#80502f">Brown</option><option value="#c99855">Blonde</option><option value="#f4eee6">Platinum</option><option value="#a94f37">Copper</option><option value="#ff69b4">Pink</option><option value="#8a5cff">Purple</option><option value="#32d6c7">Teal</option><option value="tie-dye">Tie-dye rainbow</option></select></label>
+<label>Hair style<select id="charStyle"><option>Short</option><option>Fade</option><option>Curly</option><option>Long</option><option>Bun</option><option>Mohawk</option><option>Braids</option><option>Afro</option><option>Ponytail</option><option>Shaggy</option><option>Bald</option></select></label>
+<label>Interview outfit<select id="charOutfit"><option value="#ff69b4">Pink is best 💗</option><option value="#ff9dcc">Hot pink moment</option><option value="#3f607f">Blue casual</option><option value="#5b7658">Mountain green</option><option value="#4b4542">All black</option><option value="#7c4f55">Burgundy</option><option value="#f28c45">Montana sunset orange</option><option value="#e8d9c5">Cream sweater</option><option value="tie-dye">Tie-dye chaos</option></select></label>
+<label>Accessory<select id="charAccessory"><option>None</option><option>Sunglasses</option><option>Round glasses</option><option>Gold chain</option><option>Pink cowboy hat</option></select></label>
 </div><button id="enterGame">LOOK GOOD. GO GET THE JOB →</button>
 </div></div>
 <div id="hud">
-<div id="top"><b>406 LIFE · WORLD BUILD v2.3.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · WORLD BUILD v2.4</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
 window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.style.display='block';q.textContent='Game error: '+m+' · line '+l;};
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
-const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f'};const host={x:950,y:345};const tuff={x:330,y:650};
+const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None'};const host={x:950,y:345};const tuff={x:330,y:650};
 let cam={x:0,y:0},keys={},joy={x:0,y:0},stage=0,dialogue=false,follow=false;
 addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
 function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.fill()}
@@ -50,6 +51,37 @@ function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48
 function person(n,col,label){if(n===p)col=p.outfit;ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(n.x-cam.x,n.y-cam.y+19,18,7,0,0,Math.PI*2);ctx.fill();R(n.x-14,n.y-7,28,35,col,8);ctx.fillStyle=(n===p?p.skin:'#d69a70');ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-18,12,0,Math.PI*2);ctx.fill();ctx.fillStyle=(n===p?p.hair:'#3a241a');ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-24,11,Math.PI,Math.PI*2);ctx.fill();
 ctx.fillStyle='#241b17';ctx.beginPath();ctx.arc(n.x-4-cam.x,n.y-20-cam.y,1.5,0,Math.PI*2);ctx.arc(n.x+4-cam.x,n.y-20-cam.y,1.5,0,Math.PI*2);ctx.fill();
 ctx.strokeStyle='#6f3d35';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(n.x-cam.x,n.y-16-cam.y,5,0.25,Math.PI-0.25);ctx.stroke();L(label,n.x,n.y-42,12)}
+
+function playerPerson(n){
+ const sx=n.x-cam.x,sy=n.y-cam.y;
+ ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(sx,sy+19,18,7,0,0,Math.PI*2);ctx.fill();
+ let outfit=n.outfit;
+ if(outfit==='tie-dye'){let g=ctx.createLinearGradient(sx-15,sy,sx+15,sy+30);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');ctx.fillStyle=g}else ctx.fillStyle=outfit;
+ ctx.beginPath();ctx.roundRect?ctx.roundRect(sx-14,sy-7,28,35,8):ctx.rect(sx-14,sy-7,28,35);ctx.fill();
+ ctx.fillStyle=n.skin;ctx.beginPath();ctx.arc(sx,sy-18,12,0,Math.PI*2);ctx.fill();
+ let hc=n.hair;if(hc==='tie-dye'){let g=ctx.createLinearGradient(sx-14,sy-35,sx+14,sy-8);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');ctx.fillStyle=g}else ctx.fillStyle=hc;
+ if(n.style!=='Bald'){
+   ctx.beginPath();
+   if(n.style==='Mohawk'){ctx.moveTo(sx-5,sy-28);ctx.lineTo(sx,sy-45);ctx.lineTo(sx+5,sy-28);ctx.arc(sx,sy-22,11,Math.PI,Math.PI*2)}
+   else if(n.style==='Afro'){ctx.arc(sx,sy-25,18,0,Math.PI*2)}
+   else if(n.style==='Long'){ctx.ellipse(sx,sy-19,16,25,0,Math.PI,Math.PI*2);ctx.rect(sx-15,sy-22,30,25)}
+   else if(n.style==='Bun'){ctx.arc(sx,sy-27,11,Math.PI,Math.PI*2);ctx.arc(sx,sy-37,7,0,Math.PI*2)}
+   else if(n.style==='Braids'){ctx.arc(sx,sy-25,11,Math.PI,Math.PI*2);ctx.rect(sx-13,sy-22,5,30);ctx.rect(sx+8,sy-22,5,30)}
+   else if(n.style==='Ponytail'){ctx.arc(sx,sy-25,11,Math.PI,Math.PI*2);ctx.ellipse(sx+14,sy-16,6,18,-.25,0,Math.PI*2)}
+   else if(n.style==='Curly'){ctx.arc(sx,sy-26,14,Math.PI,Math.PI*2);ctx.arc(sx-8,sy-25,7,0,Math.PI*2);ctx.arc(sx+8,sy-25,7,0,Math.PI*2)}
+   else if(n.style==='Shaggy'){ctx.arc(sx,sy-24,13,Math.PI,Math.PI*2);ctx.rect(sx-13,sy-25,26,9)}
+   else if(n.style==='Fade'){ctx.arc(sx,sy-25,10,Math.PI,Math.PI*2)}
+   else {ctx.arc(sx,sy-24,11,Math.PI,Math.PI*2)}
+   ctx.fill();
+ }
+ ctx.fillStyle='#241b17';ctx.beginPath();ctx.arc(sx-4,sy-20,1.5,0,Math.PI*2);ctx.arc(sx+4,sy-20,1.5,0,Math.PI*2);ctx.fill();
+ if(n.accessory==='Sunglasses'){ctx.strokeStyle='#111';ctx.lineWidth=3;ctx.strokeRect(sx-10,sy-24,8,6);ctx.strokeRect(sx+2,sy-24,8,6);ctx.beginPath();ctx.moveTo(sx-2,sy-21);ctx.lineTo(sx+2,sy-21);ctx.stroke()}
+ if(n.accessory==='Round glasses'){ctx.strokeStyle='#332';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(sx-6,sy-21,5,0,Math.PI*2);ctx.arc(sx+6,sy-21,5,0,Math.PI*2);ctx.stroke()}
+ if(n.accessory==='Gold chain'){ctx.strokeStyle='#e7c34c';ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx,sy+2,8,0,Math.PI);ctx.stroke()}
+ if(n.accessory==='Pink cowboy hat'){ctx.fillStyle='#ff69b4';ctx.fillRect(sx-16,sy-32,32,4);ctx.beginPath();ctx.ellipse(sx,sy-35,11,7,0,Math.PI,Math.PI*2);ctx.fill()}
+ L(n.name,n.x,n.y-52,12);
+}
+
 function draw(){
 ctx.fillStyle='#4a4d4e';ctx.fillRect(0,0,W,H);
 R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
@@ -69,7 +101,7 @@ R(900,320,100,58,'#5c3d2b',8);L('HOST STAND',950,355,11,'#ffe0bd');
 [[1130,340],[520,350],[1400,800],[750,850],[1180,930]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
 person(host,'#8b5c45','HOST');
 person({x:760,y:520},'#6c4b3b','BARTENDER');person({x:1120,y:620},'#455f72','BARTENDER');person({x:980,y:710},'#76545c','BARBACK');
-person(tuff,'#5b7658','TUFF');person(p,'#3f607f',p.name);
+person(tuff,'#5b7658','TUFF');playerPerson(p);
 }
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 
@@ -140,12 +172,19 @@ function hire(job,trainer){stage=6;document.getElementById('obj').textContent='O
  ['What if I’m late?',()=>say('TUFF — MANAGER','Then your first game achievement will be “Disappointed Tuff.” It is not rare.',[['I’ll be early.',()=>saveHire(job)]])],
  ['Do employees get hot goss immediately or after training?',()=>say('TUFF — MANAGER','Benefits begin immediately. Context arrives never.',[['Perfect. I accept.',()=>saveHire(job)]])]
  ])}
-function saveHire(job){localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit}));say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[['Finish Phase 1',null]])}
+function saveHire(job){localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit,style:p.style,accessory:p.accessory}));say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[['Finish Phase 1',null]])}
 
 function syncPreview(){
- document.querySelector('.pvHead').style.background=document.getElementById('charSkin').value;
- document.querySelector('.pvHair').style.background=document.getElementById('charHair').value;
- document.querySelector('.pvBody').style.background=document.getElementById('charOutfit').value;
+ const skin=document.getElementById('charSkin').value,hair=document.getElementById('charHair').value,outfit=document.getElementById('charOutfit').value,style=document.getElementById('charStyle').value;
+ document.querySelector('.pvHead').style.background=skin;
+ document.querySelector('.pvHair').style.background=hair==='tie-dye'?'linear-gradient(90deg,#ff69b4,#ffd84d,#32d6c7,#8a5cff)':hair;
+ document.querySelector('.pvBody').style.background=outfit==='tie-dye'?'linear-gradient(135deg,#ff69b4,#ffd84d,#32d6c7,#8a5cff)':outfit;
+ const h=document.querySelector('.pvHair');
+ h.style.display=style==='Bald'?'none':'block';
+ h.style.height=style==='Mohawk'?'34px':style==='Long'?'62px':style==='Afro'?'42px':'17px';
+ h.style.width=style==='Mohawk'?'12px':style==='Afro'?'52px':'36px';
+ h.style.left=style==='Mohawk'?'30px':style==='Afro'?'10px':'18px';
+ h.style.borderRadius=style==='Afro'?'50%':style==='Mohawk'?'8px 8px 2px 2px':'18px 18px 8px 8px';
 }
 function enterWorld(e){
  if(e){e.preventDefault();e.stopPropagation();}
@@ -157,11 +196,13 @@ function enterWorld(e){
  p.skin=document.getElementById('charSkin').value;
  p.hair=document.getElementById('charHair').value;
  p.outfit=document.getElementById('charOutfit').value;
+ p.style=document.getElementById('charStyle').value;
+ p.accessory=document.getElementById('charAccessory').value;
  document.getElementById('creator').style.display='none';
  document.getElementById('obj').textContent='Objective: Walk through the front entrance';
  return false;
 }
-['charSkin','charHair','charOutfit'].forEach(id=>document.getElementById(id).addEventListener('change',syncPreview));
+['charSkin','charHair','charOutfit','charStyle','charAccessory'].forEach(id=>document.getElementById(id).addEventListener('change',syncPreview));
 const enterBtn=document.getElementById('enterGame');
 enterBtn.type='button';
 enterBtn.addEventListener('click',enterWorld);
