@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v2.1</title><style>
+<title>406 Life v2.2</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -11,7 +11,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #speaker{color:#f3ad67;font-size:12px;font-weight:900;letter-spacing:.12em}.choice{display:block;width:100%;margin-top:8px;padding:12px;background:#493125;color:#fff;border:1px solid #ffffff22;border-radius:10px;text-align:left;font-weight:700}
 #error{position:absolute;top:90px;left:16px;right:16px;background:#8b1f1f;padding:12px;border-radius:10px;display:none}
 </style></head><body><canvas id="g"></canvas><div id="hud">
-<div id="top"><b>406 LIFE · WORLD BUILD v2.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · WORLD BUILD v2.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -25,38 +25,102 @@ function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y)
 function R(x,y,w,h,col,r=0){rr(x-cam.x,y-cam.y,w,h,r,col)}
 function L(t,x,y,size=13,col='#fff'){ctx.fillStyle=col;ctx.font='800 '+size+'px system-ui';ctx.textAlign='center';ctx.fillText(t,x-cam.x,y-cam.y)}
 function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48,0],[48,0],[0,-36],[0,36]].forEach(a=>{ctx.beginPath();ctx.arc(x+a[0]-cam.x,y+a[1]-cam.y,10,0,Math.PI*2);ctx.fill()})}
-function person(n,col,label){ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(n.x-cam.x,n.y-cam.y+19,18,7,0,0,Math.PI*2);ctx.fill();R(n.x-14,n.y-7,28,35,col,8);ctx.fillStyle='#d69a70';ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-18,12,0,Math.PI*2);ctx.fill();L(label,n.x,n.y-42,12)}
+function person(n,col,label){ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(n.x-cam.x,n.y-cam.y+19,18,7,0,0,Math.PI*2);ctx.fill();R(n.x-14,n.y-7,28,35,col,8);ctx.fillStyle='#d69a70';ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-18,12,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#241b17';ctx.beginPath();ctx.arc(n.x-4-cam.x,n.y-20-cam.y,1.5,0,Math.PI*2);ctx.arc(n.x+4-cam.x,n.y-20-cam.y,1.5,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle='#6f3d35';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(n.x-cam.x,n.y-16-cam.y,5,0.25,Math.PI-0.25);ctx.stroke();L(label,n.x,n.y-42,12)}
 function draw(){
 ctx.fillStyle='#4a4d4e';ctx.fillRect(0,0,W,H);
 R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
 for(let i=0;i<1900;i+=130)R(i,95,75,5,'#d9ca86');
 R(80,195,560,25,'#83b9cb');R(1260,195,560,25,'#83b9cb');L('GARAGE WINDOWS',360,245,13,'#eaf9ff');L('GARAGE WINDOWS',1540,245,13,'#eaf9ff');
 R(875,180,150,65,'#33251f');L('FRONT ENTRANCE',950,220,13,'#ffd09c');
-R(650,260,600,55,'#3b3028');R(785,266,330,40,'#b8c8bf');R(665,264,80,46,'#211b18');R(1155,264,80,46,'#211b18');L('KITCHEN PASS',950,292,13,'#4c392c');
+R(235,360,300,62,'#3b3028');R(300,368,170,44,'#b8c8bf');R(245,366,45,48,'#211b18');R(480,366,45,48,'#211b18');L('KITCHEN PASS',385,400,13,'#4c392c');
+[[300,275],[430,275],[560,300],[330,500],[460,520],[350,650]].forEach(a=>table(a[0],a[1]));
 R(600,410,700,350,'#3a2820',18);R(635,445,630,280,'#704730',12);R(690,485,520,200,'#2a211d',10);L('CENTER BAR',950,590,24,'#f4c38c');
 for(let xx=650;xx<1270;xx+=70){ctx.fillStyle='#943b34';ctx.beginPath();ctx.arc(xx-cam.x,392-cam.y,12,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(xx-cam.x,778-cam.y,12,0,Math.PI*2);ctx.fill()}
 [[300,310],[430,310],[560,330],[300,450],[430,470],[300,590],[430,610],[300,730],[430,740]].forEach(a=>table(a[0],a[1]));
 [[1450,310],[1620,310],[1450,490],[1620,490],[1450,670],[1620,670]].forEach(a=>table(a[0],a[1]));
 [[330,850],[470,850],[610,850],[330,1020],[470,1020],[610,1020]].forEach(a=>table(a[0],a[1]));
 for(let yy=370;yy<1050;yy+=95){R(1510,yy,220,65,'#693b32',12);R(1525,yy+11,190,43,'#834b40',9)}L('7 BOOTHS',1620,340,15,'#f5d2a9');
-R(40,700,55,200,'#23211f');L('PATIO EXIT →',180,810,15);R(110,610,210,80,'#302821',6);L('406',215,666,42,'#ffb25d');
+R(40,680,90,250,'#78a8b7');for(let gy=700;gy<920;gy+=45)R(45,gy,80,4,'#d9e4e7');L('PATIO GARAGE DOORS →',230,810,15);R(110,610,210,80,'#302821',6);L('406',215,666,42,'#ffb25d');
 R(900,320,100,58,'#5c3d2b',8);L('HOST STAND',950,355,11,'#ffe0bd');
 [[1130,340],[520,350],[1400,800],[750,850],[1180,930]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
-person(host,'#8b5c45','HOST');person(tuff,'#5b7658','TUFF');person(p,'#3f607f',p.name);
+person(host,'#8b5c45','HOST');
+person({x:760,y:520},'#6c4b3b','BARTENDER');person({x:1120,y:620},'#455f72','BARTENDER');person({x:980,y:710},'#76545c','BARBACK');
+person(tuff,'#5b7658','TUFF');person(p,'#3f607f',p.name);
 }
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+
+const solidRects=[
+ {x:600,y:410,w:700,h:350},
+ {x:650,y:260,w:600,h:55},
+ {x:1510,y:370,w:220,h:730}
+];
+function blocked(nx,ny){
+ if(nx<50||ny<50||nx>1850||ny>1200)return true;
+ for(const s of solidRects){
+  if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
+ }
+ return false;
+}
+
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]()};box.appendChild(b)})}
-function interact(){if(dialogue)return;if(stage===1&&dist(p,host)<100){stage=2;document.getElementById('obj').textContent='Objective: Find Tuff by the glowing 406 sign';say('HOST','Application? Tuff is somewhere on the west side. Try the big 406 sign.',[['Got it.',null]])}else if(stage===2&&dist(p,tuff)<105){stage=3;document.getElementById('obj').textContent='Objective: Follow Tuff to the last booth';say('TUFF — MANAGER','You here about the job? Come with me. We’ll grab the last booth before the patio.',[['Follow Tuff',()=>follow=true]])}else if(stage===4&&dist(p,tuff)<120){stage=5;say('TUFF — MANAGER','All right. First question: have you worked in a restaurant before?',[['Yeah. I know the chaos.',()=>say('TUFF','Good. Then you know exactly what you signed up for.',[['Continue',null]])],['Not yet, but I learn fast.',()=>say('TUFF','We’ll find out.',[['Continue',null]])]])}}
-document.getElementById('act').onclick=interact;
+function interact(){
+ if(dialogue)return;
+ if(stage===1&&dist(p,host)<145){
+   stage=2;document.getElementById('obj').textContent='Objective: Ask the host where to find Tuff';
+   say('HOST — FRONT DESK','Hey! Welcome to Craggy. Are you here to eat, or can I help you find somebody?',[
+    ['I’m here to turn in an application.',()=>say('HOST — FRONT DESK','Perfect. Tuff is the FOH manager tonight. He was headed toward the west side by the glowing 406 sign. Walk around the bar and you should find him.',[['Thanks! I’ll go find him.',()=>{document.getElementById('obj').textContent='Objective: Find Tuff near the glowing 406 sign'}]])],
+    ['Where is the patio?',()=>say('HOST — FRONT DESK','West side. Go past the last booth and through the big garage doors.',[['Got it.',null]])]
+   ]);
+ } else if(stage===2&&dist(p,host)<145){
+   say('HOST — FRONT DESK','Tuff should be west of the bar, near the 406 sign. If he moved again, I’m blaming him, not me.',[['I’ll find him.',null]]);
+ } else if(stage===2&&dist(p,tuff)<145){
+   stage=3;document.getElementById('obj').textContent='Objective: Follow Tuff to the last booth';
+   say('TUFF — MANAGER','You must be the applicant. '+p.name+', right? Good timing. Come with me—we’ll grab the last booth before the patio. It’s quieter over there. Usually.',[['Follow Tuff',()=>follow=true]]);
+ } else if(stage===4&&dist(p,tuff)<155){startInterview();}
+}
+function startInterview(){
+ stage=5;document.getElementById('obj').textContent='Objective: Complete the interview';
+ say('TUFF — MANAGER','All right, '+p.name+'. Relax. This is a restaurant interview, not a Senate hearing. Tell me—have you worked in a restaurant before?',[
+  ['Yes. I know the chaos and came back anyway.',()=>iq2('Experienced. Good. That can be very helpful—or very annoying if you tell me how your old restaurant did everything.')],
+  ['A little. I know enough to know I have more to learn.',()=>iq2('That is suspiciously mature for restaurant work. I like it.')],
+  ['No, but I learn fast and I work hard.',()=>iq2('Fair answer. Experience helps, but effort matters more than people think.')],
+  ['No. How hard can it be?',()=>iq2('Oh, fantastic. Famous last words.')]
+ ]);
+}
+function iq2(r){say('TUFF — MANAGER',r+' Picture this: you’re busy and three guests need you at once. What do you do?',[
+ ['Acknowledge all three, prioritize, and work the list.',()=>iq3('Organized. Good.')],
+ ['Knock out the fastest request first and keep moving.',()=>iq3('Speed matters. Just don’t confuse motion with progress.')],
+ ['Ask a teammate for help before things snowball.',()=>iq3('Good. The strongest people here know when to call for backup.')],
+ ['Panic internally, smile externally.',()=>iq3('Honestly? That is at least half of hospitality.')]
+])}
+function iq3(r){say('TUFF — MANAGER',r+' Next question: a guest is angry about something that was not your fault. What do you do?',[
+ ['Listen, own the experience, and find a solution.',()=>iq4('Exactly. You don’t have to accept abuse, but you do have to help solve the problem.')],
+ ['Get a manager immediately.',()=>iq4('Sometimes correct. I still want you to try to understand the problem first.')],
+ ['Explain why it wasn’t my fault.',()=>iq4('Careful. Being technically right is not always the same as being useful.')],
+ ['Offer something free.',()=>iq4('Not without permission, you little profit destroyer.')]
+])}
+function iq4(r){say('TUFF — MANAGER',r+' What kind of work sounds most like you?',[
+ ['Talking to guests, selling, and juggling a section.',()=>hire('SERVER','Tuff')],
+ ['Fast pressure, timing, and keeping the room moving.',()=>hire('EXPO','Kyle')],
+ ['Systems, prep, heat, and working with my hands.',()=>hire('LINE COOK','Kellen')],
+ ['Reading the room and controlling the front door.',()=>hire('HOST','Tuff')],
+ ['I want to learn the bar.',()=>hire('BARTENDER','Kyle')]
+])}
+function hire(job,trainer){stage=6;document.getElementById('obj').textContent='Objective: Return Monday for orientation with Jay';say('TUFF — MANAGER','All right. I think '+job+' is where I’d start you. Come back Monday at 4:00 for orientation with Jay, our GM. After that, '+trainer+' handles your first training shift. Show up early, bring a pen, and please do not make me regret this.',[
+ ['I’ll be here.',()=>say('TUFF — MANAGER','Good. Welcome to Craggy, '+p.name+'. Now enjoy your last peaceful weekend.',[['End interview',()=>localStorage.setItem('406life_v22',JSON.stringify({name:p.name,job:job}))]])]
+])}
+document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefault();interact()},{passive:false});
 const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
 function update(dt){
-if(!dialogue){let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x,dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+joy.y,m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}p.x=Math.max(50,Math.min(1850,p.x+dx*p.s*dt));p.y=Math.max(50,Math.min(1200,p.y+dy*p.s*dt))}
+if(!dialogue){let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x,dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+joy.y,m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}let nx=p.x+dx*p.s*dt,ny=p.y+dy*p.s*dt;if(!blocked(nx,p.y))p.x=nx;if(!blocked(p.x,ny))p.y=ny}
 if(stage===0&&p.y>220){stage=1;document.getElementById('obj').textContent='Objective: Turn in your application at the host stand';say('NARRATOR','You step inside Craggy Range. TVs glow over the bar, silverware clatters, and somebody is already in the weeds.',[['Find the host stand.',null]])}
 if(follow){let tx=1480,ty=1000,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(m>10){tuff.x+=dx/m*115*dt;tuff.y+=dy/m*115*dt}else{follow=false;stage=4;document.getElementById('obj').textContent='Objective: Sit with Tuff for your interview'}}
 cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
-let pr='';if(stage===1&&dist(p,host)<100)pr='INTERACT · Turn in application';if(stage===2&&dist(p,tuff)<105)pr='INTERACT · Talk to Tuff';if(stage===4&&dist(p,tuff)<120)pr='INTERACT · Start interview';let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
+let pr='';if(stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(stage===2&&dist(p,tuff)<145)pr='INTERACT · Talk to Tuff';if(stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 </script></body></html>
