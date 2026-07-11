@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v4.0.1</title><style>
+<title>406 Life v4.0.2</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -68,7 +68,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 </div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · SERVER SHIFT BUILD v4.0.1 · QA VERIFIED</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · SERVER SHIFT BUILD v4.0.2 · RUNTIME FIXED</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -553,7 +553,7 @@ if(serverTraining.active||serverTraining.finished){
 workers.forEach(drawWorker);
 person(kellen,'#5c4d3f','KELLEN');
 person(kyle,'#384f45','KYLE');
-if(!pr&&gameDay==='ORIENTATION'){
+if(gameDay==='ORIENTATION'){
  person(jay,'#384f68','JAY');
  R(1040,815,80,70,'#222',8);L('TIME',1080,842,11,'#f3ad67');L('CLOCK',1080,858,11,'#f3ad67');
 }
