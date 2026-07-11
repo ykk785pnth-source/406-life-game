@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v5.0</title><style>
+<title>406 Life v5.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -29,6 +29,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #achievement{position:fixed;z-index:60;top:22px;left:50%;transform:translate(-50%,-140px);width:min(430px,86vw);background:#241b15;border:2px solid #f3ad67;border-radius:18px;padding:15px;box-shadow:0 12px 40px #000b;transition:transform .35s ease;pointer-events:none}.achTitle{color:#f3ad67;font-weight:950;letter-spacing:.08em;font-size:11px}.achName{font-size:20px;font-weight:950;margin:3px 0}
 #repBox{font-size:11px;margin-top:7px;border-top:1px solid #ffffff18;padding-top:7px}
 .worldLabel{font-weight:900}
+
+#taskPanel{position:absolute;left:14px;top:88px;width:min(330px,72vw);background:#17120de8;border:1px solid #ffffff20;border-radius:14px;padding:11px 13px;pointer-events:none;box-shadow:0 8px 24px #0005}
+#taskTitle{font-size:11px;font-weight:950;letter-spacing:.12em;color:#f3ad67;margin-bottom:7px}
+.taskLine{font-size:12px;line-height:1.35;margin:4px 0;color:#eadac9}.taskLine.done{color:#8fbf91;text-decoration:line-through}.taskLine.current{color:#fff;font-weight:850}.taskDot{display:inline-block;width:15px}
+@media(max-width:700px){#taskPanel{top:92px;left:10px;width:64vw;padding:9px 11px}.taskLine{font-size:11px}}
 </style></head><body><canvas id="g"></canvas>
 <div id="creator"><div id="creatorCard">
 <div style="color:#f3ad67;font-weight:900;letter-spacing:.15em">YOUR WHITEFISH STORY STARTS HERE</div>
@@ -70,7 +75,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 </div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · CHARACTER SPRITES & CHECKPOINTS v5.0</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · TASK GUIDE & CHARACTER POLISH v5.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+
+<div id="taskPanel"><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -126,6 +133,56 @@ function continueCheckpoint(e){
 }
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+function taskRows(){
+ if(gameDay==='INTERVIEW'){
+  if(stage<=1)return [['Walk into Craggy',stage>0],['Turn in application at host stand',false],['Find Tuff near the 406 sign',false],['Follow Tuff to the interview booth',false]];
+  if(stage===2)return [['Turn in application at host stand',true],['Catch Tuff near the 406 sign',false],['Follow Tuff to the interview booth',false]];
+  if(stage===3)return [['Catch Tuff near the 406 sign',true],['Follow Tuff to the final east-wall booth',false]];
+  if(stage===4)return [['Follow Tuff to the final east-wall booth',true],['Start the interview',false]];
+  if(stage===5)return [['Complete Tuff’s interview',false]];
+  if(stage>=6)return [['Complete Tuff’s interview',true],['Start Monday orientation',false]];
+ }
+ if(gameDay==='ORIENTATION'){
+  const rows=[
+   ['Find Jay beside the host stand',orientationStep>0],
+   ['Open Phone → Swim Schedule',orientationStep>1],
+   ['Return to Jay',orientationStep>2],
+   ['Open Phone → Wallet',orientationStep>3],
+   ['Follow Jay to POS 2',orientationStep>4],
+   ['Talk to Jay at POS 2',orientationStep>5],
+   ['Clock in at POS 2',orientationStep>5],
+   ['Complete Jay’s building tour',orientationStep>11],
+   ['Find your trainer',orientationStep>12]
+  ];
+  return rows;
+ }
+ if(gameDay==='SERVER_TRAINING'){
+  const labels=[
+   'Meet Desarae at Table 62','Greet Table 62','Take drink order','Ring drinks at POS 2',
+   'Pick up drinks at service well','Deliver drinks','Take food order','Ring food at POS 2',
+   'Answer HANDS at kitchen pass','Run food','Check back','Get ranch at POS 2',
+   'Deliver ranch','Present check','Process payment','Return to Desarae'
+  ];
+  if(serverTraining.active){
+   const current=Math.max(0,serverTraining.step-1);
+   return labels.map((t,i)=>[t,i<current]);
+  }
+  if(postShiftStep===1)return [['Review shift with Desarae',true],['Clock out at POS 2',false],['Check Friday shift in Swim Schedule',false]];
+  if(postShiftStep>=2)return [['Clock out at POS 2',true],['Check Friday shift in Swim Schedule',false]];
+ }
+ return [['Explore Craggy and talk to coworkers',false]];
+}
+function updateTaskPanel(){
+ const list=document.getElementById('taskList');if(!list)return;
+ const rows=taskRows();
+ let currentAssigned=false;
+ list.innerHTML=rows.map(([text,done])=>{
+  const current=!done&&!currentAssigned; if(current)currentAssigned=true;
+  return '<div class="taskLine '+(done?'done':current?'current':'')+'"><span class="taskDot">'+(done?'✓':current?'▶':'○')+'</span>'+text+'</div>';
+ }).join('');
+}
+
 function updateLifeHud(){
  document.getElementById('cashHud').textContent='$'+life.cash;
  for(const k of ['energy','hunger','stress']){
@@ -179,12 +236,12 @@ function L(t,x,y,size=13,col='#fff'){ctx.fillStyle=col;ctx.font='800 '+size+'px 
 function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48,0],[48,0],[0,-36],[0,36]].forEach(a=>{ctx.beginPath();ctx.arc(x+a[0]-cam.x,y+a[1]-cam.y,10,0,Math.PI*2);ctx.fill()})}
 
 const staffLooks={
- TUFF:{skin:'#d69a70',hair:'#2b1a13',style:'Short',shirt:'#56705a',pants:'#252a31',apron:false,beard:true,height:1.12},
- JAY:{skin:'#c98d68',hair:'#231812',style:'Fade',shirt:'#344d68',pants:'#242832',apron:false,height:1.05},
- KELLEN:{skin:'#d69a70',hair:'#4a2e1e',style:'Short',shirt:'#4b443d',pants:'#262626',apron:true,height:1.03},
- KYLE:{skin:'#d39a74',hair:'#201914',style:'Short',shirt:'#344f43',pants:'#252b28',apron:false,height:1.04},
- JELENA:{skin:'#d69a70',hair:'#4b261f',style:'Long',shirt:'#7e3f55',pants:'#26252a',apron:true,height:1.02},
- DESARAE:{skin:'#c88867',hair:'#2d1b19',style:'Ponytail',shirt:'#df6fa8',pants:'#25252c',apron:true,height:1.02},
+ TUFF:{skin:'#d69a70',hair:'#2b1a13',style:'Short',shirt:'#56705a',pants:'#252a31',apron:false,beard:true,height:1.12,brows:true,build:1.12},
+ JAY:{skin:'#c98d68',hair:'#231812',style:'Fade',shirt:'#344d68',pants:'#242832',apron:false,height:1.05,brows:true,build:1.04},
+ KELLEN:{skin:'#d69a70',hair:'#4a2e1e',style:'Short',shirt:'#4b443d',pants:'#262626',apron:true,height:1.03,brows:true,build:1.02},
+ KYLE:{skin:'#d39a74',hair:'#201914',style:'Short',shirt:'#344f43',pants:'#252b28',apron:false,height:1.04,brows:true,build:1.06,scar:true},
+ JELENA:{skin:'#d69a70',hair:'#4b261f',style:'Long',shirt:'#7e3f55',pants:'#26252a',apron:true,height:1.02,brows:true,build:.98,earrings:true},
+ DESARAE:{skin:'#c88867',hair:'#2d1b19',style:'Ponytail',shirt:'#df6fa8',pants:'#25252c',apron:true,height:1.02,brows:true,build:1.02,earrings:true},
  HOST:{skin:'#d69a70',hair:'#6b3d24',style:'Bun',shirt:'#9a684b',pants:'#28252b',apron:false,height:1},
  BARTENDER:{skin:'#d69a70',hair:'#332118',style:'Fade',shirt:'#49657b',pants:'#242a30',apron:true,height:1},
  BARBACK:{skin:'#b87650',hair:'#161312',style:'Short',shirt:'#745366',pants:'#23252b',apron:true,height:1},
@@ -217,12 +274,12 @@ function drawAccessory(sx,sy,look,scale){
  if(a==='Pink cowboy hat'){ctx.fillStyle='#ff69b4';ctx.fillRect(sx-17*scale,sy-39*scale,34*scale,4*scale);ctx.beginPath();ctx.ellipse(sx,sy-42*scale,12*scale,7*scale,0,Math.PI,Math.PI*2);ctx.fill()}
 }
 function spriteLook(n,col){
- if(n===p)return {skin:p.skin,hair:p.hair,style:p.style,shirt:p.outfit,pants:'#252832',accessory:p.accessory,apron:clockedIn,height:1.05};
+ if(n===p)return {skin:p.skin,hair:p.hair,style:p.style,shirt:p.outfit,pants:'#252832',accessory:p.accessory,apron:clockedIn,height:1.05,brows:true,build:1};
  const base=staffLooks[n.name]||{skin:'#d69a70',hair:'#3a241a',style:'Short',shirt:col||'#536273',pants:'#25272d',apron:false,height:1};
  return {...base,shirt:base.shirt||col};
 }
 function drawCharacter(n,col,label){
- const look=spriteLook(n,col),scale=look.height||1;
+ const look=spriteLook(n,col),scale=look.height||1,build=look.build||1;
  const sx=n.x-cam.x,sy=n.y-cam.y;
  const phase=n.walkPhase||0,moving=!!n.moving,bob=moving?Math.sin(phase)*2:0;
  const legSwing=moving?Math.sin(phase)*6:0,armSwing=moving?Math.sin(phase+Math.PI)*5:0;
@@ -234,13 +291,22 @@ function drawCharacter(n,col,label){
  // arms
  ctx.strokeStyle=look.skin;ctx.lineWidth=6*scale;ctx.beginPath();ctx.moveTo(sx-13*scale,sy-1*scale+bob);ctx.lineTo(sx-17*scale+armSwing,sy+17*scale);ctx.moveTo(sx+13*scale,sy-1*scale+bob);ctx.lineTo(sx+17*scale-armSwing,sy+17*scale);ctx.stroke();
  // torso with shoulders/waist
- colorFill(look.shirt,sx,sy,34*scale,40*scale);ctx.beginPath();ctx.moveTo(sx-13*scale,sy-7*scale+bob);ctx.quadraticCurveTo(sx-18*scale,sy-3*scale+bob,sx-15*scale,sy+19*scale+bob);ctx.lineTo(sx+15*scale,sy+19*scale+bob);ctx.quadraticCurveTo(sx+18*scale,sy-3*scale+bob,sx+13*scale,sy-7*scale+bob);ctx.closePath();ctx.fill();
+ colorFill(look.shirt,sx,sy,34*scale,40*scale);ctx.beginPath();ctx.moveTo(sx-13*scale*build,sy-7*scale+bob);ctx.quadraticCurveTo(sx-18*scale*build,sy-3*scale+bob,sx-15*scale*build,sy+19*scale+bob);ctx.lineTo(sx+15*scale*build,sy+19*scale+bob);ctx.quadraticCurveTo(sx+18*scale*build,sy-3*scale+bob,sx+13*scale*build,sy-7*scale+bob);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#ffffff55';ctx.lineWidth=1.2*scale;ctx.beginPath();ctx.moveTo(sx-5*scale,sy-7*scale+bob);ctx.lineTo(sx,sy-1*scale+bob);ctx.lineTo(sx+5*scale,sy-7*scale+bob);ctx.stroke();
+ if(!look.apron){ctx.strokeStyle='#ffffff35';ctx.strokeRect(sx+4*scale,sy+4*scale+bob,7*scale,6*scale)}
  if(look.apron){ctx.fillStyle='#252426';ctx.beginPath();ctx.moveTo(sx-10*scale,sy+2*scale+bob);ctx.lineTo(sx+10*scale,sy+2*scale+bob);ctx.lineTo(sx+13*scale,sy+22*scale+bob);ctx.lineTo(sx-13*scale,sy+22*scale+bob);ctx.closePath();ctx.fill();ctx.strokeStyle='#ddd';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx-9*scale,sy+2*scale+bob);ctx.lineTo(sx-13*scale,sy-8*scale+bob);ctx.moveTo(sx+9*scale,sy+2*scale+bob);ctx.lineTo(sx+13*scale,sy-8*scale+bob);ctx.stroke()}
  // neck/head
  ctx.fillStyle=look.skin;ctx.fillRect(sx-5*scale,sy-14*scale+bob,10*scale,7*scale);ctx.beginPath();ctx.ellipse(sx,sy-25*scale+bob,12*scale,14*scale,0,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.ellipse(sx-12*scale,sy-25*scale+bob,3*scale,5*scale,0,0,Math.PI*2);ctx.ellipse(sx+12*scale,sy-25*scale+bob,3*scale,5*scale,0,0,Math.PI*2);ctx.fill();
+
  drawHair(sx,sy+bob,look,scale);
  // face
  ctx.fillStyle='#201817';ctx.beginPath();ctx.arc(sx-4*scale,sy-26*scale+bob,1.5*scale,0,Math.PI*2);ctx.arc(sx+4*scale,sy-26*scale+bob,1.5*scale,0,Math.PI*2);ctx.fill();
+ if(look.brows){ctx.strokeStyle=look.hair||'#302018';ctx.lineWidth=1.4*scale;ctx.beginPath();ctx.moveTo(sx-8*scale,sy-30*scale+bob);ctx.lineTo(sx-2*scale,sy-31*scale+bob);ctx.moveTo(sx+2*scale,sy-31*scale+bob);ctx.lineTo(sx+8*scale,sy-30*scale+bob);ctx.stroke()}
+ ctx.strokeStyle='#9a5e4d';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx,sy-26*scale+bob);ctx.lineTo(sx-1*scale,sy-22*scale+bob);ctx.lineTo(sx+1.5*scale,sy-22*scale+bob);ctx.stroke();
+ if(look.earrings){ctx.fillStyle='#e7c34c';ctx.beginPath();ctx.arc(sx-13*scale,sy-23*scale+bob,1.8*scale,0,Math.PI*2);ctx.arc(sx+13*scale,sy-23*scale+bob,1.8*scale,0,Math.PI*2);ctx.fill()}
+ if(look.scar){ctx.strokeStyle='#9e6758';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx+6*scale,sy-20*scale+bob);ctx.lineTo(sx+9*scale,sy-17*scale+bob);ctx.stroke()}
+
  ctx.strokeStyle='#7b443b';ctx.lineWidth=1.2*scale;ctx.beginPath();ctx.arc(sx,sy-21*scale+bob,5*scale,.2,Math.PI-.2);ctx.stroke();
  if(look.beard){ctx.strokeStyle='#3a241b';ctx.lineWidth=3*scale;ctx.beginPath();ctx.arc(sx,sy-22*scale+bob,9*scale,.1,Math.PI-.1);ctx.stroke()}
  drawAccessory(sx,sy+bob,look,scale);
@@ -266,6 +332,7 @@ const workers=[
 ];
 
 let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
+updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
 const kellen={x:350,y:500,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
@@ -331,7 +398,11 @@ function orientationInteract(){
  if(orientationStep===4&&dist(p,jay)<150){
   orientationStep=5;document.getElementById('obj').textContent='Orientation: Interact with the time clock';
   say('JAY — GENERAL MANAGER','Clocking in starts the shift timer. While you work, Energy and Hunger slowly fall. Mistakes raise Stress and can hurt Craggy Reputation. One mistake won’t ruin you. Repeating the same mistake will absolutely annoy Tuff.',[
-   ['What happens if I’m late?',()=>say('JAY — GENERAL MANAGER','You unlock a very special achievement.',[['That sounds bad.',null]])],
+   ['What happens if I’m late?',()=>say('JAY — GENERAL MANAGER','You unlock a very special achievement. Tuff’s disappointment has excellent range and projection.',[['That sounds bad.',null]])],
+   ['Is the time clock judging me?',()=>say('JAY — GENERAL MANAGER','Only silently. Like most of management before coffee. Also, keep your fingers off anything labeled “manager override” unless you enjoy uncomfortable conversations.',[
+     ['Moderately professional. Got it.',null],
+     ['What counts as uncomfortable?',()=>say('JAY — GENERAL MANAGER','The kind where I close the office door but leave it slightly open so HR cannot invent a story.',[['That is alarmingly specific.',null]])]
+   ])],
    ['Got it. Clock in, work well, get paid.',null]
   ]);return true;
  }
@@ -572,12 +643,28 @@ function talkManager(n){
  if(n.name==='KELLEN'){
   say('KELLEN — MANAGER','Kitchen side is controlled chaos. If you are lost, ask. If you are holding raw chicken, do not wander around looking philosophical.',[
    ['What do you train?',()=>say('KELLEN — MANAGER','Dish, prep, line, kitchen flow, cleaning, food safety—the glamorous empire.',[['Heard.',null]])],
-   ['Any advice?',()=>say('KELLEN — MANAGER','Stay organized, communicate, and clean as you go. Future you will be grateful.',[['Thanks.',null]])]
+   ['Any advice?',()=>say('KELLEN — MANAGER','Stay organized, communicate, and clean as you go. Future you will be grateful.',[['Thanks.',null]])],
+   ['What do you do for fun?',()=>say('KELLEN — MANAGER','Uhh... uhh... Spider-Man.',[
+     ['That was incredibly specific.',()=>say('KELLEN — MANAGER','I had plenty of time to prepare for the question and somehow that is still what came out.',[['Respect.',null]])],
+     ['Which Spider-Man?',()=>say('KELLEN — MANAGER','Yes.',[['Strong answer.',null]])]
+   ])]
   ]);
  }else{
-  say('KYLE — MANAGER','Bar and expo live on timing. Slow is bad. Fast and wrong is also bad. The trick is being annoyingly accurate at speed.',[
-   ['What do you train?',()=>say('KYLE — MANAGER','Bartenders and expo. Drinks, tickets, modifiers, communication, and yelling for hands with purpose.',[['Got it.',null]])],
-   ['Where is Tuff?',()=>say('KYLE — MANAGER','Probably west side. If you hear “Who rang this in?” you are getting warmer.',[['Helpful 😂',null]])]
+  say('KYLE — MANAGER','Bar and expo are the engine room. Slow is bad. Fast and wrong is also bad. Keep the ship steady, communicate, and don’t let one bad ticket turn into a mutiny.',[
+   ['What do you train?',()=>say('KYLE — MANAGER','Bartenders and expo. Drinks, tickets, modifiers, communication, and yelling for hands with purpose. Every good ship needs a crew that answers the call.',[
+     ['You really like ship metaphors.',()=>say('KYLE — MANAGER','A restaurant is a ship. The bar is the helm, expo is navigation, the kitchen is the engine room, and management is mostly plugging leaks while pretending the weather is fine.',[
+       ['That was weirdly heartfelt.',()=>say('KYLE — MANAGER','People do better when they know somebody trusts them to hold their station. Keep your word, help the crew, and don’t abandon ship during the rush.',[['Okay, Dad.',null]])],
+       ['So who is the pirate?',()=>say('KYLE — MANAGER','Depends who is asking.',[
+         ['The one with the machete energy.',()=>say('KYLE — MANAGER','Ah. Machete Jesus. Ancient maritime legend. Very niche. You did not hear that from me.',[['I knew it.',null]])],
+         ['Never mind.',null]
+       ])]
+     ])],
+     ['Got it.',null]
+   ])],
+   ['Where is Tuff?',()=>say('KYLE — MANAGER','Usually near the 406 sign. If you hear “Who rang this in?” you are getting warmer.',[['Helpful 😂',null]])],
+   ['Give me one dad-level life lesson.',()=>say('KYLE — MANAGER','Don’t confuse having a rough shift with being bad at the job. Fix what you can, own what you missed, then come back tomorrow steadier.',[
+     ['That was suspiciously wholesome.',()=>say('KYLE — MANAGER','Ships need ballast.',[['There it is.',null]])]
+   ])]
   ]);
  }
 }
@@ -722,7 +809,7 @@ function blocked(nx,ny){
  return false;
 }
 
-function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]()};box.appendChild(b)})}
+function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
  if(postShiftInteract())return;
@@ -881,6 +968,7 @@ const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
 function update(dt){
+updateTaskPanel();
 updateWorkers(dt);
 if(clockedIn&&!dialogue){
  life.minutes+=dt*1.4;
