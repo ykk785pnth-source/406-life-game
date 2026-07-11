@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v2.3</title><style>
+<title>406 Life v2.3.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -16,7 +16,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #creator h1{margin:0 0 5px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.cg label{font-size:12px;color:#efc99f}.cg input,.cg select{width:100%;margin-top:5px;padding:12px;background:#120e0c;color:#fff;border:1px solid #ffffff2a;border-radius:10px}
 #preview{height:160px;display:flex;align-items:center;justify-content:center;background:#ffffff08;border-radius:16px;margin:14px 0}
 #previewPerson{position:relative;width:70px;height:120px}.pvHead{position:absolute;left:20px;top:5px;width:32px;height:38px;border-radius:45%;background:#d69a70}.pvHair{position:absolute;left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;background:#2b1a13}.pvBody{position:absolute;left:8px;top:40px;width:56px;height:66px;border-radius:16px;background:#3f607f}.pvEye{position:absolute;top:20px;width:3px;height:3px;border-radius:50%;background:#211}.pvEye.l{left:28px}.pvEye.r{left:40px}
-#enterGame{width:100%;padding:14px;border:0;border-radius:12px;background:#e78a43;color:#1a100a;font-weight:950;font-size:17px}
+#enterGame{position:relative;z-index:30;width:100%;padding:14px;border:0;border-radius:12px;background:#e78a43;color:#1a100a;font-weight:950;font-size:17px;touch-action:manipulation;cursor:pointer}
 @media(max-width:650px){.cg{grid-template-columns:1fr 1fr}}
 </style></head><body><canvas id="g"></canvas>
 <div id="creator"><div id="creatorCard">
@@ -33,7 +33,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 </div><button id="enterGame">LOOK GOOD. GO GET THE JOB →</button>
 </div></div>
 <div id="hud">
-<div id="top"><b>406 LIFE · WORLD BUILD v2.3</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · WORLD BUILD v2.3.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -141,6 +141,33 @@ function hire(job,trainer){stage=6;document.getElementById('obj').textContent='O
  ['Do employees get hot goss immediately or after training?',()=>say('TUFF — MANAGER','Benefits begin immediately. Context arrives never.',[['Perfect. I accept.',()=>saveHire(job)]])]
  ])}
 function saveHire(job){localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit}));say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[['Finish Phase 1',null]])}
+
+function syncPreview(){
+ document.querySelector('.pvHead').style.background=document.getElementById('charSkin').value;
+ document.querySelector('.pvHair').style.background=document.getElementById('charHair').value;
+ document.querySelector('.pvBody').style.background=document.getElementById('charOutfit').value;
+}
+function enterWorld(e){
+ if(e){e.preventDefault();e.stopPropagation();}
+ const nameField=document.getElementById('charName');
+ const n=nameField.value.trim();
+ if(!n){nameField.placeholder='Enter a name first';nameField.focus();return false;}
+ p.name=n;
+ p.pronouns=document.getElementById('charPronouns').value;
+ p.skin=document.getElementById('charSkin').value;
+ p.hair=document.getElementById('charHair').value;
+ p.outfit=document.getElementById('charOutfit').value;
+ document.getElementById('creator').style.display='none';
+ document.getElementById('obj').textContent='Objective: Walk through the front entrance';
+ return false;
+}
+['charSkin','charHair','charOutfit'].forEach(id=>document.getElementById(id).addEventListener('change',syncPreview));
+const enterBtn=document.getElementById('enterGame');
+enterBtn.type='button';
+enterBtn.addEventListener('click',enterWorld);
+enterBtn.addEventListener('touchend',enterWorld,{passive:false});
+syncPreview();
+
 document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefault();interact()},{passive:false});
 const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
