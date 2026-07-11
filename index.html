@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v6.4</title><style>
+<title>406 Life v7.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -57,7 +57,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <label>Accessory<select id="charAccessory"><option>None</option><option>Sunglasses</option><option>Round glasses</option><option>Gold chain</option><option>Pink cowboy hat</option></select></label>
 </div><button id="enterGame">LOOK GOOD. GO GET THE JOB →</button>
 <button id="continueGame">CONTINUE LATEST CHECKPOINT</button>
-<button id="resetSave">Clear checkpoint and start over</button>
+<button id="resetSave">NEW GAME · ERASE CAREER SAVE</button>
 </div></div>
 <div id="hud">
 <div id="lifeHud">
@@ -67,7 +67,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
  <div class="meterRow"><span>STRESS</span><div class="meter"><div class="meterFill" id="stressFill" style="width:12%"></div></div><span id="stressNum">12</span></div>
  <div id="repBox">CRAGGY REP · <span id="repText">NEW HIRE</span> <span id="repNum">0</span>/100</div>
 </div>
-<button id="phoneBtn">📱</button>
+<button id="phoneBtn">📱</button><button id="closeoutBtn" style="display:none;position:absolute;right:112px;bottom:166px;padding:12px 14px;border-radius:12px;border:2px solid #ffdc69;background:#392b18;color:#fff;font-weight:950;pointer-events:auto">CLOSE SHIFT</button>
 <div id="phone"><div id="phoneShell">
  <div id="phoneTop"><span>406 LIFE</span><span id="phoneClock">3:56 PM</span></div>
  <div id="phoneHome"><h2 style="margin:5px 0 15px">Phone</h2><div class="appGrid">
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · ECONOMY BALANCE & STAFF DETAILS v6.4</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · REGULARS, GOSSIP & WALK-IN v7.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -169,7 +169,9 @@ const life={
 const CHECKPOINT_KEY='406life_checkpoint_v5';
 function playerSnapshot(){return {name:p.name,pronouns:p.pronouns,skin:p.skin,hair:p.hair,outfit:p.outfit,style:p.style,accessory:p.accessory}}
 function saveCheckpoint(point){
- const data={point,player:playerSnapshot(),life:{cash:life.cash,checking:life.checking,rent:life.rent,rentDue:life.rentDue,energy:life.energy,hunger:life.hunger,stress:life.stress,rep:life.rep,achievements:life.achievements,minutes:life.minutes},job:getSavedJob(),savedAt:Date.now()};
+ const data={point,player:playerSnapshot(),
+ life:{cash:life.cash,checking:life.checking,rent:life.rent,rentDue:life.rentDue,energy:life.energy,hunger:life.hunger,stress:life.stress,rep:life.rep,achievements:life.achievements,minutes:life.minutes},
+ career:JSON.parse(JSON.stringify(career)),socialWorld:JSON.parse(JSON.stringify(socialWorld)),job:getSavedJob(),savedAt:Date.now()};
  localStorage.setItem(CHECKPOINT_KEY,JSON.stringify(data));refreshContinueButton();
 }
 function getCheckpoint(){
@@ -183,16 +185,22 @@ function getCheckpoint(){
 }
 function applySavedPlayer(s){if(!s)return;Object.assign(p,s);p.walkPhase=0;p.moving=false}
 function applySavedLife(s){if(!s)return;Object.assign(life,s);updateLifeHud()}
+
+function resetEntireGame(){
+ ['406life_checkpoint_v5','406life_v23','406life_career_v1','406life_task_collapsed'].forEach(k=>localStorage.removeItem(k));
+ location.reload();
+}
+
 function refreshContinueButton(){
  const cp=getCheckpoint(),btn=document.getElementById('continueGame'),reset=document.getElementById('resetSave');
  if(!cp){btn.style.display='none';reset.style.display='none';return}
- const names={ORIENTATION:'CONTINUE FROM ORIENTATION',TRAINING:'CONTINUE FROM SERVER TRAINING',POST_SHIFT:'CONTINUE FROM SHIFT REVIEW',FRIDAY_SHIFT:'CONTINUE TO FRIDAY SHIFT',FRIDAY_DONE:'CONTINUE AFTER FIRST FRIDAY'};
+ const names={ORIENTATION:'CONTINUE FROM ORIENTATION',TRAINING:'CONTINUE FROM SERVER TRAINING',POST_SHIFT:'CONTINUE FROM SHIFT REVIEW',FRIDAY_SHIFT:'CONTINUE TO FRIDAY SHIFT',FRIDAY_DONE:'CONTINUE AFTER FIRST FRIDAY',DYNAMIC_SHIFT:'CONTINUE CURRENT SHIFT',DYNAMIC_DONE:'CONTINUE NEXT DAY'};
  btn.textContent=cp.migrated?'CONTINUE WITH YOUR EXISTING CHARACTER':(names[cp.point]||'CONTINUE LATEST CHECKPOINT');btn.style.display='block';reset.style.display='block';
 }
 function continueCheckpoint(e){
  if(e){e.preventDefault();e.stopPropagation()}
  const cp=getCheckpoint();if(!cp)return;
- applySavedPlayer(cp.player);applySavedLife(cp.life);
+ applySavedPlayer(cp.player);applySavedLife(cp.life);if(cp.career)Object.assign(career,cp.career);if(cp.socialWorld)Object.assign(socialWorld,cp.socialWorld);saveCareer();
  document.getElementById('creator').style.display='none';
  if(cp.point==='ORIENTATION'){startOrientation();return}
  if(cp.point==='TRAINING'){
@@ -243,6 +251,9 @@ function taskRows(){
   ];
   const current=Math.max(0,fridayShift.step-1);
   return labels.map((t,i)=>[t,i<current]);
+ }
+ if(gameDay==='DYNAMIC_SHIFT'){
+  return [[`${shiftEngine.day} generated shift`,!shiftEngine.active],[`Tables completed: ${shiftEngine.completed}/${shiftEngine.tables.length}`,false],[`Random event: ${shiftEngine.event?shiftEngine.event.name:'None'}`,false]];
  }
  if(gameDay==='SERVER_TRAINING'){
   const labels=[
@@ -346,7 +357,9 @@ function bindAppActions(app){
  document.querySelectorAll('[data-start]').forEach(btn=>btn.onclick=()=>{
   const shift=career.currentSchedule.find(s=>s.id===btn.dataset.start);
   document.getElementById('phone').style.display='none';
-  if(shift&&shift.day==='Saturday')startSaturdayShift();else startFridayShift();
+  if(shift&&shift.day==='Saturday')startSaturdayShift();
+  else if(career.week>1||career.fridayComplete)startGeneratedShift(shift?shift.day:'Friday');
+  else startFridayShift();
  });
  document.querySelectorAll('[data-snav]').forEach(btn=>btn.onclick=()=>{
   const page=btn.dataset.snav;
@@ -395,7 +408,8 @@ const staffLooks={
  BARTENDER:{skin:'#d69a70',hair:'#332118',style:'Fade',shirt:'#49657b',pants:'#242a30',apron:true,height:1},
  BARBACK:{skin:'#b87650',hair:'#161312',style:'Short',shirt:'#745366',pants:'#23252b',apron:true,height:1},
  SERVER:{skin:'#d69a70',hair:'#5b3525',style:'Ponytail',shirt:'#49657b',pants:'#25272d',apron:true,height:1},
- BUSSER:{skin:'#b87650',hair:'#201814',style:'Curly',shirt:'#55705d',pants:'#25272b',apron:true,height:1}
+ BUSSER:{skin:'#b87650',hair:'#201814',style:'Curly',shirt:'#55705d',pants:'#25272b',apron:true,height:1},
+ DIET_COKE_DAVE:{skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',apron:false,height:1.02,build:1.05}
 };
 function colorFill(value,sx,sy,w=30,h=45){
  if(value==='tie-dye'){let g=ctx.createLinearGradient(sx-w/2,sy-h/2,sx+w/2,sy+h/2);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');ctx.fillStyle=g}else ctx.fillStyle=value;
@@ -424,7 +438,7 @@ function drawAccessory(sx,sy,look,scale){
 }
 function spriteLook(n,col){
  if(n===p)return {skin:p.skin,hair:p.hair,style:p.style,shirt:p.outfit,pants:'#252832',accessory:p.accessory,apron:clockedIn,height:1.05,brows:true,build:1};
- const base=staffLooks[n.name]||{skin:'#d69a70',hair:'#3a241a',style:'Short',shirt:col||'#536273',pants:'#25272d',apron:false,height:1};
+ const base=(n.regular?staffLooks.DIET_COKE_DAVE:staffLooks[n.name])||{skin:'#d69a70',hair:'#3a241a',style:'Short',shirt:col||'#536273',pants:'#25272d',apron:false,height:1};
  return {...base,shirt:base.shirt||col};
 }
 function drawCharacter(n,col,label){
@@ -501,6 +515,12 @@ updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
 const kellen={x:350,y:500,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
+
+const dietCokeDave={
+ name:'DIET COKE DAVE',x:760,y:350,col:'#7d755f',
+ skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',
+ accessory:'Sunglasses',moving:false,walkPhase:0,regular:true
+};
 const desarae=workers.find(n=>n.id==='desarae');
 
 function specialWorkerTalk(n){
@@ -514,7 +534,8 @@ function specialWorkerTalk(n){
   ];
   say('JELENA — BARTENDER',j[(n.friendship-1)%j.length],[
    ['Ask for hot goss.',()=>say('JELENA — BARTENDER','Absolutely not on your first five minutes. Earn it. But watch the patio after close. That is all I’m saying.',[['I knew I liked you.',null]])],
-   ['Ask about Tuff.',()=>say('JELENA — BARTENDER','He acts scary when service is messy, then sends a heartfelt staff appreciation post at midnight. You’ll figure him out.',[['That tracks.',null]])],
+   ['Ask about Tuff.',()=>{addGossipClue('Jelena says Tuff once made a traffic cone wear a manager nametag.');
+ say('JELENA — BARTENDER','He acts scary when service is messy, then sends a heartfelt staff appreciation post at midnight. Also, ask him why a traffic cone once had a manager nametag.',[['That tracks... wait, what?',null]])}],
    ['Let her work.',null]
   ]);return true;
  }
@@ -528,7 +549,9 @@ function specialWorkerTalk(n){
   say('DESARAE — SUPERVISOR',lines[Math.floor(Math.random()*lines.length)],[
    ['Can you train every position?',()=>say('DESARAE — SUPERVISOR','Basically. My official position is “wherever the building is currently on fire.”',[['Iconic.',null]])],
    ['Why are you dancing?',()=>say('DESARAE — SUPERVISOR','Because morale is free and my feet have independent management authority.',[['Fair.',null]])],
-   ['Ask where Tuff is.',()=>say('DESARAE — SUPERVISOR','West side near the 406 sign—unless he heard a problem, in which case follow the speed-walking.',[['Thanks!',null]])]
+   ['Ask where Tuff is.',()=>say('DESARAE — SUPERVISOR','West side near the 406 sign—unless he heard a problem, in which case follow the speed-walking.',[['Thanks!',null]])],
+   ['Ask about the office traffic cone.',()=>{addGossipClue('Desarae says Jay made Tuff carry a traffic cone through the restaurant.');
+    say('DESARAE — SUPERVISOR','I did not see the beginning. I only saw Jay laughing while Tuff carried a cone through the dining room like he had won a pageant.',[['This story is improving.',null]])}]
   ]);return true;
  }
  return false;
@@ -681,6 +704,62 @@ document.getElementById('posCancel').onclick=()=>document.getElementById('posMod
 function posMatches(values,expected){return expected.every((e,i)=>values[i]&&values[i].item===e.item&&values[i].side===e.side&&values[i].mod===e.mod)}
 
 
+
+const socialWorld={
+ gossipClues:[],
+ tuffGossipUnlocked:false,
+ dietCokeDaveFriendship:0,
+ daveRefills:0,
+ walkInVisits:0
+};
+function addGossipClue(clue){
+ if(!socialWorld.gossipClues.includes(clue)){
+  socialWorld.gossipClues.push(clue);
+  achievement('HOT GOSS: LEVEL '+socialWorld.gossipClues.length,'Accidentally learn another piece of Craggy gossip.');
+ }
+ if(socialWorld.gossipClues.length>=3)socialWorld.tuffGossipUnlocked=true;
+}
+function dietCokeDaveTalk(){
+ socialWorld.dietCokeDaveFriendship++;
+ socialWorld.daveRefills++;
+ life.stress=clamp(life.stress-2,0,100);updateLifeHud();
+ const level=socialWorld.dietCokeDaveFriendship;
+ const lines=[
+  'Morning. Or afternoon. Time has no meaning when your beverage has free refills.',
+  'I’ve been sitting here long enough to know which printer jams before the managers do.',
+  'Diet Coke tastes better when somebody else is technically responsible for refilling it.',
+  'I don’t gossip. I maintain historical records verbally.',
+  'I’ve watched three management eras from this exact stool. The stool and I have seniority.'
+ ];
+ const opts=[
+  ['Refill his Diet Coke.',()=>{socialWorld.daveRefills++;fridayGood(1,'Took care of a regular');say('DIET COKE DAVE','That’s why you’re my favorite today. Do not tell the others.',[['Your secret is safe.',null]])}],
+  ['Ask what he knows about Tuff.',()=>{
+    if(level<2){say('DIET COKE DAVE','Too early. I need to know whether you are a trustworthy employee or just professionally curious.',[['Fair.',null]])}
+    else{addGossipClue('Dave says Tuff once disappeared during inventory and came back carrying a traffic cone.');
+      say('DIET COKE DAVE','All I’m saying is: inventory night, missing traffic cone, Tuff returned through the patio door looking very pleased with himself. Those are facts. Interpretation is between you and God.',[['That is extremely specific.',null]])}
+  }],
+  ['Ask how long he has been here.',()=>say('DIET COKE DAVE','Long enough that people assume I work here. Short enough that I still refuse side work.',[['Legend.',null]])],
+  ['Let Dave continue holding court.',null]
+ ];
+ say('DIET COKE DAVE — BAR REGULAR',lines[(level-1)%lines.length],opts);
+}
+function tuffGossipTalk(){
+ if(!socialWorld.tuffGossipUnlocked){
+  say('TUFF — MANAGER','You have the face of somebody who has heard half a story and decided to become an investigator.',[
+   ['I’m just here for the hot goss.',()=>say('TUFF — MANAGER','Then work harder. People reveal things when they trust you—or when they forget you are standing there.',[['Noted.',null]])],
+   ['No idea what you mean.',null]
+  ]);return;
+ }
+ say('TUFF — MANAGER','Okay. You dug for this, so here is the actual story. The traffic cone was not stolen. It was temporarily reassigned as a patio safety device after somebody backed into the real one. The part Dave leaves out is that Jay made me carry it through the restaurant like a trophy.',[
+  ['So Dave exaggerated?',()=>say('TUFF — MANAGER','Dave did not exaggerate. He selected facts for maximum entertainment. That is advanced gossip technique.',[['Respect.',null]])],
+  ['What happened to the cone?',()=>say('TUFF — MANAGER','It lived in the office for six months wearing a manager nametag. Kyle called it our newest supervisor.',[
+    ['Was the name Machete Jesus?',()=>say('TUFF — MANAGER','No. Entirely different department.',[['Interesting.',null]])]
+  ])],
+  ['That was the hot goss?',()=>say('TUFF — MANAGER','Real restaurant gossip is ninety percent stupid objects with lore and ten percent things HR cannot hear.',[['Honestly, fair.',null]])]
+ ]);
+ achievement('ACTUAL HOT GOSS','Piece together enough clues to make Tuff tell the real story.');
+}
+
 const guestFlow={parties:[],hostEscort:null,barGuests:[],nextId:1};
 function makeGuest(x,y,color='#6f587d'){return{x,y,col:color,moving:false,walkPhase:0,facing:'down'}}
 function createParty(tableId,count){
@@ -725,7 +804,61 @@ function addBarGuest(seatX,seatY){
  const g=makeGuest(940,230,['#776080','#4d6d79','#6a7550'][guestFlow.barGuests.length%3]);
  Object.assign(g,{seatX,seatY,state:'ARRIVING'});guestFlow.barGuests.push(g)
 }
-function startBarTraffic(){if(guestFlow.barGuests.length)return;addBarGuest(760,350);addBarGuest(920,350);addBarGuest(1080,350)}
+function startBarTraffic(){dietCokeDave.x=760;dietCokeDave.y=350;if(guestFlow.barGuests.length)return;addBarGuest(760,350);addBarGuest(920,350);addBarGuest(1080,350)}
+
+
+const recovery={
+ burger:{energy:34,hunger:48,stress:-3,label:'Inhale a burger'},
+ coffee:{energy:18,hunger:0,stress:-2,label:'Drink coffee'},
+ redbull:{energy:42,hunger:0,stress:5,label:'Chug a Red Bull'},
+ water:{energy:5,hunger:2,stress:-4,label:'Drink water'}
+};
+function applyRecovery(type){
+ const r=recovery[type];if(!r)return;
+ life.energy=clamp(life.energy+r.energy,0,100);
+ life.hunger=clamp(life.hunger+r.hunger,0,100);
+ life.stress=clamp(life.stress+r.stress,0,100);
+ updateLifeHud();saveCheckpoint(fridayShift.active?'DYNAMIC_SHIFT':'POST_SHIFT');
+}
+
+function walkInInteraction(){
+ if(dialogue)return false;
+ if(p.x>155&&p.x<225&&p.y>1040&&p.y<1180){
+  socialWorld.walkInVisits++;
+  say('WALK-IN COOLER','Cold air, stacked kegs, cases of water, Red Bull and approximately six seconds of peace.',[
+   ['Drink water.',()=>{applyRecovery('water');say('NARRATOR','You drink water beside the kegs like a responsible adult hiding from responsibility.',[['Refreshing.',null]])}],
+   ['Chug a Red Bull.',()=>{applyRecovery('redbull');achievement('WALK-IN MEDICINE','Chug a Red Bull in the walk-in.');say('DESARAE','Jay does not know about this.',[['Neither does my heart.',null]])}],
+   ['Take a sixty-second walk-in break.',()=>{life.stress=clamp(life.stress-12,0,100);life.energy=clamp(life.energy+4,0,100);updateLifeHud();say('NARRATOR','The compressor hums. Nobody asks you for ranch. This is luxury.',[['Return to society.',null]])}],
+   ['Inspect the kegs.',()=>say('WALK-IN COOLER','Beer kegs, backup CO₂ and one keg that will absolutely blow during the worst possible rush.',[['Naturally.',null]])],
+   ['Leave.',null]
+  ]);return true;
+ }
+ return false;
+}
+
+function recoveryInteraction(){
+ if(dialogue)return false;
+ // Employee meal / drink station at POS 2.
+ if(Math.hypot(p.x-500,p.y-720)<145&&!fridayShift.active&&!serverTraining.active){
+  say('EMPLOYEE BREAK','You have approximately four minutes before somebody needs you again.',[
+   ['Eat a burger as fast as humanly possible.',()=>{applyRecovery('burger');achievement('THIRTY-SEVEN SECOND MEAL','Consume an employee burger with terrifying efficiency.');say('JAY','You ate that in thirty-seven seconds. I am impressed and concerned.',[['Calories don’t count on doubles.',null]])}],
+   ['Drink coffee.',()=>{applyRecovery('coffee');say('NARRATOR','Coffee restores enough energy to continue making questionable decisions.',[['Perfect.',null]])}],
+   ['Drink water like a responsible adult.',()=>{applyRecovery('water');say('NARRATOR','Hydration. Annoyingly effective.',[['Fine.',null]])}]
+  ]);return true;
+ }
+ // Walk-in Red Bull hotspot.
+ if(Math.hypot(p.x-395,p.y-650)<130&&!fridayShift.active){
+  say('WALK-IN COOLER','A cold Red Bull sits behind the prep containers like contraband.',[
+   ['Chug it.',()=>{applyRecovery('redbull');achievement('WALK-IN MEDICINE','Chug a Red Bull in the walk-in.');say('DESARAE','Jay does not know about this.',[['Neither does my heart.',null]])}],
+   ['Practice restraint.',null]
+  ]);return true;
+ }
+ return false;
+}
+function endDayRecovery(){
+ life.energy=100;life.hunger=82;life.stress=clamp(life.stress-35,0,100);
+ life.rentDue=Math.max(0,life.rentDue-1);advanceDay(1);updateLifeHud();saveCareer();
+}
 
 const fridayShift={
  active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,incident:false,cleanup:false,
@@ -740,22 +873,151 @@ function fridayGood(points,msg){fridayShift.score+=points;rep(points,msg)}
 function fridayMistake(points,msg){fridayShift.mistakes++;fridayShift.score=Math.max(0,fridayShift.score-points);rep(-points,msg);life.stress=clamp(life.stress+5,0,100);updateLifeHud()}
 function setFridayObjective(t){document.getElementById('obj').textContent='FRIDAY SHIFT: '+t}
 
+
+const shiftEngine={
+ active:false,day:'Friday',weather:'Clear',patio:false,event:null,
+ difficulty:1,tables:[],orders:[],needs:[],completed:0,totalTips:0
+};
+const guestTypes=[
+ {name:'Glacier tourists',patience:72,tip:1.15,needs:['menu question','refill']},
+ {name:'Local regulars',patience:88,tip:1.22,needs:['ranch']},
+ {name:'Hockey fans',patience:65,tip:1.08,needs:['beer refill','napkins']},
+ {name:'Whitefish family',patience:70,tip:1.05,needs:['side plates','extra napkins']},
+ {name:'Needy vacationers',patience:52,tip:.92,needs:['ranch','lemons','refill']},
+ {name:'Industry table',patience:82,tip:1.30,needs:['water','check quickly']}
+];
+const engineMenu=[
+ {item:'Classic Cheese',mods:['No onion','Plain','Add bacon'],sides:['Fries','Tater Tots +$1.50']},
+ {item:'Craggy Burger',mods:['No tomato','No onion','No modification'],sides:['Fries','House Salad +$3']},
+ {item:'Fried Chicken Sandwich',mods:['No coleslaw','No bacon ranch','No modification'],sides:['Fries','Tater Tots +$1.50']},
+ {item:'Baja Tacos',mods:['No crema','No cilantro','No modification'],sides:['Fries','Soup +$3']},
+ {item:'Bison Burger',mods:['No sage mayo','No cheese','No modification'],sides:['Fries','House Salad +$3']},
+ {item:'Fish & Chips',mods:['Extra tartar','No coleslaw','No modification'],sides:['Fries','Tater Tots +$1.50']},
+ {item:'Caesar Salad',mods:['Add crispy chicken','Add grilled chicken','No croutons'],sides:['No side']},
+ {item:'Smashburger',mods:['Plain','No pickles','Add bacon'],sides:['Fries','Tater Tots +$1.50']}
+];
+const shiftEvents=[
+ {name:'Birthday table',text:'A birthday party arrives wearing matching hats.',effect:'tips'},
+ {name:'Keg blows',text:'The beer keg blows during the rush. Jelena looks personally betrayed.',effect:'delay'},
+ {name:'Dropped tray',text:'A busser drops a tray near your section.',effect:'cleanup'},
+ {name:'VGK game rush',text:'The Golden Knights game starts and the bar gets loud.',effect:'crowd'},
+ {name:'Kitchen delay',text:'The kitchen is running eighteen minutes behind.',effect:'patience'},
+ {name:'Dog on patio',text:'A dog on the patio becomes the most popular guest in the restaurant.',effect:'morale'}
+];
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function generateOrder(){
+ const m=rand(engineMenu);
+ return {item:m.item,mod:rand(m.mods),side:rand(m.sides)};
+}
+function generateShift(day){
+ shiftEngine.active=true;shiftEngine.day=day;
+ shiftEngine.weather=rand(['Clear','Sunny','Rain','Cool']);
+ shiftEngine.patio=day==='Saturday'&&shiftEngine.weather!=='Rain';
+ shiftEngine.difficulty=day==='Saturday'?1.35:1;
+ shiftEngine.event=rand(shiftEvents);
+ shiftEngine.completed=0;shiftEngine.totalTips=0;
+ const count=day==='Saturday'?4:3;
+ shiftEngine.tables=Array.from({length:count},(_,i)=>{
+  const base=fridayShift.tables[i]||{id:String(34+i),x:760+(i%3)*220,y:i<3?820:960};
+  const type=rand(guestTypes),party=2+Math.floor(Math.random()*3);
+  return {id:base.id,x:base.x,y:base.y,status:'SAT',type,party,patience:type.patience,needs:[...type.needs],order:Array.from({length:party},generateOrder)};
+ });
+ return shiftEngine;
+}
+function dynamicShiftSummary(){
+ return `${shiftEngine.day.toUpperCase()} · ${shiftEngine.weather}
+${shiftEngine.patio?'Patio open · ':''}${shiftEngine.tables.length} tables
+Event: ${shiftEngine.event.name}`;
+}
+function startGeneratedShift(day){
+ clearTrainingGuests();
+ guestFlow.parties=guestFlow.parties.filter(p=>p.tableId!=='62');
+ serverTraining.finished=false;serverTraining.active=false;
+ guestFlow.parties=[];guestFlow.barGuests=[];startBarTraffic();
+ generateShift(day);gameDay='DYNAMIC_SHIFT';fridayShift.active=false;serverTraining.active=false;
+ clockedIn=true;life.minutes=day==='Saturday'?11*60:16*60;
+ career.dayIndex=day==='Saturday'?5:4;
+ p.x=900;p.y=260;
+ shiftEngine.tables.forEach(t=>{const party=createParty(t.id,t.party);party.state='SEATED';seatParty(party)});
+ document.getElementById('obj').textContent=`${day.toUpperCase()} SHIFT · Check your generated section`;
+ say('SHIFT BRIEFING',dynamicShiftSummary(),[
+  ['Start shift.',()=>openDynamicTable(0)],
+  ['What could possibly go wrong?',()=>say('DESARAE',shiftEngine.event.text,[['Of course.',()=>openDynamicTable(0)]])]
+ ]);
+ updateLifeHud();saveCheckpoint('DYNAMIC_SHIFT');
+}
+function openDynamicTable(index){
+ const t=shiftEngine.tables[index];if(!t){finishDynamicShift();return}
+ document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} · Serve Table ${t.id}`;
+ const needs=t.needs.length?t.needs.join(', '):'surprisingly nothing extra';
+ say(`TABLE ${t.id} · ${t.type.name}`,`${t.party} guests. Needs: ${needs}.`,[
+  ['Take the order carefully.',()=>openDynamicPOS(index)],
+  ['Try to remember everything without writing it down.',()=>{fridayMistake(3,'Trusted chaotic memory');openDynamicPOS(index)}]
+ ]);
+}
+function openDynamicPOS(index){
+ const t=shiftEngine.tables[index];
+ openOrderPOS({
+  title:`POS 2 · TABLE ${t.id}`,
+  instructions:`Generated ${shiftEngine.day} order. Match every guest.`,
+  guests:t.order.map(o=>{
+   const correct=engineMenu.find(m=>m.item===o.item);
+   const wrong=engineMenu.filter(m=>m.item!==o.item).sort(()=>Math.random()-.5).slice(0,2).map(m=>m.item);
+   return {items:[o.item,...wrong].sort(()=>Math.random()-.5),sides:correct.sides,mods:correct.mods};
+  })
+ },vals=>{
+   const ok=posMatches(vals,t.order);
+   if(ok)fridayGood(5,'Generated order entered correctly');else fridayMistake(5,'Generated order error');
+   resolveDynamicNeeds(index);
+ });
+}
+function resolveDynamicNeeds(index){
+ const t=shiftEngine.tables[index];
+ const choices=[
+  ['Bring every requested item before food arrives.',()=>fridayGood(3,'Handled generated needs')],
+  ['Forget one thing and hope they stop asking.',()=>fridayMistake(2,'Missed generated need')],
+  ['Make a joke about Montana’s ranch economy.',()=>fridayGood(1,'Kept guests entertained')]
+ ];
+ say(`TABLE ${t.id} · FOLLOW-UP`,`They request: ${t.needs.join(', ')||'the check'}.`,choices.map(c=>[c[0],()=>{c[1]();closeDynamicTable(index)}]));
+}
+function closeDynamicTable(index){
+ const t=shiftEngine.tables[index];t.status='PAID';releaseParty(t.id);
+ const base=55+t.party*18,tip=Math.round(base*.18*t.type.tip*shiftEngine.difficulty);
+ shiftEngine.totalTips+=tip;shiftEngine.completed++;
+ life.cash+=tip;life.checking+=economy.averageHourlyWages;updateLifeHud();
+ say(`TABLE ${t.id} CLOSED`,`Tip: $${tip}. ${shiftEngine.event.text}`,[
+  ['Next table.',()=>openDynamicTable(index+1)]
+ ]);
+}
+function finishDynamicShift(){
+ shiftEngine.active=false;clockedIn=false;
+ const grade=fridayShift.mistakes<=1?'A':fridayShift.mistakes<=3?'B':'C';
+ career.history.push({week:career.week,shift:shiftEngine.day,tips:shiftEngine.totalTips,grade});
+ if(shiftEngine.day==='Saturday'){career.saturdayComplete=true;advanceDay(2)}
+ else career.fridayComplete=true;
+ endDayRecovery();saveCareer();saveCheckpoint('DYNAMIC_DONE');
+ document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} COMPLETE · Tips $${shiftEngine.totalTips}`;
+ say('DESARAE — SHIFT REVIEW',`Grade ${grade}. Tips: $${shiftEngine.totalTips}. Energy restored after ending the day.`,[
+  ['Open Swim Schedule.',()=>{openPhone();openApp('swim')}],
+  ['Celebrate surviving.',null]
+ ]);
+}
+
 function startSaturdayShift(){
- career.saturdayComplete=true;
+ career.dayIndex=5;saveCareer();
  achievement('WHY DID I PICK THIS UP?','Start the optional Saturday cover shift.');
- startFridayShift();
- setTimeout(()=>{
-  document.getElementById('obj').textContent='SATURDAY COVER SHIFT: Survive the patio crowd';
-  say('DESARAE — SUPERVISOR','You picked up Saturday voluntarily. That means I respect you, but I also question your judgment. Same section systems, busier patio energy.',[['Let’s make money.',null]]);
- },50);
+ startGeneratedShift('Saturday');
 }
 
 function startFridayShift(){
- saveCheckpoint('FRIDAY_SHIFT');
+ career.dayIndex=4;saveCareer();saveCheckpoint('FRIDAY_SHIFT');
  gameDay='FRIDAY_SHIFT';stage=20;postShiftStep=0;serverTraining.active=false;serverTraining.finished=true;
  fridayShift.active=true;fridayShift.step=1;fridayShift.score=0;fridayShift.mistakes=0;fridayShift.tips=0;fridayShift.carrying='';
  fridayShift.tables.forEach(t=>{t.status='EMPTY';t.happiness=100});
-clearTrainingGuests();guestFlow.parties=[];guestFlow.hostEscort=null;guestFlow.barGuests=[];
+clearTrainingGuests();
+ guestFlow.parties=guestFlow.parties.filter(p=>p.tableId!=='62');
+ serverTraining.finished=false;serverTraining.active=false;
+ guestFlow.parties=[];guestFlow.hostEscort=null;guestFlow.barGuests=[];
 createParty('31',2);createParty('32',4);createParty('33',3);startBarTraffic();
  life.minutes=15*60+52;clockedIn=false;p.x=900;p.y=260;desarae.x=690;desarae.y=770;updateLifeHud();
  setFridayObjective('Clock in at POS 2');
@@ -992,6 +1254,13 @@ function fridayShiftInteract(){
  if(fridayShift.step===32&&dist(p,desarae)<220){finishFridayShift();return true}
  return false;
 }
+
+function forceCloseoutAdvance(){
+ if(!fridayShift.active)return;
+ if(fridayShift.step===31){openTipEntry();return}
+ if(fridayShift.step===32){finishFridayShift();return}
+}
+
 function openTipEntry(){
  document.getElementById('posTitle').textContent='POS 2 · CLOSEOUT';
  document.getElementById('posInstructions').innerHTML='Enter the handwritten tip from each signed receipt. Pay attention to decimal placement.';
@@ -1219,7 +1488,8 @@ function talkManager(n){
      ['You really like ship metaphors.',()=>say('KYLE — MANAGER','A restaurant is a ship. The bar is the helm, expo is navigation, the kitchen is the engine room, and management is mostly plugging leaks while pretending the weather is fine.',[
        ['That was weirdly heartfelt.',()=>say('KYLE — MANAGER','People do better when they know somebody trusts them to hold their station. Keep your word, help the crew, and don’t abandon ship during the rush.',[['Okay, Dad.',null]])],
        ['So who is the pirate?',()=>say('KYLE — MANAGER','Depends who is asking.',[
-         ['The one with the machete energy.',()=>say('KYLE — MANAGER','Ah. Machete Jesus. Ancient maritime legend. Very niche. You did not hear that from me.',[['I knew it.',null]])],
+         ['The one with the machete energy.',()=>{addGossipClue('Kyle says the traffic cone became an honorary supervisor.');
+ say('KYLE — MANAGER','Ah. Machete Jesus. Ancient maritime legend. Very niche. Also, the cone was promoted before you were. You did not hear that from me.',[['I knew it.',null]])}],
          ['Never mind.',null]
        ])]
      ])],
@@ -1329,6 +1599,16 @@ L('PATIO GARAGE DOORS',980,1130,15,'#f7e4c9');
 R(105,930,150,95,'#4b5559',7);R(115,940,130,28,'#9aa4a7',4);R(125,978,45,32,'#747d80',4);R(180,978,55,32,'#747d80',4);
 L('BUSSING',180,957,10,'#eef4f5');L('STATION',180,1018,9,'#eef4f5');
 
+
+// walk-in cooler behind the bussing station
+R(70,1035,260,150,'#aeb9bd',8);R(88,1050,92,120,'#dce5e8',5);R(195,1050,115,120,'#89979c',5);
+L('WALK-IN',200,1068,12,'#263238');
+L('COOLER',200,1084,12,'#263238');
+for(let y=1095;y<=1145;y+=25){R(212,y,78,12,'#64777e',3)}
+for(let x=218;x<=278;x+=20){ctx.fillStyle='#d94141';ctx.fillRect(x-cam.x,1102-cam.y,10,22);ctx.fillStyle='#2c7cc4';ctx.fillRect(x-cam.x,1130-cam.y,10,22)}
+for(let x=105;x<=165;x+=28){ctx.fillStyle='#8f8f8f';ctx.beginPath();ctx.arc(x-cam.x,1110-cam.y,11,0,Math.PI*2);ctx.fill();R(x-9,1110,18,42,'#6f777a',4)}
+R(285,1100,10,28,'#4d585c',3);
+
 // west wall 406 sign
 R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
 ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',195,860,9,'#f1d0a4');
@@ -1345,6 +1625,16 @@ L('SKI PHOTO',1470,722,8,'#65777d');
 [[1400,800],[620,340],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
 person(host,'#8b5c45','HOST');
 
+
+
+if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
+ for(const t of shiftEngine.tables){
+  const col=t.status==='PAID'?'#71b780':'#f3ad67';
+  ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(t.x-42-cam.x,t.y-32-cam.y,84,64);
+  L(`T${t.id} · ${t.status}`,t.x,t.y+58,10,col);
+ }
+ L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.weather}`,1050,1120,13,'#fff3d2');
+}
 
 if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
  // Host seating chart
@@ -1374,7 +1664,7 @@ if(fridayShift.incident&&!fridayShift.cleanup){
  L('BROKEN DISHES',C.x,C.y+82,9,'#ff8e73');
 }
 
-if(serverTraining.active||serverTraining.finished){
+if(serverTraining.active){
  const T=serverTraining.table;
  // Highlight training table and seated guests.
  ctx.strokeStyle='#f3ad67';ctx.lineWidth=3;ctx.strokeRect(T.x-42-cam.x,T.y-32-cam.y,84,64);
@@ -1388,6 +1678,10 @@ if(serverTraining.active||serverTraining.finished){
 
 for(const party of guestFlow.parties)for(const g of party.members)drawCharacter(g,g.col,'');
 for(const bg of guestFlow.barGuests)drawCharacter(bg,bg.col,'');
+drawCharacter(dietCokeDave,dietCokeDave.col,'DIET COKE DAVE');
+ctx.fillStyle='#d9e9f1';ctx.fillRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
+ctx.fillStyle='#5b3a22';ctx.fillRect(dietCokeDave.x+22-cam.x,dietCokeDave.y-5-cam.y,6,13);
+ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
 workers.forEach(drawWorker);
 person(kellen,'#5c4d3f','KELLEN');
 person(kyle,'#384f45','KYLE');
@@ -1407,6 +1701,8 @@ const solidRects=[
  {x:330,y:355,w:82,h:390},
  {x:75,y:430,w:75,h:330},
  {x:205,y:530,w:70,h:190},{x:455,y:530,w:70,h:190}
+,
+ {x:70,y:1035,w:100,h:150},{x:210,y:1035,w:120,h:150},{x:170,y:1035,w:40,h:18}
 ];
 const tableBlocks=[[130,275],[300,275],[470,275],[150,380],[330,380],[130,840],[300,840],[470,840],[1470,285],[1640,285],[1780,285],[1470,430],[1640,430],[760,820],[980,820],[1200,820],[760,960],[980,960],[1200,960],[1660,336],[1660,456],[1660,576],[1660,696],[1660,816],[1660,936],[1660,1056]];
 function blocked(nx,ny){
@@ -1419,12 +1715,16 @@ function blocked(nx,ny){
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
+ if(dist(p,dietCokeDave)<150){dietCokeDaveTalk();return}
+ if(stage>=6&&dist(p,tuff)<165&&socialWorld.gossipClues.length>0){tuffGossipTalk();return}
  if(Math.hypot(p.x-1470,p.y-690)<120){
   say('SKI PHOTO','This photo of the skier hiking the mountain is absolutely Nick Winn.',[
    ['That is definitely Nick Winn.',null],
    ['Enhance.',()=>say('SKI PHOTO','The pixels refuse to cooperate, but spiritually? Nick Winn.',[['Case closed.',null]])]
   ]);return;
  }
+ if(walkInInteraction())return;
+ if(recoveryInteraction())return;
  if(fridayShiftInteract())return;
  if(postShiftInteract())return;
  if(serverTrainingInteract())return;
@@ -1572,7 +1872,7 @@ enterBtn.addEventListener('touchend',enterWorld,{passive:false});
 const continueBtn=document.getElementById('continueGame');
 continueBtn.addEventListener('click',continueCheckpoint);
 continueBtn.addEventListener('touchend',continueCheckpoint,{passive:false});
-document.getElementById('resetSave').onclick=()=>{localStorage.removeItem(CHECKPOINT_KEY);refreshContinueButton()};
+document.getElementById('resetSave').onclick=()=>resetEntireGame();
 refreshContinueButton();
 
 
@@ -1586,6 +1886,9 @@ taskToggle.onclick=()=>{
  localStorage.setItem('406life_task_collapsed',collapsed?'1':'0');
 };
 
+
+document.getElementById('closeoutBtn').onclick=forceCloseoutAdvance;
+
 syncPreview();
 
 document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefault();interact()},{passive:false});
@@ -1593,6 +1896,7 @@ const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
 function update(dt){
+document.getElementById('closeoutBtn').style.display=(fridayShift.active&&fridayShift.step>=31)?'block':'none';
 updateTaskPanel();
 updateWorkers(dt);updateGuestFlow(dt);
 if(clockedIn&&!dialogue){
@@ -1652,7 +1956,10 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep>=6&&orientationStep<=11){const ts=tourStops[tourIndex];if(ts&&Math.hypot(p.x-ts.x,p.y-ts.y)<150)pr='INTERACT · Learn about '+ts.name}
  else if(orientationStep===12&&dist(p,getTrainer())<150)pr='INTERACT · Start training with '+getTrainer().name;
 }
-if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1470,p.y-690)<120)pr='INTERACT · Inspect ski photo';const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
+if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1470,p.y-690)<120)pr='INTERACT · Inspect ski photo';if(!pr&&!fridayShift.active&&!serverTraining.active&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Employee break';
+if(!pr&&p.x>155&&p.x<225&&p.y>1040&&p.y<1180)pr='INTERACT · Walk-in cooler';
+if(!pr&&!fridayShift.active&&Math.hypot(p.x-395,p.y-650)<130)pr='INTERACT · Suspicious walk-in Red Bull';
+const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 </script></body></html>
