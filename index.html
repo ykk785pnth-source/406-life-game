@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v2.2</title><style>
+<title>406 Life v2.3</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -10,22 +10,44 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #dlg{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:min(780px,88vw);background:#211712f5;padding:18px;border-radius:18px;display:none;pointer-events:auto}
 #speaker{color:#f3ad67;font-size:12px;font-weight:900;letter-spacing:.12em}.choice{display:block;width:100%;margin-top:8px;padding:12px;background:#493125;color:#fff;border:1px solid #ffffff22;border-radius:10px;text-align:left;font-weight:700}
 #error{position:absolute;top:90px;left:16px;right:16px;background:#8b1f1f;padding:12px;border-radius:10px;display:none}
-</style></head><body><canvas id="g"></canvas><div id="hud">
-<div id="top"><b>406 LIFE · WORLD BUILD v2.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
+
+#creator{position:fixed;inset:0;background:radial-gradient(circle at 70% 20%,#4b3324,#15110e 58%);z-index:20;display:flex;align-items:center;justify-content:center;padding:18px}
+#creatorCard{width:min(760px,94vw);background:#251a15f5;border:1px solid #ffffff22;border-radius:24px;padding:22px;box-shadow:0 20px 70px #000b}
+#creator h1{margin:0 0 5px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.cg label{font-size:12px;color:#efc99f}.cg input,.cg select{width:100%;margin-top:5px;padding:12px;background:#120e0c;color:#fff;border:1px solid #ffffff2a;border-radius:10px}
+#preview{height:160px;display:flex;align-items:center;justify-content:center;background:#ffffff08;border-radius:16px;margin:14px 0}
+#previewPerson{position:relative;width:70px;height:120px}.pvHead{position:absolute;left:20px;top:5px;width:32px;height:38px;border-radius:45%;background:#d69a70}.pvHair{position:absolute;left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;background:#2b1a13}.pvBody{position:absolute;left:8px;top:40px;width:56px;height:66px;border-radius:16px;background:#3f607f}.pvEye{position:absolute;top:20px;width:3px;height:3px;border-radius:50%;background:#211}.pvEye.l{left:28px}.pvEye.r{left:40px}
+#enterGame{width:100%;padding:14px;border:0;border-radius:12px;background:#e78a43;color:#1a100a;font-weight:950;font-size:17px}
+@media(max-width:650px){.cg{grid-template-columns:1fr 1fr}}
+</style></head><body><canvas id="g"></canvas>
+<div id="creator"><div id="creatorCard">
+<div style="color:#f3ad67;font-weight:900;letter-spacing:.15em">YOUR WHITEFISH STORY STARTS HERE</div>
+<h1>Create Your Character</h1><div style="color:#cfb9a3">You check your reflection before walking into Craggy to turn in an application.</div>
+<div id="preview"><div id="previewPerson"><div class="pvBody"></div><div class="pvHead"></div><div class="pvHair"></div><div class="pvEye l"></div><div class="pvEye r"></div></div></div>
+<div class="cg">
+<label>First name<input id="charName" value="" placeholder="What should Tuff call you?"></label>
+<label>Pronouns<select id="charPronouns"><option>he/him</option><option>she/her</option><option>they/them</option><option>he/they</option><option>she/they</option></select></label>
+<label>Skin tone<select id="charSkin"><option value="#f1c5a4">Light</option><option value="#d69a70" selected>Medium light</option><option value="#b87650">Medium</option><option value="#855139">Deep</option><option value="#583326">Very deep</option></select></label>
+<label>Hair color<select id="charHair"><option value="#2b1a13">Dark brown</option><option value="#111111">Black</option><option value="#80502f">Brown</option><option value="#c99855">Blonde</option><option value="#a94f37">Copper</option></select></label>
+<label>Hair style<select id="charStyle"><option>Short</option><option>Fade</option><option>Curly</option><option>Long</option><option>Bun</option></select></label>
+<label>Interview outfit<select id="charOutfit"><option value="#3f607f">Blue casual</option><option value="#5b7658">Mountain green</option><option value="#4b4542">All black</option><option value="#7c4f55">Burgundy</option></select></label>
+</div><button id="enterGame">LOOK GOOD. GO GET THE JOB →</button>
+</div></div>
+<div id="hud">
+<div id="top"><b>406 LIFE · WORLD BUILD v2.3</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
 window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.style.display='block';q.textContent='Game error: '+m+' · line '+l;};
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
-const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'PLAYER'};const host={x:950,y:345};const tuff={x:330,y:650};
+const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f'};const host={x:950,y:345};const tuff={x:330,y:650};
 let cam={x:0,y:0},keys={},joy={x:0,y:0},stage=0,dialogue=false,follow=false;
 addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
 function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.fill()}
 function R(x,y,w,h,col,r=0){rr(x-cam.x,y-cam.y,w,h,r,col)}
 function L(t,x,y,size=13,col='#fff'){ctx.fillStyle=col;ctx.font='800 '+size+'px system-ui';ctx.textAlign='center';ctx.fillText(t,x-cam.x,y-cam.y)}
 function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48,0],[48,0],[0,-36],[0,36]].forEach(a=>{ctx.beginPath();ctx.arc(x+a[0]-cam.x,y+a[1]-cam.y,10,0,Math.PI*2);ctx.fill()})}
-function person(n,col,label){ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(n.x-cam.x,n.y-cam.y+19,18,7,0,0,Math.PI*2);ctx.fill();R(n.x-14,n.y-7,28,35,col,8);ctx.fillStyle='#d69a70';ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-18,12,0,Math.PI*2);ctx.fill();
+function person(n,col,label){if(n===p)col=p.outfit;ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(n.x-cam.x,n.y-cam.y+19,18,7,0,0,Math.PI*2);ctx.fill();R(n.x-14,n.y-7,28,35,col,8);ctx.fillStyle=(n===p?p.skin:'#d69a70');ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-18,12,0,Math.PI*2);ctx.fill();ctx.fillStyle=(n===p?p.hair:'#3a241a');ctx.beginPath();ctx.arc(n.x-cam.x,n.y-cam.y-24,11,Math.PI,Math.PI*2);ctx.fill();
 ctx.fillStyle='#241b17';ctx.beginPath();ctx.arc(n.x-4-cam.x,n.y-20-cam.y,1.5,0,Math.PI*2);ctx.arc(n.x+4-cam.x,n.y-20-cam.y,1.5,0,Math.PI*2);ctx.fill();
 ctx.strokeStyle='#6f3d35';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(n.x-cam.x,n.y-16-cam.y,5,0.25,Math.PI-0.25);ctx.stroke();L(label,n.x,n.y-42,12)}
 function draw(){
@@ -34,8 +56,8 @@ R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
 for(let i=0;i<1900;i+=130)R(i,95,75,5,'#d9ca86');
 R(80,195,560,25,'#83b9cb');R(1260,195,560,25,'#83b9cb');L('GARAGE WINDOWS',360,245,13,'#eaf9ff');L('GARAGE WINDOWS',1540,245,13,'#eaf9ff');
 R(875,180,150,65,'#33251f');L('FRONT ENTRANCE',950,220,13,'#ffd09c');
-R(235,360,300,62,'#3b3028');R(300,368,170,44,'#b8c8bf');R(245,366,45,48,'#211b18');R(480,366,45,48,'#211b18');L('KITCHEN PASS',385,400,13,'#4c392c');
-[[300,275],[430,275],[560,300],[330,500],[460,520],[350,650]].forEach(a=>table(a[0],a[1]));
+R(175,330,68,470,'#3b3028');R(184,405,50,310,'#b8c8bf');R(182,345,54,48,'#211b18');R(182,728,54,54,'#211b18');L('KITCHEN',285,500,13,'#f3d2ad');L('PASS',285,520,13,'#f3d2ad');
+[[320,275],[455,275],[585,300],[335,505],[470,525],[345,655],[500,675],[720,850],[850,850],[980,850],[1110,850],[1240,850]].forEach(a=>table(a[0],a[1]));
 R(600,410,700,350,'#3a2820',18);R(635,445,630,280,'#704730',12);R(690,485,520,200,'#2a211d',10);L('CENTER BAR',950,590,24,'#f4c38c');
 for(let xx=650;xx<1270;xx+=70){ctx.fillStyle='#943b34';ctx.beginPath();ctx.arc(xx-cam.x,392-cam.y,12,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(xx-cam.x,778-cam.y,12,0,Math.PI*2);ctx.fill()}
 [[300,310],[430,310],[560,330],[300,450],[430,470],[300,590],[430,610],[300,730],[430,740]].forEach(a=>table(a[0],a[1]));
@@ -53,14 +75,14 @@ function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 
 const solidRects=[
  {x:600,y:410,w:700,h:350},
- {x:650,y:260,w:600,h:55},
+ {x:175,y:330,w:68,h:470},
  {x:1510,y:370,w:220,h:730}
 ];
+const tableBlocks=[[300,310],[430,310],[560,330],[300,450],[430,470],[300,590],[430,610],[300,730],[430,740],[1450,310],[1620,310],[1450,490],[1620,490],[1450,670],[1620,670],[330,850],[470,850],[610,850],[330,1020],[470,1020],[610,1020],[320,275],[455,275],[585,300],[335,505],[470,525],[345,655],[500,675],[720,850],[850,850],[980,850],[1110,850],[1240,850]];
 function blocked(nx,ny){
  if(nx<50||ny<50||nx>1850||ny>1200)return true;
- for(const s of solidRects){
-  if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
- }
+ for(const s of solidRects)if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
+ for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<52)return true;
  return false;
 }
 
@@ -80,37 +102,45 @@ function interact(){
    say('TUFF — MANAGER','You must be the applicant. '+p.name+', right? Good timing. Come with me—we’ll grab the last booth before the patio. It’s quieter over there. Usually.',[['Follow Tuff',()=>follow=true]]);
  } else if(stage===4&&dist(p,tuff)<155){startInterview();}
 }
+let scores={server:0,host:0,expo:0,bar:0,kitchen:0};
+function add(o){Object.keys(o).forEach(k=>scores[k]=(scores[k]||0)+o[k])}
 function startInterview(){
- stage=5;document.getElementById('obj').textContent='Objective: Complete the interview';
- say('TUFF — MANAGER','All right, '+p.name+'. Relax. This is a restaurant interview, not a Senate hearing. Tell me—have you worked in a restaurant before?',[
-  ['Yes. I know the chaos and came back anyway.',()=>iq2('Experienced. Good. That can be very helpful—or very annoying if you tell me how your old restaurant did everything.')],
-  ['A little. I know enough to know I have more to learn.',()=>iq2('That is suspiciously mature for restaurant work. I like it.')],
-  ['No, but I learn fast and I work hard.',()=>iq2('Fair answer. Experience helps, but effort matters more than people think.')],
-  ['No. How hard can it be?',()=>iq2('Oh, fantastic. Famous last words.')]
- ]);
+ stage=5;document.getElementById('obj').textContent='Objective: Survive the interview with Tuff';
+ say('TUFF — MANAGER','All right, '+p.name+'. Relax. This is a restaurant interview, not a Senate hearing. Why Craggy?',[
+  ['I love hospitality and I want to grow.',()=>{add({server:2,host:2});iq2('Good answer. Annoyingly responsible.')}],
+  ['I’m just here for the hot goss.',()=>{add({bar:2,server:1});iq2('Honestly, restaurant employment is an extremely efficient delivery system for that.')}],
+  ['I need money and your Indeed ad looked least terrifying.',()=>{add({kitchen:1,expo:1});iq2('Practical. I can work with practical.')}],
+  ['I heard the managers are devastatingly handsome.',()=>{add({host:1,server:1});iq2('Correct answer. No notes. Moving on.')}]
+ ])}
+function iq2(r){say('TUFF — MANAGER',r+' It’s Friday night. Three guests need you, the kitchen is yelling, and somebody just sat themselves at a dirty table. Your move?',[
+ ['Acknowledge everyone, prioritize, then execute.',()=>{add({server:3,expo:1});iq3('Organized. Hot. We love a list.')}],
+ ['I just stand on expo and yell, “I NEED HANDS!!”',()=>{add({expo:4});iq3('You may have been born for expo. Terrifying. Useful.')}],
+ ['I’m tired, Grandpa.',()=>{add({host:1,kitchen:1});iq3('WELL THAT’S TOO DAMN BAD! Keep moving.')}],
+ ['Disappear into the walk-in for a tiny emotional reset.',()=>{add({kitchen:2,bar:1});iq3('I cannot officially endorse that. I can acknowledge the cultural accuracy.')}]
+ ])}
+function iq3(r){say('TUFF — MANAGER',r+' A guest is furious about something that wasn’t your fault. What do you do?',[
+ ['Listen, own the experience, and solve what I can.',()=>{add({server:3,host:2});iq4('Exactly. You don’t have to accept abuse, but you do have to be useful.')}],
+ ['Get a manager after I understand the problem.',()=>{add({host:2,server:1});iq4('Good. Please know what happened before dropping a mystery bomb in my lap.')}],
+ ['Explain, in detail, why I am innocent.',()=>{add({kitchen:1});iq4('A courtroom defense is rarely what table 42 is looking for.')}],
+ ['Can I drink a Rumple Minze while working?',()=>{add({bar:3});iq4('Absolutely not. Also: wildly concerning pivot. Bartender energy, though.')}]
+ ])}
+function iq4(r){say('TUFF — MANAGER',r+' Last one. Your coworker is drowning. You’re technically caught up. What happens next?',[
+ ['I jump in. Their section affects the whole restaurant.',()=>{add({server:2,expo:2,host:1});finishInterview()}],
+ ['I ask what would help most instead of guessing.',()=>{add({expo:2,kitchen:2});finishInterview()}],
+ ['I polish one fork very slowly and avoid eye contact.',()=>{add({bar:1});finishInterview()}],
+ ['I say “thoughts and prayers” and go refill my water.',()=>{add({host:1});finishInterview()}]
+ ])}
+function finishInterview(){
+ let best=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+ let map={server:['SERVER','Tuff'],host:['HOST','Tuff'],expo:['EXPO','Kyle'],bar:['BARTENDER','Kyle'],kitchen:['LINE COOK','Kellen']};
+ let [job,trainer]=map[best];hire(job,trainer);
 }
-function iq2(r){say('TUFF — MANAGER',r+' Picture this: you’re busy and three guests need you at once. What do you do?',[
- ['Acknowledge all three, prioritize, and work the list.',()=>iq3('Organized. Good.')],
- ['Knock out the fastest request first and keep moving.',()=>iq3('Speed matters. Just don’t confuse motion with progress.')],
- ['Ask a teammate for help before things snowball.',()=>iq3('Good. The strongest people here know when to call for backup.')],
- ['Panic internally, smile externally.',()=>iq3('Honestly? That is at least half of hospitality.')]
-])}
-function iq3(r){say('TUFF — MANAGER',r+' Next question: a guest is angry about something that was not your fault. What do you do?',[
- ['Listen, own the experience, and find a solution.',()=>iq4('Exactly. You don’t have to accept abuse, but you do have to help solve the problem.')],
- ['Get a manager immediately.',()=>iq4('Sometimes correct. I still want you to try to understand the problem first.')],
- ['Explain why it wasn’t my fault.',()=>iq4('Careful. Being technically right is not always the same as being useful.')],
- ['Offer something free.',()=>iq4('Not without permission, you little profit destroyer.')]
-])}
-function iq4(r){say('TUFF — MANAGER',r+' What kind of work sounds most like you?',[
- ['Talking to guests, selling, and juggling a section.',()=>hire('SERVER','Tuff')],
- ['Fast pressure, timing, and keeping the room moving.',()=>hire('EXPO','Kyle')],
- ['Systems, prep, heat, and working with my hands.',()=>hire('LINE COOK','Kellen')],
- ['Reading the room and controlling the front door.',()=>hire('HOST','Tuff')],
- ['I want to learn the bar.',()=>hire('BARTENDER','Kyle')]
-])}
-function hire(job,trainer){stage=6;document.getElementById('obj').textContent='Objective: Return Monday for orientation with Jay';say('TUFF — MANAGER','All right. I think '+job+' is where I’d start you. Come back Monday at 4:00 for orientation with Jay, our GM. After that, '+trainer+' handles your first training shift. Show up early, bring a pen, and please do not make me regret this.',[
- ['I’ll be here.',()=>say('TUFF — MANAGER','Good. Welcome to Craggy, '+p.name+'. Now enjoy your last peaceful weekend.',[['End interview',()=>localStorage.setItem('406life_v22',JSON.stringify({name:p.name,job:job}))]])]
-])}
+function hire(job,trainer){stage=6;document.getElementById('obj').textContent='Objective: Return Monday for orientation with Jay';say('TUFF — MANAGER','Okay, '+p.name+'. Based on all of that chaos, I’m starting you as '+job+'. Come back Monday at 4:00 PM for orientation with Jay, our GM. After orientation, '+trainer+' handles your first training shift.',[
+ ['Wait… I actually got the job?',()=>say('TUFF — MANAGER','Against my better judgment, yes. Bring a pen, wear non-slip shoes, and do not make me look stupid.',[['Deal.',()=>saveHire(job)]])],
+ ['What if I’m late?',()=>say('TUFF — MANAGER','Then your first game achievement will be “Disappointed Tuff.” It is not rare.',[['I’ll be early.',()=>saveHire(job)]])],
+ ['Do employees get hot goss immediately or after training?',()=>say('TUFF — MANAGER','Benefits begin immediately. Context arrives never.',[['Perfect. I accept.',()=>saveHire(job)]])]
+ ])}
+function saveHire(job){localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit}));say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[['Finish Phase 1',null]])}
 document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefault();interact()},{passive:false});
 const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
