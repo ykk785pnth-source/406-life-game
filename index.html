@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v5.1</title><style>
+<title>406 Life v6.0</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -75,7 +75,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 </div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · TASK GUIDE & CHARACTER POLISH v5.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · FRIDAY SERVER SHIFT v6.0</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -112,7 +112,7 @@ function applySavedLife(s){if(!s)return;Object.assign(life,s);updateLifeHud()}
 function refreshContinueButton(){
  const cp=getCheckpoint(),btn=document.getElementById('continueGame'),reset=document.getElementById('resetSave');
  if(!cp){btn.style.display='none';reset.style.display='none';return}
- const names={ORIENTATION:'CONTINUE FROM ORIENTATION',TRAINING:'CONTINUE FROM SERVER TRAINING',POST_SHIFT:'CONTINUE FROM SHIFT REVIEW'};
+ const names={ORIENTATION:'CONTINUE FROM ORIENTATION',TRAINING:'CONTINUE FROM SERVER TRAINING',POST_SHIFT:'CONTINUE FROM SHIFT REVIEW',FRIDAY_SHIFT:'CONTINUE TO FRIDAY SHIFT',FRIDAY_DONE:'CONTINUE AFTER FIRST FRIDAY'};
  btn.textContent=cp.migrated?'CONTINUE WITH YOUR EXISTING CHARACTER':(names[cp.point]||'CONTINUE LATEST CHECKPOINT');btn.style.display='block';reset.style.display='block';
 }
 function continueCheckpoint(e){
@@ -156,6 +156,17 @@ function taskRows(){
    ['Find your trainer',orientationStep>12]
   ];
   return rows;
+ }
+ if(gameDay==='FRIDAY_SHIFT'){
+  const labels=[
+   'Clock in at POS 2','Check seating chart at host stand','Greet Table 31','Greet Table 32',
+   'Ring both drink orders','Pick up drinks','Deliver Table 31 drinks','Deliver Table 32 drinks',
+   'Acknowledge Table 33','Take Table 31 order','Take Table 32 order','Ring Tables 31 & 32',
+   'Take Table 33 order','Ring Table 33','Answer HANDS','Run Table 31 food',
+   'Run Table 32 food','Check back Table 31','Close checks at POS 2','Get Friday review'
+  ];
+  const current=Math.max(0,fridayShift.step-1);
+  return labels.map((t,i)=>[t,i<current]);
  }
  if(gameDay==='SERVER_TRAINING'){
   const labels=[
@@ -206,7 +217,13 @@ function rep(delta,reason){
 function appHTML(app){
  const job=getSavedJob();
  const apps={
- swim:`<h2>🐟 Swim Schedule</h2><div class="card"><b>MONDAY · 4:00 PM</b><br>${job} · Orientation / Training<br><small>Trainer: ${(getTrainer()||desarae).name}</small></div><div class="card"><b>FRIDAY · 4:00 PM</b><br>${job}<br><small>FIRST REAL SHIFT · 3-table section · Friday rush</small></div><div class="card"><b>OPEN SHIFT</b><br>Saturday · 4:00 PM · Server<br><small>Cover shift · Estimated tips: $247</small></div><div class="card"><small>MANAGER NOTE</small><br>No, the schedule will not be rewritten because you forgot about your cousin's birthday.</div>`,
+ swim:`<h2>🐟 Swim Schedule</h2>
+<div class="card"><b>MONDAY · 4:00 PM</b><br>${job} · Orientation / Training<br><small>Trainer: ${(getTrainer()||desarae).name}</small></div>
+<button id="fridayShiftBtn" class="card" style="width:100%;color:white;text-align:left;background:#3d2a20;border:1px solid #f3ad67">
+ <b>FRIDAY · 4:00 PM</b><br>SERVER<br><small>FIRST REAL SHIFT · 3-table section · Friday rush</small><br><span style="color:#f3ad67;font-weight:900">TAP TO START SHIFT →</span>
+</button>
+<div class="card"><b>OPEN SHIFT</b><br>Saturday · 4:00 PM · Server<br><small>Cover shift · Estimated tips: $247</small></div>
+<div class="card"><small>MANAGER NOTE</small><br>No, the schedule will not be rewritten because you forgot about your cousin's birthday.</div>`,
  wallet:`<h2>👛 Wallet</h2><div class="card"><small>CASH</small><div class="money">$${life.cash}</div></div><div class="card"><small>CHECKING</small><div class="money">$${life.checking}</div></div><div class="card"><small>RENT DUE IN ${life.rentDue} DAYS</small><div class="money">$${life.rent}</div><small>Your apartment currently contains optimism and almost no furniture.</small></div>`,
  calendar:`<h2>📅 Calendar</h2><div class="card"><b>Today</b><br>4:00 PM · Craggy Orientation</div><div class="card"><b>Friday</b><br>4:00 PM · First real shift</div><div class="card"><b>In ${life.rentDue} days</b><br>🏠 Rent due · $${life.rent}</div><div class="card"><b>Coming soon</b><br>Whitefish events, birthdays, parties, game nights, and bad decisions.</div>`,
  messages:`<h2>💬 Messages</h2><div class="card"><b>Jay</b><br>Orientation at 4. Come a few minutes early.</div><div class="card"><b>Tuff</b><br>Bring a pen. This is me telling you now so you cannot say nobody told you.</div>`,
@@ -216,11 +233,23 @@ function appHTML(app){
  return apps[app]||'';
 }
 function openPhone(){if(!life.phoneUnlocked){say('NARRATOR','You do have a phone, but Jay has not finished setting up your new Whitefish life systems yet.',[['Fine. I’ll be patient.',null]]);return}document.getElementById('phone').style.display='flex';}
+function bindAppActions(app){
+ if(app==='swim'){
+  const btn=document.getElementById('fridayShiftBtn');
+  if(btn)btn.onclick=()=>{document.getElementById('phone').style.display='none';startFridayShift()};
+ }
+}
+function openApp(app){
+ document.getElementById('phoneHome').style.display='none';
+ document.getElementById('appView').style.display='block';
+ document.getElementById('appContent').innerHTML=appHTML(app);
+ bindAppActions(app);
+}
 document.getElementById('phoneBtn').addEventListener('pointerdown',e=>{e.preventDefault();openPhone()});
 document.getElementById('closePhone').onclick=()=>document.getElementById('phone').style.display='none';
 document.querySelector('.phoneBack').onclick=()=>{document.getElementById('appView').style.display='none';document.getElementById('phoneHome').style.display='block'};
 document.querySelectorAll('.app').forEach(b=>b.onclick=()=>{
- document.getElementById('phoneHome').style.display='none';document.getElementById('appView').style.display='block';document.getElementById('appContent').innerHTML=appHTML(b.dataset.app);
+ openApp(b.dataset.app);
  if(gameDay==='ORIENTATION'&&orientationStep===1&&b.dataset.app==='swim'){orientationStep=2;life.scheduleUnlocked=true;document.getElementById('obj').textContent='Orientation: Talk to Jay after checking Swim Schedule'}
  if(gameDay==='ORIENTATION'&&orientationStep===3&&b.dataset.app==='wallet'){orientationStep=4;document.getElementById('obj').textContent='Orientation: Follow Jay to the time clock';jay.x=565;jay.y=750}
 });
@@ -311,10 +340,11 @@ function drawCharacter(n,col,label){
  if(look.beard){ctx.strokeStyle='#3a241b';ctx.lineWidth=3*scale;ctx.beginPath();ctx.arc(sx,sy-22*scale+bob,9*scale,.1,Math.PI-.1);ctx.stroke()}
  drawAccessory(sx,sy+bob,look,scale);
  // carried training items
- if(n===p&&serverTraining.active&&serverTraining.carrying){
-  if(serverTraining.carrying==='drinks'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+7,18,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#743b24';ctx.fillRect(sx+13,sy-6,5,12);ctx.fillRect(sx+22,sy-6,5,12);ctx.fillStyle='#cfeaff';ctx.fillRect(sx+31,sy-6,5,12)}
-  if(serverTraining.carrying==='food'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+6,19,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c68039';ctx.beginPath();ctx.arc(sx+22,sy+3,8,0,Math.PI*2);ctx.fill()}
-  if(serverTraining.carrying==='ranch'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}
+ const carryItem=serverTraining.active?serverTraining.carrying:(fridayShift.active?fridayShift.carrying:'');
+ if(n===p&&carryItem){
+  if(carryItem==='drinks'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+7,18,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#743b24';ctx.fillRect(sx+13,sy-6,5,12);ctx.fillRect(sx+22,sy-6,5,12);ctx.fillStyle='#cfeaff';ctx.fillRect(sx+31,sy-6,5,12)}
+  if(carryItem==='food'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+6,19,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c68039';ctx.beginPath();ctx.arc(sx+22,sy+3,8,0,Math.PI*2);ctx.fill()}
+  if(carryItem==='ranch'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}
  }
  if(label)L(label,n.x,n.y-58*scale,12);
 }
@@ -484,6 +514,176 @@ function postShiftInteract(){
  }
  return false;
 }
+
+const fridayShift={
+ active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,
+ tables:[
+  {id:'31',x:760,y:820,status:'EMPTY',happiness:100},
+  {id:'32',x:980,y:820,status:'EMPTY',happiness:100},
+  {id:'33',x:1200,y:820,status:'EMPTY',happiness:100}
+ ]
+};
+function fridayTable(id){return fridayShift.tables.find(t=>t.id===id)}
+function fridayGood(points,msg){fridayShift.score+=points;rep(points,msg)}
+function fridayMistake(points,msg){fridayShift.mistakes++;fridayShift.score=Math.max(0,fridayShift.score-points);rep(-points,msg);life.stress=clamp(life.stress+5,0,100);updateLifeHud()}
+function setFridayObjective(t){document.getElementById('obj').textContent='FRIDAY SHIFT: '+t}
+function startFridayShift(){
+ saveCheckpoint('FRIDAY_SHIFT');
+ gameDay='FRIDAY_SHIFT';stage=20;postShiftStep=0;serverTraining.active=false;serverTraining.finished=true;
+ fridayShift.active=true;fridayShift.step=1;fridayShift.score=0;fridayShift.mistakes=0;fridayShift.tips=0;fridayShift.carrying='';
+ fridayShift.tables.forEach(t=>{t.status='EMPTY';t.happiness=100});
+ life.minutes=15*60+52;clockedIn=false;p.x=900;p.y=260;desarae.x=690;desarae.y=770;updateLifeHud();
+ setFridayObjective('Clock in at POS 2');
+ say('NARRATOR','FRIDAY · 3:52 PM. Your first real shift. Three tables, one Friday rush, and Desarae has officially stopped holding your hand.',[
+  ['I am prepared and emotionally stable.',()=>say('DESARAE — SUPERVISOR','Great! One of those things might still be true by 6:30.',[['Clock in.',null]])],
+  ['I’m tired, Grandpa.',()=>say('DESARE — SUPERVISOR','WELL THAT’S TOO DAMN BAD. Your section has been cut from four tables to three because I love you.',[['Fine 😂',null]])]
+ ]);
+}
+function showSeatingChart(){
+ const chart=`SECTION 6 · ${p.name}
+TABLE 31 — 2 TOP
+TABLE 32 — 4 TOP
+TABLE 33 — 3 TOP
+Rotation: 31 → 32 → 33`;
+ say('HOST STAND — SEATING CHART',chart,[
+  ['Confirm section.',()=>{fridayShift.step=3;fridayTable('31').status='SAT';setFridayObjective('Greet newly seated Table 31')}],
+  ['Ask why the tables are all at once.',()=>say('HOST','They are not all at once. Yet. Please do not manifest that.',[['Confirm section.',()=>{fridayShift.step=3;fridayTable('31').status='SAT';setFridayObjective('Greet newly seated Table 31')} ]])]
+ ]);
+}
+function fridayShiftInteract(){
+ if(!fridayShift.active||dialogue)return false;
+ const T31=fridayTable('31'),T32=fridayTable('32'),T33=fridayTable('33');
+ if(fridayShift.step===1&&Math.hypot(p.x-500,p.y-720)<140){
+  clockedIn=true;life.minutes=16*60;fridayShift.step=2;fridayGood(2,'On time for Friday');
+  setFridayObjective('Check your section on the host seating chart');
+  say('TIME CLOCK','CLOCKED IN · FRIDAY 4:00 PM',[['Go to the host stand.',null]]);return true;
+ }
+ if(fridayShift.step===2&&dist(p,host)<150){showSeatingChart();return true}
+ if(fridayShift.step===3&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
+  T31.status='DRINKS';fridayShift.step=4;fridayGood(3,'Prompt greeting');
+  T32.status='SAT';setFridayObjective('Greet Table 32 before ringing both drink orders');
+  say('TABLE 31','Two guests want a Coke and an iced tea.',[
+   ['Warm greeting, repeat drinks, mention the special.',()=>fridayGood(2,'Strong first greet')],
+   ['“Coke. Tea. Got it.”',()=>fridayMistake(1,'Bare minimum greeting')],
+   ['Tell them soup day is a sacred Montana institution.',()=>fridayGood(1,'Charming nonsense')]
+  ]);return true;
+ }
+ if(fridayShift.step===4&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
+  T32.status='DRINKS';fridayShift.step=5;setFridayObjective('Ring drinks for Tables 31 and 32 at POS 2');
+  say('TABLE 32','Four guests order two waters, one lemonade, and one beer.',[
+   ['Repeat the entire order back.',()=>fridayGood(2,'Confirmed four-top drinks')],
+   ['Nod confidently and remember maybe half.',()=>fridayMistake(2,'Risky memory choice')]
+  ]);return true;
+ }
+ if(fridayShift.step===5&&Math.hypot(p.x-500,p.y-720)<150){
+  say('POS 2 — DRINKS','Choose the combined ticket.',[
+   ['31: Coke + iced tea · 32: 2 waters + lemonade + beer',()=>{fridayGood(4,'Accurate drink tickets');fridayShift.step=6;setFridayObjective('Pick up drinks at the service well')}],
+   ['31: 2 Cokes · 32: water + 2 beers + lemonade',()=>{fridayMistake(4,'Wrong drink tickets');fridayShift.step=6;setFridayObjective('Pick up corrected drinks at the service well')}],
+   ['Everyone gets ranch.',()=>{fridayMistake(3,'Ranch is not a beverage');fridayShift.step=6;setFridayObjective('Pick up actual drinks at the service well')}]
+  ]);return true;
+ }
+ if(fridayShift.step===6&&Math.hypot(p.x-800,p.y-430)<165){
+  fridayShift.carrying='drinks';fridayShift.step=7;setFridayObjective('Deliver drinks to Table 31, then Table 32');
+  say('JELENA — BARTENDER','Full tray. Table 31 on the left, 32 in the middle. Use two hands and your remaining dignity.',[['Take tray.',null]]);return true;
+ }
+ if(fridayShift.step===7&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
+  T31.status='ORDER';fridayShift.step=8;fridayGood(2,'Delivered first drinks');setFridayObjective('Deliver the rest of the drinks to Table 32');
+  say('TABLE 31','Drinks landed safely. They are ready to order soon.',[['Keep moving.',null]]);return true;
+ }
+ if(fridayShift.step===8&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
+  fridayShift.carrying='';T32.status='ORDER';T33.status='SAT';fridayShift.step=9;fridayGood(2,'Delivered second drinks');
+  setFridayObjective('Table 33 was just seated — acknowledge them');
+  say('TABLE 32','Drinks delivered. Behind you, Table 33 has just sat down.',[['Acknowledge Table 33 immediately.',null]]);return true;
+ }
+ if(fridayShift.step===9&&Math.hypot(p.x-T33.x,p.y-T33.y)<155){
+  T33.status='DRINKS';fridayShift.step=10;setFridayObjective('Take food orders from Tables 31 and 32');
+  say('TABLE 33','Three guests order waters and say they need a minute.',[
+   ['Drop waters soon and promise to return.',()=>fridayGood(3,'Acknowledged new table')],
+   ['Say “Perfect, take forever.”',()=>fridayGood(1,'Made them laugh')],
+   ['Pretend you did not see them.',()=>fridayMistake(4,'Ignored newly seated table')]
+  ]);return true;
+ }
+ if(fridayShift.step===10&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
+  T31.status='RING';fridayShift.step=11;setFridayObjective('Take Table 32’s food order');
+  say('TABLE 31 — FOOD','Burger no onion and fish tacos.',[
+   ['Write modifiers and repeat everything.',()=>fridayGood(3,'Accurate two-top order')],
+   ['Remember “burger and fish-ish.”',()=>fridayMistake(3,'Weak order notes')]
+  ]);return true;
+ }
+ if(fridayShift.step===11&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
+  T32.status='RING';fridayShift.step=12;setFridayObjective('Ring Tables 31 and 32 at POS 2');
+  say('TABLE 32 — FOOD','Chicken sandwich, bison burger medium, Caesar salad, fries with ranch.',[
+   ['Clarify burger temperature and ranch.',()=>fridayGood(3,'Handled modifiers')],
+   ['Tell them all bison is legally well-done.',()=>fridayMistake(2,'Invented a policy')]
+  ]);return true;
+ }
+ if(fridayShift.step===12&&Math.hypot(p.x-500,p.y-720)<150){
+  T31.status='COOKING';T32.status='COOKING';fridayShift.step=13;setFridayObjective('Take Table 33’s order while food cooks');
+  say('POS 2 — FOOD','Ring both tickets.',[
+   ['Enter every modifier carefully.',()=>fridayGood(4,'Accurate food tickets')],
+   ['Mash buttons until something prints.',()=>fridayMistake(5,'Catastrophic POS energy')]
+  ]);return true;
+ }
+ if(fridayShift.step===13&&Math.hypot(p.x-T33.x,p.y-T33.y)<155){
+  T33.status='RING';fridayShift.step=14;setFridayObjective('Ring Table 33, then answer HANDS at the kitchen pass');
+  say('TABLE 33 — FOOD','Three burgers: one no cheese, one add bacon, one plain.',[
+   ['Repeat each burger separately.',()=>fridayGood(3,'Controlled a modifier-heavy order')],
+   ['Write “three burgs.”',()=>fridayMistake(4,'Dangerously vague notes')]
+  ]);return true;
+ }
+ if(fridayShift.step===14&&Math.hypot(p.x-500,p.y-720)<150){
+  T33.status='COOKING';fridayShift.step=15;setFridayObjective('Answer HANDS at the kitchen pass');
+  say('POS 2','Table 33 sent. Expo immediately yells for hands.',[['I NEED HANDS!!',null]]);return true;
+ }
+ if(fridayShift.step===15&&Math.hypot(p.x-350,p.y-500)<165){
+  fridayShift.carrying='food';fridayShift.step=16;setFridayObjective('Run hot food to Tables 31 and 32');
+  achievement('FRIDAY HANDS','Answer the pass during your first real rush.');
+  say('EXPO','31 and 32 are both up. Check every modifier before you move.',[
+   ['Verify plates and split the run logically.',()=>fridayGood(4,'Protected food accuracy')],
+   ['Stack everything and pray.',()=>fridayMistake(3,'Chaotic food run')]
+  ]);return true;
+ }
+ if(fridayShift.step===16&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
+  T31.status='EATING';fridayShift.step=17;setFridayObjective('Deliver the remaining food to Table 32');
+  fridayGood(2,'Ran Table 31 food');say('TABLE 31','Food delivered correctly.',[['Move to 32.',null]]);return true;
+ }
+ if(fridayShift.step===17&&Math.hypot(p.x-T32.x,p.y-T32.y)<155){
+  T32.status='EATING';fridayShift.carrying='';fridayShift.step=18;setFridayObjective('Check back on Table 31');
+  fridayGood(2,'Ran Table 32 food');say('TABLE 32','Food delivered. They immediately ask for another ranch.',[['Of course they do.',null]]);return true;
+ }
+ if(fridayShift.step===18&&Math.hypot(p.x-T31.x,p.y-T31.y)<155){
+  fridayShift.step=19;setFridayObjective('Get ranch at POS 2, then finish the shift');
+  say('TABLE 31','Everything is good. They ask for the check.',[
+   ['Prebus and promise the check.',()=>fridayGood(3,'Strong check-back and prebus')],
+   ['Drop the check and flee.',()=>fridayMistake(2,'Skipped prebus')]
+  ]);return true;
+ }
+ if(fridayShift.step===19&&Math.hypot(p.x-500,p.y-720)<150){
+  fridayShift.step=20;setFridayObjective('Return to Desarae for your Friday review');
+  const base=38,tip=Math.max(8,Math.round(base+fridayShift.score*1.6-fridayShift.mistakes*3));
+  fridayShift.tips=tip;life.cash+=tip;life.checking+=46;updateLifeHud();
+  T31.status='PAID';T32.status='PAID';T33.status='PAID';
+  say('SHIFT TOTALS','Hourly wages deposited: $46 · Cash tips: $'+tip,[['Find Desarae.',null]]);return true;
+ }
+ if(fridayShift.step===20&&dist(p,desarae)<180){
+  finishFridayShift();return true;
+ }
+ return false;
+}
+function finishFridayShift(){
+ fridayShift.active=false;clockedIn=false;const s=fridayShift.score,m=fridayShift.mistakes;
+ const grade=s>=32?'A':s>=23?'B':s>=14?'C':'NEEDS ANOTHER TRAINING SHIFT';
+ if(s>=32)achievement('SECTION SURVIVOR','Complete your first Friday section with an A.');
+ else achievement('FIRST FRIDAY DOWN','Survive your first real Friday shift.');
+ saveCheckpoint('FRIDAY_DONE');
+ document.getElementById('obj').textContent='FRIDAY COMPLETE · Grade '+grade+' · Tips $'+fridayShift.tips;
+ say('DESARAE — SUPERVISOR','Friday score: '+s+' · Mistakes: '+m+' · Grade: '+grade+'. You managed three tables, protected the important modifiers, and nobody left crying. That counts.',[
+  ['Did I level up?',()=>say('DESARAE — SUPERVISOR',s>=23?'Your Craggy reputation moved up. Keep this consistent and better sections unlock.':'Not yet. Promotions are built from patterns, not one brave little Friday.',[['Fair.',null]])],
+  ['How weeded did I look?',()=>say('DESARAE — SUPERVISOR',m<3?'Busy, but in control.':'Like a baby deer carrying ranch. We will work on it.',[['😂',null]])],
+  ['What comes next?',()=>say('DESARAE — SUPERVISOR','Another server shift with more independence: real table timers, guest moods, side work, comps, and getting cut—or not getting cut—based on performance.',[['Let’s go.',null]])]
+ ]);
+}
+
 const serverTraining={
  active:false,step:0,score:0,mistakes:0,carrying:'',table:{x:1160,y:820},
  drinkOrder:'2 Cokes · 1 Water',foodOrder:'Burger no onion · Chicken sandwich · Fries',
@@ -606,14 +806,29 @@ function finishServerTraining(){
  ]);
 }
 
+function npcBlocked(n,nx,ny){
+ const radius=14;
+ for(const s of solidRects)if(nx+radius>s.x&&nx-radius<s.x+s.w&&ny+radius>s.y&&ny-radius<s.y+s.h)return true;
+ for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<38)return true;
+ return nx<55||ny<200||nx>1845||ny>1180;
+}
 function updateWorkers(dt){
  for(const n of workers){
   if(serverTraining.active&&n.id==='desarae'){n.moving=false;continue}
+  if(fridayShift.active&&n.id==='desarae'){n.moving=false;continue}
   const t=n.route[n.ri],dx=t[0]-n.x,dy=t[1]-n.y,m=Math.hypot(dx,dy);
-  if(m<8){n.ri=(n.ri+1)%n.route.length;n.moving=false;continue}
+  if(m<8){n.ri=(n.ri+1)%n.route.length;n.moving=false;n.stuck=0;continue}
   n.moving=true;n.walkPhase=(n.walkPhase||0)+dt*9;
   n.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
-  n.x+=dx/m*n.s*dt;n.y+=dy/m*n.s*dt;
+  const sx=dx/m*n.s*dt,sy=dy/m*n.s*dt;
+  // Bar staff stay on their authored interior routes. Floor staff obey the same geometry as the player.
+  if(['server','busser','desarae'].includes(n.id)){
+   let moved=false;
+   if(!npcBlocked(n,n.x+sx,n.y)){n.x+=sx;moved=true}
+   if(!npcBlocked(n,n.x,n.y+sy)){n.y+=sy;moved=true}
+   if(!moved){n.stuck=(n.stuck||0)+dt;if(n.stuck>.7){n.ri=(n.ri+1)%n.route.length;n.stuck=0}}
+   else n.stuck=0;
+  }else{n.x+=sx;n.y+=sy}
  }
 }
 function drawWorker(n){
@@ -767,6 +982,23 @@ R(1420,650,100,78,'#2a2521',5);R(1430,660,80,58,'#d8e3e6',3);L('SKI',1470,692,15
 [[1400,800],[620,340],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
 person(host,'#8b5c45','HOST');
 
+
+if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
+ // Host seating chart
+ R(805,270,120,92,'#2b3135',6);R(814,280,102,70,'#e6e0d2',3);L('SECTION 6',865,296,10,'#30343a');
+ L('31 · 2 TOP',865,312,9,'#30343a');L('32 · 4 TOP',865,326,9,'#30343a');L('33 · 3 TOP',865,340,9,'#30343a');
+ for(const ft of fridayShift.tables){
+  let col=ft.status==='EMPTY'?'#777':ft.status==='SAT'?'#f3ad67':ft.status==='PAID'?'#71b780':'#65b9d6';
+  ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(ft.x-42-cam.x,ft.y-32-cam.y,84,64);
+  L('T'+ft.id+' · '+ft.status,ft.x,ft.y+58,11,col);
+  if(ft.status!=='EMPTY'){
+   person({x:ft.x-45,y:ft.y-4},'#7d5872','');
+   person({x:ft.x+45,y:ft.y-4},'#4c6d7a','');
+   if(ft.id!=='31')person({x:ft.x,y:ft.y-50},'#65754c','');
+  }
+ }
+}
+
 if(serverTraining.active||serverTraining.finished){
  const T=serverTraining.table;
  // Highlight training table and seated guests.
@@ -812,6 +1044,7 @@ function blocked(nx,ny){
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
+ if(fridayShiftInteract())return;
  if(postShiftInteract())return;
  if(serverTrainingInteract())return;
  if(orientationInteract())return;
@@ -994,6 +1227,19 @@ if(stage===0&&p.y>220){stage=1;document.getElementById('obj').textContent='Objec
 if(follow){let tx=1490,ty=1015,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(m>10){tuff.moving=true;tuff.walkPhase=(tuff.walkPhase||0)+dt*10;tuff.x+=dx/m*115*dt;tuff.y+=dy/m*115*dt}else{tuff.moving=false;follow=false;stage=4;document.getElementById('obj').textContent='Objective: Sit with Tuff for your interview'}}
 cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
 let pr='';
+if(fridayShift.active){
+ const F=fridayShift,T31=fridayTable('31'),T32=fridayTable('32'),T33=fridayTable('33');
+ if(F.step===1&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Clock in for Friday';
+ else if(F.step===2&&dist(p,host)<155)pr='INTERACT · View seating chart';
+ else if([3,7,10,16,18].includes(F.step)&&Math.hypot(p.x-T31.x,p.y-T31.y)<160)pr='INTERACT · Table 31';
+ else if([4,8,11,17].includes(F.step)&&Math.hypot(p.x-T32.x,p.y-T32.y)<160)pr='INTERACT · Table 32';
+ else if([9,13].includes(F.step)&&Math.hypot(p.x-T33.x,p.y-T33.y)<160)pr='INTERACT · Table 33';
+ else if([5,12,14,19].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
+ else if(F.step===6&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
+ else if(F.step===15&&Math.hypot(p.x-350,p.y-500)<170)pr='INTERACT · Answer HANDS';
+ else if(F.step===20&&dist(p,desarae)<180)pr='INTERACT · Friday review';
+}
+
 if(postShiftStep===1&&Math.hypot(p.x-500,p.y-720)<140)pr='INTERACT · Clock out at POS 2';
 if(serverTraining.active){
  const T=serverTraining.table;
