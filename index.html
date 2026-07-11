@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v6.1</title><style>
+<title>406 Life v6.4</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -30,7 +30,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #repBox{font-size:11px;margin-top:7px;border-top:1px solid #ffffff18;padding-top:7px}
 .worldLabel{font-weight:900}
 
-#taskPanel{position:absolute;left:14px;top:88px;width:min(330px,72vw);background:#17120de8;border:1px solid #ffffff20;border-radius:14px;padding:11px 13px;pointer-events:none;box-shadow:0 8px 24px #0005}
+#taskPanel{position:absolute;left:14px;top:88px;width:min(330px,72vw);background:#17120de8;border:1px solid #ffffff20;border-radius:14px;padding:11px 13px;pointer-events:auto;box-shadow:0 8px 24px #0005}#taskPanel.collapsed{width:190px}#taskPanel.collapsed #taskList{display:none}#taskToggle{float:right;border:0;background:#ffffff12;color:#fff;border-radius:8px;width:28px;height:24px;font-weight:900}
 #taskTitle{font-size:11px;font-weight:950;letter-spacing:.12em;color:#f3ad67;margin-bottom:7px}
 .taskLine{font-size:12px;line-height:1.35;margin:4px 0;color:#eadac9}.taskLine.done{color:#8fbf91;text-decoration:line-through}.taskLine.current{color:#fff;font-weight:850}.taskDot{display:inline-block;width:15px}
 @media(max-width:700px){#taskPanel{top:92px;left:10px;width:64vw;padding:9px 11px}.taskLine{font-size:11px}}
@@ -39,6 +39,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #posCard{width:min(560px,92vw);max-height:86vh;overflow:auto;background:#211712;border:2px solid #f3ad67;border-radius:20px;padding:18px}
 #posCard h2{margin:0 0 6px;color:#f3ad67}.posGuest{background:#ffffff0b;border:1px solid #ffffff18;border-radius:13px;padding:11px;margin:10px 0}.posGuest label{display:block;font-size:11px;color:#e9c7a3;margin-top:8px}.posGuest select,.posGuest input{width:100%;margin-top:4px;padding:10px;background:#100d0b;color:#fff;border:1px solid #ffffff2a;border-radius:9px}
 #posSubmit{width:100%;padding:13px;border:0;border-radius:11px;background:#e78a43;font-weight:950}#posCancel{width:100%;margin-top:8px;padding:9px;border:0;background:transparent;color:#d5b99e}
+
+.scheduleHeader{display:flex;align-items:center;gap:10px;margin-bottom:12px}.scheduleLogo{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#eaf7ec;color:#2a9d52;font-weight:950;font-size:23px}
+.scheduleSection{background:#ffffff0b;border:1px solid #ffffff18;border-radius:14px;margin:10px 0;overflow:hidden}.scheduleSection h3{margin:0;padding:11px 13px;background:#278ebd;font-size:14px}.scheduleRow{padding:12px 13px;border-top:1px solid #ffffff12}.scheduleRow:first-of-type{border-top:0}.scheduleAction{margin-top:8px;padding:9px 11px;border-radius:9px;border:1px solid #f3ad67;background:#3b2b21;color:white;font-weight:900;width:100%}.scheduleNav{display:grid;grid-template-columns:1fr 1fr;gap:8px}.scheduleNav button{padding:10px;border:1px solid #ffffff18;background:#ffffff0b;color:#fff;border-radius:10px}.badge{display:inline-block;background:#ef8a56;color:white;border-radius:999px;padding:2px 7px;font-size:10px;font-weight:900}
 </style></head><body><canvas id="g"></canvas>
 <div id="creator"><div id="creatorCard">
 <div style="color:#f3ad67;font-weight:900;letter-spacing:.15em">YOUR WHITEFISH STORY STARTS HERE</div>
@@ -82,9 +85,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · DETAILED SERVER SHIFT v6.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · ECONOMY BALANCE & STAFF DETAILS v6.4</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
-<div id="taskPanel"><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
+<div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -93,8 +96,72 @@ const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
 const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
 
+
+const career={
+ week:1,dayIndex:0,
+ pickedSaturday:false,
+ fridayComplete:false,
+ saturdayComplete:false,
+ currentSchedule:[
+  {id:'fri1',day:'Friday',time:'4:00 PM',role:'SERVER',type:'scheduled',payHint:'3-table section'},
+  {id:'satOpen',day:'Saturday',time:'4:00 PM',role:'SERVER',type:'open',payHint:'Estimated tips $180–260'}
+ ],
+ history:[]
+};
+
+const economy={
+ rent:750,
+ utilities:95,
+ phone:65,
+ groceries:220,
+ transport:90,
+ weeklyBaseShifts:3,
+ averageHourlyWages:62,
+ averageTips:110,
+ openShiftBonusTips:185
+};
+function projectedMonthlyIncome(){
+ const weekly=(economy.averageHourlyWages+economy.averageTips)*economy.weeklyBaseShifts;
+ return Math.round(weekly*4.33);
+}
+function projectedMonthlyExpenses(){
+ return economy.rent+economy.utilities+economy.phone+economy.groceries+economy.transport;
+}
+function projectedMonthlyExtra(){
+ return projectedMonthlyIncome()-projectedMonthlyExpenses();
+}
+
+function dayName(){return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][career.dayIndex%7]}
+function advanceDay(days=1){career.dayIndex+=days;while(career.dayIndex>=7){career.dayIndex-=7;career.week++;generateWeeklySchedule()}}
+function generateWeeklySchedule(){
+ const patterns=[
+  [{day:'Monday',time:'4:00 PM',role:'SERVER',payHint:'Dinner section'},
+   {day:'Wednesday',time:'4:00 PM',role:'SERVER',payHint:'Midweek dinner'},
+   {day:'Friday',time:'4:00 PM',role:'SERVER',payHint:'Friday rush'},
+   {day:'Saturday',time:'4:00 PM',role:'SERVER',type:'open',payHint:'Estimated tips $190–280'}],
+  [{day:'Tuesday',time:'4:00 PM',role:'SERVER',payHint:'Dinner shift'},
+   {day:'Thursday',time:'4:00 PM',role:'SERVER',payHint:'VGK game night'},
+   {day:'Friday',time:'4:00 PM',role:'SERVER',payHint:'Friday close'},
+   {day:'Saturday',time:'11:00 AM',role:'SERVER',type:'open',payHint:'Patio lunch'}],
+  [{day:'Monday',time:'4:00 PM',role:'SERVER',payHint:'Dinner section'},
+   {day:'Wednesday',time:'4:00 PM',role:'SERVER',payHint:'Midweek dinner'},
+   {day:'Friday',time:'4:00 PM',role:'SERVER',payHint:'Closing server'},
+   {day:'Sunday',time:'10:00 AM',role:'SERVER',type:'open',payHint:'Brunch cover'}]
+ ];
+ const p=patterns[(career.week-1)%patterns.length];
+ career.currentSchedule=p.map((s,i)=>({id:'w'+career.week+'s'+i,type:s.type||'scheduled',...s}));
+ career.pickedSaturday=false;career.fridayComplete=false;career.saturdayComplete=false;
+}
+function saveCareer(){
+ localStorage.setItem('406life_career_v1',JSON.stringify(career));
+}
+function loadCareer(){
+ try{const s=JSON.parse(localStorage.getItem('406life_career_v1')||'null');if(s)Object.assign(career,s)}catch(e){}
+}
+loadCareer();
+
 const life={
- cash:80,checking:220,rent:750,rentDue:14,energy:88,hunger:76,stress:12,rep:0,
+ cash:80,checking:220,rent:economy.rent,rentDue:14,energy:88,hunger:76,stress:12,rep:0,
  level:1,xp:0,achievements:[],minutes:15*60+56,phoneUnlocked:false,walletUnlocked:false,scheduleUnlocked:false,
  mistakes:0,goodActions:0
 };
@@ -212,7 +279,7 @@ function updateLifeHud(){
  document.getElementById('repText').textContent=life.rep<20?'NEW HIRE':life.rep<45?'RELIABLE-ish':life.rep<70?'CRAGGY REGULAR':life.rep<90?'TRUSTED EMPLOYEE':'CRAGGY LEGEND';
  const hr=Math.floor(life.minutes/60)%24,min=Math.floor(life.minutes%60),ap=hr>=12?'PM':'AM',h=((hr+11)%12)+1;
  const ts=h+':'+String(min).padStart(2,'0')+' '+ap;
- document.querySelector('#lifeHud b:first-child').textContent='MON · '+ts;document.getElementById('phoneClock').textContent=ts;
+ document.querySelector('#lifeHud b:first-child').textContent=dayName().slice(0,3).toUpperCase()+' · '+ts;document.getElementById('phoneClock').textContent=ts;
 }
 function achievement(name,desc){
  if(life.achievements.includes(name))return;
@@ -223,30 +290,74 @@ function rep(delta,reason){
  life.rep=clamp(life.rep+delta,0,100); if(delta<0)life.mistakes++;else life.goodActions++;
  updateLifeHud();
 }
+function scheduleHTML(){
+ const upcoming=career.currentSchedule.map(s=>{
+  const action=s.type==='open'
+   ? `<button class="scheduleAction" data-shift="${s.id}">PICK UP SHIFT</button>`
+   : ((s.day==='Friday'&&!career.fridayComplete)||(s.day==='Saturday'&&career.pickedSaturday&&!career.saturdayComplete)
+      ? `<button class="scheduleAction" data-start="${s.id}">START SHIFT →</button>`:'');
+  return `<div class="scheduleRow"><b>${s.day}</b> · ${s.time}<br>${s.role} ${s.type==='open'?'<span class="badge">OPEN</span>':''}<br><small>${s.payHint||''}</small>${action}</div>`;
+ }).join('');
+ return `<div class="scheduleHeader"><div class="scheduleLogo">swim</div><div><h2 style="margin:0">Swim Schedule</h2><small>Week ${career.week} · Whitefish MT</small></div></div>
+ <div class="scheduleSection"><h3>Upcoming shifts</h3>${upcoming||'<div class="scheduleRow">No shifts posted yet.</div>'}</div>
+ <div class="scheduleNav">
+  <button data-snav="myschedule">My Schedule</button>
+  <button data-snav="available">Available Shifts</button>
+  <button data-snav="trades">Shift Trades</button>
+  <button data-snav="message">Message Wall</button>
+ </div>
+ <div class="scheduleSection"><h3>Manager note</h3><div class="scheduleRow">Schedule requests are due before the schedule is posted. No, remembering your cousin’s birthday afterward does not count.</div></div>`;
+}
 function appHTML(app){
  const job=getSavedJob();
  const apps={
- swim:`<h2>🐟 Swim Schedule</h2>
-<div class="card"><b>MONDAY · 4:00 PM</b><br>${job} · Orientation / Training<br><small>Trainer: ${(getTrainer()||desarae).name}</small></div>
-<button id="fridayShiftBtn" class="card" style="width:100%;color:white;text-align:left;background:#3d2a20;border:1px solid #f3ad67">
- <b>FRIDAY · 4:00 PM</b><br>SERVER<br><small>FIRST REAL SHIFT · 3-table section · Friday rush</small><br><span style="color:#f3ad67;font-weight:900">TAP TO START SHIFT →</span>
-</button>
-<div class="card"><b>OPEN SHIFT</b><br>Saturday · 4:00 PM · Server<br><small>Cover shift · Estimated tips: $247</small></div>
-<div class="card"><small>MANAGER NOTE</small><br>No, the schedule will not be rewritten because you forgot about your cousin's birthday.</div>`,
- wallet:`<h2>👛 Wallet</h2><div class="card"><small>CASH</small><div class="money">$${life.cash}</div></div><div class="card"><small>CHECKING</small><div class="money">$${life.checking}</div></div><div class="card"><small>RENT DUE IN ${life.rentDue} DAYS</small><div class="money">$${life.rent}</div><small>Your apartment currently contains optimism and almost no furniture.</small></div>`,
- calendar:`<h2>📅 Calendar</h2><div class="card"><b>Today</b><br>4:00 PM · Craggy Orientation</div><div class="card"><b>Friday</b><br>4:00 PM · First real shift</div><div class="card"><b>In ${life.rentDue} days</b><br>🏠 Rent due · $${life.rent}</div><div class="card"><b>Coming soon</b><br>Whitefish events, birthdays, parties, game nights, and bad decisions.</div>`,
- messages:`<h2>💬 Messages</h2><div class="card"><b>Jay</b><br>Orientation at 4. Come a few minutes early.</div><div class="card"><b>Tuff</b><br>Bring a pen. This is me telling you now so you cannot say nobody told you.</div>`,
- contacts:`<h2>☎️ Contacts</h2><div class="card">Tuff · Manager</div><div class="card">Jay · GM</div><div class="card">Kellen · Manager</div><div class="card">Kyle · Manager</div><div class="card">Jelena · Bartender 💗</div><div class="card">Craggy Range</div>`,
+ swim:scheduleHTML(),
+ wallet:`<h2>👛 Wallet</h2>
+<div class="card"><small>CASH</small><div class="money">$${life.cash}</div></div>
+<div class="card"><small>CHECKING</small><div class="money">$${life.checking}</div></div>
+<div class="card"><small>RENT DUE IN ${life.rentDue} DAYS</small><div class="money">$${life.rent}</div><small>Your apartment currently contains optimism and almost no furniture.</small></div>
+<div class="card"><b>MONTHLY FORECAST</b><br>
+Estimated work income: $${projectedMonthlyIncome()}<br>
+Basic expenses: $${projectedMonthlyExpenses()}<br>
+Estimated money left: <b>$${projectedMonthlyExtra()}</b><br>
+<small>Open shifts increase savings and apartment money, but should not be required to survive. Three regular shifts per week should cover a modest Whitefish life.</small></div>
+<div class="card"><small>BASIC MONTHLY EXPENSES</small><br>
+Rent $${economy.rent} · Utilities $${economy.utilities} · Phone $${economy.phone}<br>
+Groceries $${economy.groceries} · Transportation $${economy.transport}</div>`,
+ calendar:`<h2>📅 Calendar</h2><div class="card"><b>Week ${career.week}</b><br>${career.currentSchedule.map(s=>s.day+' · '+s.time+' · '+s.role).join('<br>')}</div><div class="card"><b>Rent</b><br>Due in ${life.rentDue} days · $${life.rent}</div>`,
+ messages:`<h2>💬 Messages</h2><div class="card"><b>Jay</b><br>Check Swim Schedule before asking when you work.</div><div class="card"><b>Tuff</b><br>Picking up a shift is appreciated. Picking it up and then trying to give it away six minutes later is less appreciated.</div>`,
+ contacts:`<h2>☎️ Contacts</h2><div class="card">Tuff · Manager</div><div class="card">Jay · GM</div><div class="card">Kellen · Manager</div><div class="card">Kyle · Manager</div><div class="card">Jelena · Bartender 💗</div><div class="card">Desarae · Supervisor</div>`,
  achievements:`<h2>🏆 Achievements</h2>${life.achievements.length?life.achievements.map(x=>'<div class="card"><b>'+x+'</b></div>').join(''):'<div class="card">Nothing yet. Try not to disappoint Tuff immediately.</div>'}`
  };
  return apps[app]||'';
 }
+
 function openPhone(){if(!life.phoneUnlocked){say('NARRATOR','You do have a phone, but Jay has not finished setting up your new Whitefish life systems yet.',[['Fine. I’ll be patient.',null]]);return}document.getElementById('phone').style.display='flex';}
 function bindAppActions(app){
- if(app==='swim'){
-  const btn=document.getElementById('fridayShiftBtn');
-  if(btn)btn.onclick=()=>{document.getElementById('phone').style.display='none';startFridayShift()};
- }
+ if(app!=='swim')return;
+ document.querySelectorAll('[data-shift]').forEach(btn=>btn.onclick=()=>{
+  const id=btn.dataset.shift;
+  if(career.pickedSaturday){say('SWIM SCHEDULE','You already picked up the open shift. Commitment is beautiful and mildly inconvenient.',[['Okay.',null]]);return}
+  career.pickedSaturday=true;
+  const shift=career.currentSchedule.find(s=>s.id===id);if(shift)shift.type='scheduled';
+  saveCareer();achievement('VOLUNTARY EMOTIONAL DAMAGE','Pick up an open Saturday shift.');
+  openApp('swim');
+ });
+ document.querySelectorAll('[data-start]').forEach(btn=>btn.onclick=()=>{
+  const shift=career.currentSchedule.find(s=>s.id===btn.dataset.start);
+  document.getElementById('phone').style.display='none';
+  if(shift&&shift.day==='Saturday')startSaturdayShift();else startFridayShift();
+ });
+ document.querySelectorAll('[data-snav]').forEach(btn=>btn.onclick=()=>{
+  const page=btn.dataset.snav;
+  const text={
+   myschedule:'Your posted shifts are listed above. Future weeks generate after the current week is completed.',
+   available:'Open shifts can be picked up for more money, reputation and emotional damage.',
+   trades:'Shift trades unlock after you have more than one scheduled shift.',
+   message:'Message Wall: Tuff posted “Please stop leaving the flat top on.”'
+  }[page];
+  say('SWIM SCHEDULE',text,[['Back to schedule.',()=>openApp('swim')]]);
+ });
 }
 function openApp(app){
  document.getElementById('phoneHome').style.display='none';
@@ -277,9 +388,9 @@ const staffLooks={
  TUFF:{skin:'#d69a70',hair:'#2b1a13',style:'Short',shirt:'#56705a',pants:'#252a31',apron:false,beard:true,height:1.12,brows:true,build:1.12},
  JAY:{skin:'#c98d68',hair:'#231812',style:'Fade',shirt:'#344d68',pants:'#242832',apron:false,height:1.05,brows:true,build:1.04},
  KELLEN:{skin:'#d69a70',hair:'#4a2e1e',style:'Short',shirt:'#4b443d',pants:'#262626',apron:true,height:1.03,brows:true,build:1.02},
- KYLE:{skin:'#d39a74',hair:'#201914',style:'Short',shirt:'#344f43',pants:'#252b28',apron:false,height:1.04,brows:true,build:1.06,scar:true},
+ KYLE:{skin:'#d39a74',hair:'#201914',style:'Short',shirt:'#344f43',pants:'#252b28',apron:false,height:1.04,brows:true,build:1.06,scar:true,redBandana:true,hipKnife:true},
  JELENA:{skin:'#d69a70',hair:'#4b261f',style:'Long',shirt:'#7e3f55',pants:'#26252a',apron:true,height:1.02,brows:true,build:.98,earrings:true},
- DESARAE:{skin:'#c88867',hair:'#2d1b19',style:'Ponytail',shirt:'#df6fa8',pants:'#25252c',apron:true,height:1.02,brows:true,build:1.02,earrings:true},
+ DESARAE:{skin:'#c88867',hair:'#2d1b19',style:'Ponytail',shirt:'#df6fa8',pants:'#25252c',apron:true,height:1.02,brows:true,build:1.02,cigaretteEarrings:true},
  HOST:{skin:'#d69a70',hair:'#6b3d24',style:'Bun',shirt:'#9a684b',pants:'#28252b',apron:false,height:1},
  BARTENDER:{skin:'#d69a70',hair:'#332118',style:'Fade',shirt:'#49657b',pants:'#242a30',apron:true,height:1},
  BARBACK:{skin:'#b87650',hair:'#161312',style:'Short',shirt:'#745366',pants:'#23252b',apron:true,height:1},
@@ -319,7 +430,7 @@ function spriteLook(n,col){
 function drawCharacter(n,col,label){
  const look=spriteLook(n,col),scale=look.height||1,build=look.build||1;
  const sx=n.x-cam.x,sy=n.y-cam.y;
- const phase=n.walkPhase||0,moving=!!n.moving,bob=moving?Math.sin(phase)*2:0;
+ const phase=n.walkPhase||0,moving=!!n.moving,bob=moving?Math.sin(phase)*2:0,blink=Math.sin((life.minutes+(n.x||0))*0.9)>0.985;
  const legSwing=moving?Math.sin(phase)*6:0,armSwing=moving?Math.sin(phase+Math.PI)*5:0;
  ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(sx,sy+24*scale,19*scale,7*scale,0,0,Math.PI*2);ctx.fill();
  // legs + shoes
@@ -333,16 +444,31 @@ function drawCharacter(n,col,label){
  ctx.strokeStyle='#ffffff55';ctx.lineWidth=1.2*scale;ctx.beginPath();ctx.moveTo(sx-5*scale,sy-7*scale+bob);ctx.lineTo(sx,sy-1*scale+bob);ctx.lineTo(sx+5*scale,sy-7*scale+bob);ctx.stroke();
  if(!look.apron){ctx.strokeStyle='#ffffff35';ctx.strokeRect(sx+4*scale,sy+4*scale+bob,7*scale,6*scale)}
  if(look.apron){ctx.fillStyle='#252426';ctx.beginPath();ctx.moveTo(sx-10*scale,sy+2*scale+bob);ctx.lineTo(sx+10*scale,sy+2*scale+bob);ctx.lineTo(sx+13*scale,sy+22*scale+bob);ctx.lineTo(sx-13*scale,sy+22*scale+bob);ctx.closePath();ctx.fill();ctx.strokeStyle='#ddd';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx-9*scale,sy+2*scale+bob);ctx.lineTo(sx-13*scale,sy-8*scale+bob);ctx.moveTo(sx+9*scale,sy+2*scale+bob);ctx.lineTo(sx+13*scale,sy-8*scale+bob);ctx.stroke()}
+
+ if(look.hipKnife){
+  ctx.fillStyle='#32261f';ctx.fillRect(sx+13*scale,sy+8*scale+bob,6*scale,19*scale);
+  ctx.fillStyle='#8c6b4d';ctx.fillRect(sx+14*scale,sy+5*scale+bob,4*scale,7*scale);
+ }
  // neck/head
  ctx.fillStyle=look.skin;ctx.fillRect(sx-5*scale,sy-14*scale+bob,10*scale,7*scale);ctx.beginPath();ctx.ellipse(sx,sy-25*scale+bob,12*scale,14*scale,0,0,Math.PI*2);ctx.fill();
  ctx.beginPath();ctx.ellipse(sx-12*scale,sy-25*scale+bob,3*scale,5*scale,0,0,Math.PI*2);ctx.ellipse(sx+12*scale,sy-25*scale+bob,3*scale,5*scale,0,0,Math.PI*2);ctx.fill();
 
  drawHair(sx,sy+bob,look,scale);
+ if(look.redBandana){
+  ctx.fillStyle='#a52b2b';ctx.fillRect(sx-14*scale,sy-35*scale+bob,28*scale,5*scale);
+  ctx.beginPath();ctx.moveTo(sx+13*scale,sy-34*scale+bob);ctx.lineTo(sx+23*scale,sy-28*scale+bob);ctx.lineTo(sx+15*scale,sy-24*scale+bob);ctx.fill();
+ }
  // face
- ctx.fillStyle='#201817';ctx.beginPath();ctx.arc(sx-4*scale,sy-26*scale+bob,1.5*scale,0,Math.PI*2);ctx.arc(sx+4*scale,sy-26*scale+bob,1.5*scale,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#201817';
+ if(blink){ctx.fillRect(sx-6*scale,sy-26*scale+bob,4*scale,1*scale);ctx.fillRect(sx+2*scale,sy-26*scale+bob,4*scale,1*scale)}
+ else{ctx.beginPath();ctx.arc(sx-4*scale,sy-26*scale+bob,1.5*scale,0,Math.PI*2);ctx.arc(sx+4*scale,sy-26*scale+bob,1.5*scale,0,Math.PI*2);ctx.fill()}
  if(look.brows){ctx.strokeStyle=look.hair||'#302018';ctx.lineWidth=1.4*scale;ctx.beginPath();ctx.moveTo(sx-8*scale,sy-30*scale+bob);ctx.lineTo(sx-2*scale,sy-31*scale+bob);ctx.moveTo(sx+2*scale,sy-31*scale+bob);ctx.lineTo(sx+8*scale,sy-30*scale+bob);ctx.stroke()}
  ctx.strokeStyle='#9a5e4d';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx,sy-26*scale+bob);ctx.lineTo(sx-1*scale,sy-22*scale+bob);ctx.lineTo(sx+1.5*scale,sy-22*scale+bob);ctx.stroke();
  if(look.earrings){ctx.fillStyle='#e7c34c';ctx.beginPath();ctx.arc(sx-13*scale,sy-23*scale+bob,1.8*scale,0,Math.PI*2);ctx.arc(sx+13*scale,sy-23*scale+bob,1.8*scale,0,Math.PI*2);ctx.fill()}
+ if(look.cigaretteEarrings){
+  ctx.fillStyle='#f4eee4';ctx.fillRect(sx-16*scale,sy-22*scale+bob,3*scale,11*scale);ctx.fillRect(sx+13*scale,sy-22*scale+bob,3*scale,11*scale);
+  ctx.fillStyle='#d97945';ctx.fillRect(sx-16*scale,sy-12*scale+bob,3*scale,3*scale);ctx.fillRect(sx+13*scale,sy-12*scale+bob,3*scale,3*scale);
+ }
  if(look.scar){ctx.strokeStyle='#9e6758';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx+6*scale,sy-20*scale+bob);ctx.lineTo(sx+9*scale,sy-17*scale+bob);ctx.stroke()}
 
  ctx.strokeStyle='#7b443b';ctx.lineWidth=1.2*scale;ctx.beginPath();ctx.arc(sx,sy-21*scale+bob,5*scale,.2,Math.PI-.2);ctx.stroke();
@@ -554,6 +680,53 @@ document.getElementById('posSubmit').onclick=()=>{document.getElementById('posMo
 document.getElementById('posCancel').onclick=()=>document.getElementById('posModal').style.display='none';
 function posMatches(values,expected){return expected.every((e,i)=>values[i]&&values[i].item===e.item&&values[i].side===e.side&&values[i].mod===e.mod)}
 
+
+const guestFlow={parties:[],hostEscort:null,barGuests:[],nextId:1};
+function makeGuest(x,y,color='#6f587d'){return{x,y,col:color,moving:false,walkPhase:0,facing:'down'}}
+function createParty(tableId,count){
+ const colors=['#7d5872','#4c6d7a','#65754c','#8a6755','#5f6f8a'];
+ const party={id:guestFlow.nextId++,tableId,count,state:'ARRIVING',
+  members:Array.from({length:count},(_,i)=>makeGuest(940+i*16,238,colors[i%colors.length])),
+  queueX:760,queueY:335};
+ guestFlow.parties.push(party);return party;
+}
+function partyForTable(id){return guestFlow.parties.find(g=>g.tableId===id)}
+function tableSeatPositions(t,count){return [[t.x-45,t.y-4],[t.x+45,t.y-4],[t.x,t.y-50],[t.x,t.y+48]].slice(0,count)}
+function beginHostEscort(party){if(!party)return;party.state='ESCORT';guestFlow.hostEscort=party;host.x=760;host.y=315}
+function seatParty(party){
+ const t=party.tableId==='62'?serverTraining.table:fridayTable(party.tableId),seats=tableSeatPositions(t,party.count);
+ party.members.forEach((g,i)=>{g.x=seats[i][0];g.y=seats[i][1];g.moving=false});party.state='SEATED';guestFlow.hostEscort=null
+}
+function releaseParty(id){const party=partyForTable(id);if(party)party.state='LEAVING'}
+function clearTrainingGuests(){guestFlow.parties=guestFlow.parties.filter(p=>p.tableId!=='62')}
+function moveEntityToward(e,tx,ty,speed,dt){
+ const dx=tx-e.x,dy=ty-e.y,m=Math.hypot(dx,dy);if(m<5){e.moving=false;return true}
+ e.moving=true;e.walkPhase=(e.walkPhase||0)+dt*9;e.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+ e.x+=dx/m*speed*dt;e.y+=dy/m*speed*dt;return false
+}
+function updateGuestFlow(dt){
+ for(const party of guestFlow.parties){
+  if(party.state==='ARRIVING')party.members.forEach((g,i)=>moveEntityToward(g,party.queueX+(i-1)*18,party.queueY,62,dt));
+  else if(party.state==='ESCORT'){
+   const t=party.tableId==='62'?serverTraining.table:fridayTable(party.tableId),done=moveEntityToward(host,t.x-95,t.y-75,70,dt);
+   party.members.forEach((g,i)=>moveEntityToward(g,host.x-25-i*14,host.y+25+i*7,66,dt));if(done)seatParty(party)
+  }else if(party.state==='LEAVING'){
+   let done=true;party.members.forEach((g,i)=>{if(!moveEntityToward(g,940+i*14,220,72,dt))done=false});if(done)party.state='GONE'
+  }
+ }
+ guestFlow.parties=guestFlow.parties.filter(p=>p.state!=='GONE');
+ for(const bg of guestFlow.barGuests){
+  if(bg.state==='ARRIVING'){if(moveEntityToward(bg,bg.seatX,bg.seatY,68,dt))bg.state='SEATED'}
+  else if(bg.state==='LEAVING'){if(moveEntityToward(bg,940,220,72,dt))bg.state='GONE'}
+ }
+ guestFlow.barGuests=guestFlow.barGuests.filter(g=>g.state!=='GONE')
+}
+function addBarGuest(seatX,seatY){
+ const g=makeGuest(940,230,['#776080','#4d6d79','#6a7550'][guestFlow.barGuests.length%3]);
+ Object.assign(g,{seatX,seatY,state:'ARRIVING'});guestFlow.barGuests.push(g)
+}
+function startBarTraffic(){if(guestFlow.barGuests.length)return;addBarGuest(760,350);addBarGuest(920,350);addBarGuest(1080,350)}
+
 const fridayShift={
  active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,incident:false,cleanup:false,
  tables:[
@@ -566,11 +739,24 @@ function fridayTable(id){return fridayShift.tables.find(t=>t.id===id)}
 function fridayGood(points,msg){fridayShift.score+=points;rep(points,msg)}
 function fridayMistake(points,msg){fridayShift.mistakes++;fridayShift.score=Math.max(0,fridayShift.score-points);rep(-points,msg);life.stress=clamp(life.stress+5,0,100);updateLifeHud()}
 function setFridayObjective(t){document.getElementById('obj').textContent='FRIDAY SHIFT: '+t}
+
+function startSaturdayShift(){
+ career.saturdayComplete=true;
+ achievement('WHY DID I PICK THIS UP?','Start the optional Saturday cover shift.');
+ startFridayShift();
+ setTimeout(()=>{
+  document.getElementById('obj').textContent='SATURDAY COVER SHIFT: Survive the patio crowd';
+  say('DESARAE — SUPERVISOR','You picked up Saturday voluntarily. That means I respect you, but I also question your judgment. Same section systems, busier patio energy.',[['Let’s make money.',null]]);
+ },50);
+}
+
 function startFridayShift(){
  saveCheckpoint('FRIDAY_SHIFT');
  gameDay='FRIDAY_SHIFT';stage=20;postShiftStep=0;serverTraining.active=false;serverTraining.finished=true;
  fridayShift.active=true;fridayShift.step=1;fridayShift.score=0;fridayShift.mistakes=0;fridayShift.tips=0;fridayShift.carrying='';
  fridayShift.tables.forEach(t=>{t.status='EMPTY';t.happiness=100});
+clearTrainingGuests();guestFlow.parties=[];guestFlow.hostEscort=null;guestFlow.barGuests=[];
+createParty('31',2);createParty('32',4);createParty('33',3);startBarTraffic();
  life.minutes=15*60+52;clockedIn=false;p.x=900;p.y=260;desarae.x=690;desarae.y=770;updateLifeHud();
  setFridayObjective('Clock in at POS 2');
  say('NARRATOR','FRIDAY · 3:52 PM. Your first real shift. Three tables, one Friday rush, and Desarae has officially stopped holding your hand.',[
@@ -585,8 +771,8 @@ TABLE 32 — 4 TOP
 TABLE 33 — 3 TOP
 Rotation: 31 → 32 → 33`;
  say('HOST STAND — SEATING CHART',chart,[
-  ['Confirm section.',()=>{fridayShift.step=3;fridayTable('31').status='SAT';setFridayObjective('Greet newly seated Table 31')}],
-  ['Ask why the tables are all at once.',()=>say('HOST','They are not all at once. Yet. Please do not manifest that.',[['Confirm section.',()=>{fridayShift.step=3;fridayTable('31').status='SAT';setFridayObjective('Greet newly seated Table 31')} ]])]
+  ['Confirm section.',()=>{fridayShift.step=3;fridayTable('31').status='SAT';beginHostEscort(partyForTable('31'));setFridayObjective('Follow the host to Table 31, then greet them')}],
+  ['Ask why the tables are all at once.',()=>say('HOST','They are not all at once. Yet. Please do not manifest that.',[['Confirm section.',()=>{fridayShift.step=3;fridayTable('31').status='SAT';beginHostEscort(partyForTable('31'));setFridayObjective('Follow the host to Table 31, then greet them')} ]])]
  ]);
 }
 function fridayShiftInteract(){
@@ -601,7 +787,7 @@ function fridayShiftInteract(){
  if(fridayShift.step===2&&dist(p,host)<150){showSeatingChart();return true}
 
  if(fridayShift.step===3&&Math.hypot(p.x-A.x,p.y-A.y)<155){
-  A.status='DRINKS';B.status='SAT';fridayShift.step=4;fridayGood(3,'Prompt greeting');
+  A.status='DRINKS';B.status='SAT';beginHostEscort(partyForTable('32'));fridayShift.step=4;fridayGood(3,'Prompt greeting');
   setFridayObjective('Greet Table 32');
   say('TABLE 31','A relaxed two-top orders a Coke and iced tea. They say they are in no rush.',[
    ['Warm greeting and mention the Southwest Rolls.',()=>fridayGood(2,'Suggested an appetizer')],
@@ -609,7 +795,7 @@ function fridayShiftInteract(){
   ]);return true;
  }
  if(fridayShift.step===4&&Math.hypot(p.x-B.x,p.y-B.y)<155){
-  B.status='DRINKS';C.status='SAT';fridayShift.step=5;setFridayObjective('Acknowledge needy Table 33');
+  B.status='DRINKS';C.status='SAT';beginHostEscort(partyForTable('33'));fridayShift.step=5;setFridayObjective('Acknowledge needy Table 33');
   say('TABLE 32','A four-top orders two waters, lemonade and a beer. They are friendly but ask several menu questions.',[
    ['Explain burger side substitutions accurately.',()=>fridayGood(3,'Menu knowledge')],
    ['Say every substitution is “probably free.”',()=>fridayMistake(3,'Invented pricing')]
@@ -803,24 +989,24 @@ function fridayShiftInteract(){
  if(fridayShift.step===31&&Math.hypot(p.x-500,p.y-720)<150){
   openTipEntry();return true;
  }
- if(fridayShift.step===32&&dist(p,desarae)<180){finishFridayShift();return true}
+ if(fridayShift.step===32&&dist(p,desarae)<220){finishFridayShift();return true}
  return false;
 }
 function openTipEntry(){
  document.getElementById('posTitle').textContent='POS 2 · CLOSEOUT';
  document.getElementById('posInstructions').innerHTML='Enter the handwritten tip from each signed receipt. Pay attention to decimal placement.';
  document.getElementById('posFields').innerHTML=`
- <div class="posGuest"><b>Table 31 · Check $48.20</b><label>Signed tip<input id="tip31" type="number" step="0.01" placeholder="10.00"></label></div>
- <div class="posGuest"><b>Table 32 · Check $96.40</b><label>Signed tip<input id="tip32" type="number" step="0.01" placeholder="19.00"></label></div>
- <div class="posGuest"><b>Table 33 · Check $71.75</b><label>Signed tip<input id="tip33" type="number" step="0.01" placeholder="14.00"></label></div>`;
+ <div class="posGuest"><b>Table 31 · Check $104.20</b><label>Signed tip<input id="tip31" type="number" step="0.01" value="22.00"></label></div>
+ <div class="posGuest"><b>Table 32 · Check $188.40</b><label>Signed tip<input id="tip32" type="number" step="0.01" value="38.00"></label></div>
+ <div class="posGuest"><b>Table 33 · Check $139.75</b><label>Signed tip<input id="tip33" type="number" step="0.01" value="28.00"></label></div>`;
  document.getElementById('posSubmit').textContent='ENTER TIPS & CLOSE CHECKS';
  posCallback=()=>{
   const vals=[Number(document.getElementById('tip31').value),Number(document.getElementById('tip32').value),Number(document.getElementById('tip33').value)];
-  const actual=[10,19,14],correct=vals.every((v,i)=>Math.abs(v-actual[i])<.01);
+  const actual=[22,38,28],correct=vals.every((v,i)=>Math.abs(v-actual[i])<.01);
   if(correct)fridayGood(8,'Entered tips accurately');else fridayMistake(8,'Incorrect tip entry');
   const entered=vals.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
   fridayShift.tips=Math.max(0,Math.round(entered*100)/100);
-  life.cash+=fridayShift.tips;life.checking+=62;updateLifeHud();
+  life.cash+=fridayShift.tips;life.checking+=economy.averageHourlyWages;updateLifeHud();
   fridayShift.tables.forEach(t=>t.status='PAID');fridayShift.step=32;setFridayObjective('Return to Desarae for Friday review');
   say('CLOSEOUT COMPLETE','Hourly wages deposited: $62 · Tips entered: $'+fridayShift.tips.toFixed(2),[['Find Desarae.',null]]);
  };
@@ -831,7 +1017,13 @@ function finishFridayShift(){
  const grade=s>=55?'A':s>=40?'B':s>=25?'C':'NEEDS ANOTHER TRAINING SHIFT';
  if(s>=55)achievement('SECTION SURVIVOR','Complete your detailed Friday section with an A.');
  else achievement('FIRST FRIDAY DOWN','Survive your first detailed Friday shift.');
- saveCheckpoint('FRIDAY_DONE');
+ career.fridayComplete=true;career.history.push({week:career.week,shift:'Friday',tips:fridayShift.tips,score:s});
+ if(career.pickedSaturday){
+  document.getElementById('obj').textContent='FRIDAY COMPLETE · Saturday shift added to Swim Schedule';
+ }else{
+  advanceDay(3);
+ }
+ saveCareer();saveCheckpoint('FRIDAY_DONE');
  document.getElementById('obj').textContent='FRIDAY COMPLETE · Grade '+grade+' · Tips $'+fridayShift.tips.toFixed(2);
  say('DESARAE — SUPERVISOR','Friday score: '+s+' · Mistakes: '+m+' · Grade: '+grade+'. You handled three tables, real modifiers, a needy table, prebussing, closeout, and a ranch-related workplace disaster.',[
   ['Did I level up?',()=>say('DESARAE — SUPERVISOR',s>=40?'Your reputation moved up. Better sections and less supervision are getting closer.':'Not yet. Promotions are built from patterns, accuracy and teamwork—not surviving one ranch tornado.',[['Fair.',null]])],
@@ -852,6 +1044,7 @@ function startServerTraining(){
  saveCheckpoint('TRAINING');
  gameDay='SERVER_TRAINING';serverTraining.active=true;serverTraining.step=1;serverTraining.score=0;serverTraining.mistakes=0;serverTraining.carrying='';serverTraining.startedAt=life.minutes;
  desarae.x=1060;desarae.y=800;
+clearTrainingGuests();const trainingParty=createParty('62',3);trainingParty.state='SEATED';seatParty(trainingParty);
  setServerObjective('Meet Desarae at Table 62');
  say('DESARAE — SUPERVISOR','Okay, '+p.name+'! One table. I’ll shadow you, but you’re doing the work. Greet them, get drinks, ring everything correctly, run food, check back, close the check. Easy! Except when it isn’t.',[
   ['Let’s do it.',null],
@@ -945,7 +1138,7 @@ function serverTrainingInteract(){
  return false;
 }
 function finishServerTraining(){
- serverTraining.finished=true;serverTraining.active=false;clockedIn=true;postShiftStep=1;
+ releaseParty('62');serverTraining.finished=true;serverTraining.active=false;clockedIn=true;postShiftStep=1;
  const s=serverTraining.score,m=serverTraining.mistakes;
  let grade=s>=24?'A':s>=18?'B':s>=11?'C':'NEEDS COACHING';
  let feedback=s>=24?'Fast, accurate, warm, and helpful. You looked like you belonged here.':
@@ -1095,6 +1288,12 @@ L('BAR',1025,575,24,'#f4c38c');
 for(let x=835;x<=1215;x+=48){R(x,458,8,28,'#c4a469',3);ctx.fillStyle='#eee';ctx.beginPath();ctx.arc(x+4-cam.x,455-cam.y,5,0,Math.PI*2);ctx.fill()}
 for(let x=825;x<=1225;x+=34)R(x,640,17,15,['#8c5b3f','#5c704f','#6c4b66'][Math.floor(x/34)%3],2);
 
+
+// actual bar stools around the outer rail
+for(let x=760;x<=1290;x+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(x-cam.x,335-cam.y,13,0,Math.PI*2);ctx.fill();R(x-4,347,8,18,'#2d2421',3)}
+for(let x=760;x<=1290;x+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(x-cam.x,785-cam.y,13,0,Math.PI*2);ctx.fill();R(x-4,797,8,18,'#2d2421',3)}
+for(let y=430;y<=680;y+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(1375-cam.x,y-cam.y,13,0,Math.PI*2);ctx.fill();R(1371,y+12,8,18,'#2d2421',3)}
+
 // host stand
 R(710,270,100,62,'#4a2f21',7);R(716,276,88,9,'#b68458',4);R(726,290,68,26,'#2d201a',3);
 R(734,293,52,18,'#d7c9ad',2);L('HOST',760,306,9,'#493629');
@@ -1155,14 +1354,18 @@ if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
   let col=ft.status==='EMPTY'?'#777':ft.status==='SAT'?'#f3ad67':ft.status==='PAID'?'#71b780':'#65b9d6';
   ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(ft.x-42-cam.x,ft.y-32-cam.y,84,64);
   L('T'+ft.id+' · '+ft.status,ft.x,ft.y+58,11,col);
-  if(ft.status!=='EMPTY'){
-   person({x:ft.x-45,y:ft.y-4},'#7d5872','');
-   person({x:ft.x+45,y:ft.y-4},'#4c6d7a','');
-   if(ft.id!=='31')person({x:ft.x,y:ft.y-50},'#65754c','');
-  }
+
  }
 }
 
+
+
+if(fridayShift.active&&fridayShift.step===31){
+ ctx.strokeStyle='#ffdc69';ctx.lineWidth=5;ctx.strokeRect(450-cam.x,680-cam.y,105,90);L('ENTER TIPS HERE',502,668,11,'#ffdc69')
+}
+if(fridayShift.active&&fridayShift.step===32){
+ ctx.strokeStyle='#ff9dcc';ctx.lineWidth=4;ctx.strokeRect(desarae.x-35-cam.x,desarae.y-55-cam.y,70,90);L('SHIFT REVIEW',desarae.x,desarae.y-68,11,'#ff9dcc')
+}
 
 if(fridayShift.incident&&!fridayShift.cleanup){
  const C=fridayTable('33');ctx.fillStyle='#e8e2d7';
@@ -1175,9 +1378,7 @@ if(serverTraining.active||serverTraining.finished){
  const T=serverTraining.table;
  // Highlight training table and seated guests.
  ctx.strokeStyle='#f3ad67';ctx.lineWidth=3;ctx.strokeRect(T.x-42-cam.x,T.y-32-cam.y,84,64);
- person({x:T.x-48,y:T.y-4},'#7d5872','');
- person({x:T.x+48,y:T.y-4},'#4c6d7a','');
- person({x:T.x,y:T.y-52},'#65754c','');
+
  L('TABLE 62',T.x,T.y+58,12,'#f3ad67');
  // Training highlights use the permanent POS 2 and permanent service well.
  // Pickup zones.
@@ -1185,6 +1386,8 @@ if(serverTraining.active||serverTraining.finished){
  if(serverTraining.step===9){ctx.strokeStyle='#ffcf67';ctx.lineWidth=4;ctx.strokeRect(330-cam.x,355-cam.y,82,390);L('FOOD READY',371,345,11,'#ffcf67')}
 }
 
+for(const party of guestFlow.parties)for(const g of party.members)drawCharacter(g,g.col,'');
+for(const bg of guestFlow.barGuests)drawCharacter(bg,bg.col,'');
 workers.forEach(drawWorker);
 person(kellen,'#5c4d3f','KELLEN');
 person(kyle,'#384f45','KYLE');
@@ -1372,6 +1575,17 @@ continueBtn.addEventListener('touchend',continueCheckpoint,{passive:false});
 document.getElementById('resetSave').onclick=()=>{localStorage.removeItem(CHECKPOINT_KEY);refreshContinueButton()};
 refreshContinueButton();
 
+
+const taskPanel=document.getElementById('taskPanel'),taskToggle=document.getElementById('taskToggle');
+const savedTaskCollapse=localStorage.getItem('406life_task_collapsed')==='1';
+if(savedTaskCollapse){taskPanel.classList.add('collapsed');taskToggle.textContent='+'}
+taskToggle.onclick=()=>{
+ taskPanel.classList.toggle('collapsed');
+ const collapsed=taskPanel.classList.contains('collapsed');
+ taskToggle.textContent=collapsed?'+':'−';
+ localStorage.setItem('406life_task_collapsed',collapsed?'1':'0');
+};
+
 syncPreview();
 
 document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefault();interact()},{passive:false});
@@ -1380,7 +1594,7 @@ function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
 function update(dt){
 updateTaskPanel();
-updateWorkers(dt);
+updateWorkers(dt);updateGuestFlow(dt);
 if(clockedIn&&!dialogue){
  life.minutes+=dt*.55;
  life.energy=clamp(life.energy-dt*.10,0,100);
@@ -1412,11 +1626,12 @@ if(fridayShift.active){
  else if([3,8,11,20,28].includes(F.step)&&Math.hypot(p.x-A.x,p.y-A.y)<160)pr='INTERACT · Table 31';
  else if([4,9,13,23,29].includes(F.step)&&Math.hypot(p.x-B.x,p.y-B.y)<160)pr='INTERACT · Table 32';
  else if([5,10,15,18,24,25,27,30].includes(F.step)&&Math.hypot(p.x-C.x,p.y-C.y)<160)pr='INTERACT · Table 33';
- else if([6,12,14,16,17,31].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
+ else if([6,12,14,16,17].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
+ else if(F.step===31&&Math.hypot(p.x-500,p.y-720)<180)pr='INTERACT · ENTER TIPS & CLOSE CHECKS';
  else if(F.step===7&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
  else if([19,22].includes(F.step)&&Math.hypot(p.x-350,p.y-500)<170)pr='INTERACT · Kitchen pass';
  else if([21,26].includes(F.step)&&Math.hypot(p.x-180,p.y-980)<155)pr='INTERACT · Bussing station';
- else if(F.step===32&&dist(p,desarae)<180)pr='INTERACT · Friday review';
+ else if(F.step===32&&dist(p,desarae)<220)pr='INTERACT · COMPLETE FRIDAY REVIEW';
 }
 
 if(postShiftStep===1&&Math.hypot(p.x-500,p.y-720)<140)pr='INTERACT · Clock out at POS 2';
