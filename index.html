@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v2.5</title><style>
+<title>406 Life v3.5</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -18,11 +18,22 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 #previewPerson{position:relative;width:70px;height:120px}.pvHead{position:absolute;left:20px;top:5px;width:32px;height:38px;border-radius:45%;background:#d69a70}.pvHair{position:absolute;left:18px;top:1px;width:36px;height:17px;border-radius:18px 18px 8px 8px;background:#2b1a13}.pvBody{position:absolute;left:8px;top:40px;width:56px;height:66px;border-radius:16px;background:#3f607f}.pvEye{position:absolute;top:20px;width:3px;height:3px;border-radius:50%;background:#211}.pvEye.l{left:28px}.pvEye.r{left:40px}.pvAccessory{position:absolute;z-index:8;pointer-events:none}
 #enterGame{position:relative;z-index:30;width:100%;padding:14px;border:0;border-radius:12px;background:#e78a43;color:#1a100a;font-weight:950;font-size:17px;touch-action:manipulation;cursor:pointer}
 @media(max-width:650px){.cg{grid-template-columns:1fr 1fr}#creator{align-items:flex-start}#creatorCard{margin:10px 0 30px}#preview{height:130px}}
+
+#lifeHud{position:absolute;right:14px;top:14px;width:220px;background:#17120de8;border:1px solid #ffffff20;border-radius:16px;padding:11px;pointer-events:none}
+.meterRow{display:grid;grid-template-columns:58px 1fr 28px;gap:7px;align-items:center;font-size:11px;margin:5px 0}.meter{height:8px;background:#ffffff18;border-radius:9px;overflow:hidden}.meterFill{height:100%;background:#eee;border-radius:9px}
+#phoneBtn{position:absolute;right:28px;bottom:158px;width:72px;height:72px;border-radius:22px;background:#24272d;border:2px solid #ffffff38;color:#fff;font-size:27px;pointer-events:auto;box-shadow:0 7px 25px #0008}
+#phone{position:fixed;z-index:40;inset:0;background:#0009;display:none;align-items:center;justify-content:center;pointer-events:auto}
+#phoneShell{width:min(390px,92vw);height:min(760px,88vh);background:#121417;border:7px solid #292b30;border-radius:38px;padding:18px;box-shadow:0 20px 70px #000;overflow:auto}
+#phoneTop{display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px}.appGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.app{background:#ffffff0d;border:1px solid #ffffff18;border-radius:18px;padding:13px 5px;color:#fff;text-align:center;font-size:12px;min-height:68px}.appIcon{font-size:27px;display:block;margin-bottom:5px}
+#appView{display:none}.phoneBack{background:#ffffff12;color:#fff;border:1px solid #ffffff20;border-radius:10px;padding:8px 12px;margin-bottom:12px}.card{background:#ffffff0c;border:1px solid #ffffff18;border-radius:14px;padding:12px;margin:9px 0}.shift{display:grid;grid-template-columns:1fr auto;gap:8px}.money{font-size:27px;font-weight:950}
+#achievement{position:fixed;z-index:60;top:22px;left:50%;transform:translate(-50%,-140px);width:min(430px,86vw);background:#241b15;border:2px solid #f3ad67;border-radius:18px;padding:15px;box-shadow:0 12px 40px #000b;transition:transform .35s ease;pointer-events:none}.achTitle{color:#f3ad67;font-weight:950;letter-spacing:.08em;font-size:11px}.achName{font-size:20px;font-weight:950;margin:3px 0}
+#repBox{font-size:11px;margin-top:7px;border-top:1px solid #ffffff18;padding-top:7px}
+.worldLabel{font-weight:900}
 </style></head><body><canvas id="g"></canvas>
 <div id="creator"><div id="creatorCard">
 <div style="color:#f3ad67;font-weight:900;letter-spacing:.15em">YOUR WHITEFISH STORY STARTS HERE</div>
 <h1>Create Your Character</h1><div style="color:#cfb9a3">You check your reflection before walking into Craggy to turn in an application.</div>
-<div id="preview"><div id="previewPerson"><div class="pvBody"></div><div class="pvHead"></div><div class="pvHair"></div><div class="pvEye l"></div><div class="pvEye r"></div><div class="pvAccessory"></div></div></div>
+<div id="preview"><canvas id="creatorCanvas" width="180" height="150" style="width:180px;height:150px"></canvas><div id="previewPerson" style="display:none"><div class="pvBody"></div><div class="pvHead"></div><div class="pvHair"></div><div class="pvEye l"></div><div class="pvEye r"></div><div class="pvAccessory"></div></div></div>
 <div class="cg">
 <label>First name<input id="charName" value="" placeholder="What should Tuff call you?"></label>
 <label>Pronouns<select id="charPronouns"><option>he/him</option><option>she/her</option><option>they/them</option><option>he/they</option><option>she/they</option></select></label>
@@ -34,7 +45,30 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 </div><button id="enterGame">LOOK GOOD. GO GET THE JOB →</button>
 </div></div>
 <div id="hud">
-<div id="top"><b>406 LIFE · WORLD BUILD v2.5</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="lifeHud">
+ <div style="display:flex;justify-content:space-between"><b>MON · 3:56 PM</b><b id="cashHud">$80</b></div>
+ <div class="meterRow"><span>ENERGY</span><div class="meter"><div class="meterFill" id="energyFill" style="width:88%"></div></div><span id="energyNum">88</span></div>
+ <div class="meterRow"><span>HUNGER</span><div class="meter"><div class="meterFill" id="hungerFill" style="width:76%"></div></div><span id="hungerNum">76</span></div>
+ <div class="meterRow"><span>STRESS</span><div class="meter"><div class="meterFill" id="stressFill" style="width:12%"></div></div><span id="stressNum">12</span></div>
+ <div id="repBox">CRAGGY REP · <span id="repText">NEW HIRE</span> <span id="repNum">0</span>/100</div>
+</div>
+<button id="phoneBtn">📱</button>
+<div id="phone"><div id="phoneShell">
+ <div id="phoneTop"><span>406 LIFE</span><span id="phoneClock">3:56 PM</span></div>
+ <div id="phoneHome"><h2 style="margin:5px 0 15px">Phone</h2><div class="appGrid">
+  <button class="app" data-app="swim"><span class="appIcon">🐟</span>Swim Schedule</button>
+  <button class="app" data-app="wallet"><span class="appIcon">👛</span>Wallet</button>
+  <button class="app" data-app="calendar"><span class="appIcon">📅</span>Calendar</button>
+  <button class="app" data-app="messages"><span class="appIcon">💬</span>Messages</button>
+  <button class="app" data-app="contacts"><span class="appIcon">☎️</span>Contacts</button>
+  <button class="app" data-app="achievements"><span class="appIcon">🏆</span>Achievements</button>
+ </div></div>
+ <div id="appView"><button class="phoneBack">← PHONE</button><div id="appContent"></div></div>
+ <button id="closePhone" style="width:100%;margin-top:18px;padding:11px;border-radius:12px;border:0;background:#ffffff18;color:white">CLOSE PHONE</button>
+</div></div>
+<div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
+
+<div id="top"><b>406 LIFE · LIFE SYSTEMS BUILD v3.5</b><div id="obj">Objective: Walk through the front entrance</div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
 <div class="joy" id="joy"><div id="stick"></div></div><button id="act">INTERACT</button></div>
 <script>
@@ -42,6 +76,56 @@ window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.styl
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
 const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None'};const host={x:950,y:345};const tuff={x:330,y:650};
+
+const life={
+ cash:80,checking:220,rent:750,rentDue:14,energy:88,hunger:76,stress:12,rep:0,
+ level:1,xp:0,achievements:[],minutes:15*60+56,phoneUnlocked:false,walletUnlocked:false,scheduleUnlocked:false,
+ mistakes:0,goodActions:0
+};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function updateLifeHud(){
+ document.getElementById('cashHud').textContent='$'+life.cash;
+ for(const k of ['energy','hunger','stress']){
+  document.getElementById(k+'Fill').style.width=life[k]+'%';document.getElementById(k+'Num').textContent=Math.round(life[k]);
+ }
+ document.getElementById('repNum').textContent=Math.round(life.rep);
+ document.getElementById('repText').textContent=life.rep<20?'NEW HIRE':life.rep<45?'RELIABLE-ish':life.rep<70?'CRAGGY REGULAR':life.rep<90?'TRUSTED EMPLOYEE':'CRAGGY LEGEND';
+ const hr=Math.floor(life.minutes/60)%24,min=Math.floor(life.minutes%60),ap=hr>=12?'PM':'AM',h=((hr+11)%12)+1;
+ const ts=h+':'+String(min).padStart(2,'0')+' '+ap;
+ document.querySelector('#lifeHud b:first-child').textContent='MON · '+ts;document.getElementById('phoneClock').textContent=ts;
+}
+function achievement(name,desc){
+ if(life.achievements.includes(name))return;
+ life.achievements.push(name);document.getElementById('achName').textContent=name;document.getElementById('achDesc').textContent=desc;
+ const a=document.getElementById('achievement');a.style.transform='translate(-50%,0)';setTimeout(()=>a.style.transform='translate(-50%,-140px)',3200);
+}
+function rep(delta,reason){
+ life.rep=clamp(life.rep+delta,0,100); if(delta<0)life.mistakes++;else life.goodActions++;
+ updateLifeHud();
+}
+function appHTML(app){
+ const job=getSavedJob();
+ const apps={
+ swim:`<h2>🐟 Swim Schedule</h2><div class="card"><b>MONDAY · 4:00 PM</b><br>${job} · Orientation / Training<br><small>Trainer: ${getTrainer().name}</small></div><div class="card"><b>FRIDAY · 4:00 PM</b><br>${job}<br><small>Estimated emotional damage: Severe</small></div><div class="card"><b>OPEN SHIFT</b><br>Saturday · 4:00 PM · Server<br><small>Estimated earnings: $247</small></div><div class="card"><small>MANAGER NOTE</small><br>No, the schedule will not be rewritten because you forgot about your cousin's birthday.</div>`,
+ wallet:`<h2>👛 Wallet</h2><div class="card"><small>CASH</small><div class="money">$${life.cash}</div></div><div class="card"><small>CHECKING</small><div class="money">$${life.checking}</div></div><div class="card"><small>RENT DUE IN ${life.rentDue} DAYS</small><div class="money">$${life.rent}</div><small>Your apartment currently contains optimism and almost no furniture.</small></div>`,
+ calendar:`<h2>📅 Calendar</h2><div class="card"><b>Today</b><br>4:00 PM · Craggy Orientation</div><div class="card"><b>Friday</b><br>4:00 PM · First real shift</div><div class="card"><b>In ${life.rentDue} days</b><br>🏠 Rent due · $${life.rent}</div><div class="card"><b>Coming soon</b><br>Whitefish events, birthdays, parties, game nights, and bad decisions.</div>`,
+ messages:`<h2>💬 Messages</h2><div class="card"><b>Jay</b><br>Orientation at 4. Come a few minutes early.</div><div class="card"><b>Tuff</b><br>Bring a pen. This is me telling you now so you cannot say nobody told you.</div>`,
+ contacts:`<h2>☎️ Contacts</h2><div class="card">Tuff · Manager</div><div class="card">Jay · GM</div><div class="card">Kellen · Manager</div><div class="card">Kyle · Manager</div><div class="card">Jelena · Bartender 💗</div><div class="card">Craggy Range</div>`,
+ achievements:`<h2>🏆 Achievements</h2>${life.achievements.length?life.achievements.map(x=>'<div class="card"><b>'+x+'</b></div>').join(''):'<div class="card">Nothing yet. Try not to disappoint Tuff immediately.</div>'}`
+ };
+ return apps[app]||'';
+}
+function openPhone(){if(!life.phoneUnlocked){say('NARRATOR','You do have a phone, but Jay has not finished setting up your new Whitefish life systems yet.',[['Fine. I’ll be patient.',null]]);return}document.getElementById('phone').style.display='flex';}
+document.getElementById('phoneBtn').addEventListener('pointerdown',e=>{e.preventDefault();openPhone()});
+document.getElementById('closePhone').onclick=()=>document.getElementById('phone').style.display='none';
+document.querySelector('.phoneBack').onclick=()=>{document.getElementById('appView').style.display='none';document.getElementById('phoneHome').style.display='block'};
+document.querySelectorAll('.app').forEach(b=>b.onclick=()=>{
+ document.getElementById('phoneHome').style.display='none';document.getElementById('appView').style.display='block';document.getElementById('appContent').innerHTML=appHTML(b.dataset.app);
+ if(gameDay==='ORIENTATION'&&orientationStep===1&&b.dataset.app==='swim'){orientationStep=2;life.scheduleUnlocked=true;document.getElementById('obj').textContent='Orientation: Talk to Jay after checking Swim Schedule'}
+ if(gameDay==='ORIENTATION'&&orientationStep===3&&b.dataset.app==='wallet'){orientationStep=4;document.getElementById('obj').textContent='Orientation: Follow Jay to the time clock';jay.x=1080;jay.y=810}
+});
+updateLifeHud();
+
 let cam={x:0,y:0},keys={},joy={x:0,y:0},stage=0,dialogue=false,follow=false;
 addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
 function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.fill()}
@@ -84,12 +168,117 @@ function playerPerson(n){
 
 
 const workers=[
- {id:'bartender1',role:'BARTENDER',name:'JELENA',x:760,y:520,col:'#6c4b3b',route:[[760,520],[900,500],[1080,500],[1180,570],[1080,650],[850,650]],ri:0,s:58,line:'If you need Tuff, he is probably walking very fast toward a problem.'},
+ {id:'bartender1',role:'BARTENDER',name:'JELENA',x:760,y:520,col:'#6c4b3b',route:[[760,520],[900,500],[1080,500],[1180,570],[1080,650],[850,650]],ri:0,s:58,friendship:0,line:'If you need Tuff, he is probably walking very fast toward a problem.'},
  {id:'bartender2',role:'BARTENDER',name:'BARTENDER',x:1120,y:620,col:'#455f72',route:[[1120,620],[1180,560],[1080,500],[900,500],[720,560]],ri:0,s:48,line:'First day? My professional advice is: learn where the ranch is and never say “it’s slow.”'},
  {id:'barback',role:'BARBACK',name:'BARBACK',x:980,y:710,col:'#76545c',route:[[980,700],[760,690],[660,610],[760,470],[1050,470],[1210,600]],ri:0,s:72,line:'I have ice, glassware, and seventeen things to do. What’s up?'},
  {id:'server',role:'SERVER',name:'SERVER',x:520,y:820,col:'#4b657b',route:[[520,820],[520,700],[360,610],[470,525],[520,700],[850,850],[720,850]],ri:0,s:78,carry:true,line:'I’m running food. If you see someone standing at the pass staring into space, yell “HANDS!”'},
  {id:'busser',role:'BUSSER',name:'BUSSER',x:1350,y:800,col:'#526f5c',route:[[1350,800],[1450,670],[1620,670],[1450,490],[1200,820],[980,850],[720,850]],ri:0,s:70,bus:true,line:'I’m bussing this whole planet one ranch cup at a time.'}
 ];
+
+let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
+const jay={x:950,y:345,name:'JAY'};
+const kellen={x:260,y:520,name:'KELLEN'};
+const kyle={x:690,y:470,name:'KYLE'};
+
+function specialWorkerTalk(n){
+ if(n.name!=='JELENA')return false;
+ n.friendship=(n.friendship||0)+1;
+ const j=[
+  'Oh, you’re the new hire. Tuff interviewed you? Be honest—how many times did he mention ranch?',
+  'My professional advice: never say “slow,” never steal my bar rag, and if Tuff starts speed-walking, get out of the lane.',
+  'Hot goss costs one friendship point. Congratulations, you now have '+n.friendship+'.',
+  'You seem fun. Survive orientation and then we can discuss who is secretly dating whom. Allegedly.'
+ ];
+ say('JELENA — BARTENDER',j[(n.friendship-1)%j.length],[['Ask for hot goss.',()=>say('JELENA — BARTENDER','Absolutely not on your first five minutes. Earn it. But watch the patio after close. That is all I’m saying.',[['I knew I liked you.',null]])],['Ask about Tuff.',()=>say('JELENA — BARTENDER','He acts scary when service is messy, then sends a heartfelt staff appreciation post at midnight. You’ll figure him out.',[['That tracks.',null]])],['Let her work.',null]]);
+ return true;
+}
+function startOrientation(){
+ gameDay='ORIENTATION';stage=10;orientationStep=0;clockedIn=false;life.minutes=15*60+56;
+ p.x=950;p.y=255;tuff.x=330;tuff.y=650;updateLifeHud();
+ document.getElementById('obj').textContent='Orientation: Find Jay at the host stand';
+ say('NARRATOR','MONDAY · 3:56 PM. Two weeks ago you left the big city. Now you live in Whitefish, Montana, your apartment is mostly empty, rent is coming, and your first job here starts in four minutes. No pressure.',[
+  ['Walk inside and find Jay.',null],
+  ['What could possibly go wrong?',()=>say('NARRATOR','A dangerous thing to say inside a restaurant.',[['Go find Jay.',null]])]
+ );
+}
+function orientationInteract(){
+ if(gameDay!=='ORIENTATION')return false;
+ if(orientationStep===0&&dist(p,jay)<145){
+  orientationStep=1;life.phoneUnlocked=true;achievement('NEW NUMBER, WHO DIS?','Jay added the Craggy crew to your phone.');
+  document.getElementById('obj').textContent='Orientation: Open your phone and check Swim Schedule';
+  say('JAY — GENERAL MANAGER','You must be '+p.name+'. Welcome to Craggy. First thing: your phone. I added the important contacts. Open Swim Schedule and check today’s shift.',[
+   ['Open phone.',()=>openPhone()],
+   ['Is it called Schedule Fly?',()=>say('JAY — GENERAL MANAGER','Legally? Maybe. Here? Swim Schedule. Montana branding. Tuff insisted.',[['Open Swim Schedule.',()=>openPhone()]])]
+  ]);return true;
+ }
+ if(orientationStep===2&&dist(p,jay)<155){
+  orientationStep=3;life.walletUnlocked=true;document.getElementById('obj').textContent='Orientation: Open Wallet and check your rent';
+  say('JAY — GENERAL MANAGER','Good. Swim Schedule is where you check shifts, offered shifts, and requests off. Now open Wallet. You moved to Whitefish with $80 cash, $220 in checking, and rent due in fourteen days. So—welcome to Montana. Beautiful views, aggressive housing costs.',[
+   ['Open Wallet.',()=>openPhone()],
+   ['Can I pay rent in vibes?',()=>say('JAY — GENERAL MANAGER','Your landlord has reviewed the proposal and requested actual money.',[['Fine. Show me Wallet.',()=>openPhone()]])]
+  ]);return true;
+ }
+ if(orientationStep===4&&dist(p,jay)<150){
+  orientationStep=5;document.getElementById('obj').textContent='Orientation: Interact with the time clock';
+  say('JAY — GENERAL MANAGER','Clocking in starts the shift timer. While you work, Energy and Hunger slowly fall. Mistakes raise Stress and can hurt Craggy Reputation. One mistake won’t ruin you. Repeating the same mistake will absolutely annoy Tuff.',[
+   ['What happens if I’m late?',()=>say('JAY — GENERAL MANAGER','You unlock a very special achievement.',[['That sounds bad.',null]])],
+   ['Got it. Clock in, work well, get paid.',null]
+  ]);return true;
+ }
+ if(orientationStep===5&&Math.hypot(p.x-1080,p.y-850)<130){
+  clockedIn=true;orientationStep=6;life.minutes=16*60;rep(3,'On time');
+  achievement('NOT DISAPPOINTING TUFF','Clock in on time for your first orientation shift.');
+  document.getElementById('obj').textContent='Orientation: Walk the restaurant with Jay';
+  say('TIME CLOCK','CLOCKED IN · 4:00 PM',[['Start the building tour.',()=>startBuildingTour()]]);return true;
+ }
+ if(orientationStep>=6&&orientationStep<=11){return tourInteract()}
+ if(orientationStep===12){
+  const trainer=getTrainer();
+  if(dist(p,trainer)<150){orientationStep=13;tutorialDone=true;rep(5,'Completed orientation');
+   document.getElementById('obj').textContent='Orientation complete · Explore and talk to coworkers';
+   const role=getSavedJob();
+   say(trainer.name+' — TRAINER','All right, '+p.name+'. You’re training as '+role+'. First rule: ask questions. Second: move with purpose. Third: when somebody yells “HANDS,” they mean you too.',[
+    ['I was born ready.',()=>say(trainer.name+' — TRAINER','That confidence will either be useful or hilarious. We’ll find out next shift.',[['Orientation complete.',null]])],
+    ['I’m tired, Grandpa.',()=>{life.stress=clamp(life.stress+2,0,100);updateLifeHud();say(trainer.name+' — TRAINER','WELL THAT’S TOO DAMN BAD. Apparently Tuff trained you already.',[['Okay okay 😂',null]])}]
+   ]);return true;}
+ }
+ return false;
+}
+const tourStops=[
+ {x:950,y:345,name:'HOST STAND',text:'This is the host stand: wait list, reservations, seating rotation, and the first person blamed for a table that chose to sit themselves.'},
+ {x:1320,y:520,name:'BAR',text:'The bar is a working zone. Don’t cut through it, don’t steal fruit, and never ask a bartender if they are busy while they are visibly making nine drinks.'},
+ {x:285,y:520,name:'KITCHEN PASS',text:'The pass connects FOH and BOH. Finished food lands here. If expo yells “HANDS,” bring food. Standing nearby pretending not to hear is a reputation choice.'},
+ {x:180,y:805,name:'PATIO DOORS',text:'These garage doors lead to the patio. In summer, this section prints money and destroys step counts.'},
+ {x:500,y:850,name:'SERVER STATION',text:'Server stations are for drinks, silverware, side work, and discovering that every ranch cup in Montana has disappeared at once.'},
+ {x:330,y:650,name:'406 SIGN',text:'Landmark unlocked: the 406 sign. If you get lost, orient yourself here. If Tuff is missing, there is a suspiciously high chance he is nearby.'}
+];
+let tourIndex=0;
+function startBuildingTour(){tourIndex=0;orientationStep=6;document.getElementById('obj').textContent='Tour: Go to '+tourStops[0].name}
+function tourInteract(){
+ const s=tourStops[tourIndex];
+ if(Math.hypot(p.x-s.x,p.y-s.y)<150){
+  say('JAY — GENERAL MANAGER',s.text,[['Next stop.',()=>{tourIndex++;orientationStep++;if(tourIndex<tourStops.length)document.getElementById('obj').textContent='Tour: Go to '+tourStops[tourIndex].name;else finishTour()}]]);
+  return true;
+ }
+ return false;
+}
+function finishTour(){
+ orientationStep=12;const tr=getTrainer(),job=getSavedJob();
+ document.getElementById('obj').textContent='Orientation: Find '+tr.name+' for '+job+' training';
+ say('JAY — GENERAL MANAGER','That’s the building. You’re assigned to '+job+', so '+tr.name+' takes it from here. Work well, your reputation rises and better shifts and promotions unlock. Make mistakes, learn from them. Keep making the same mistakes? Your career gets very slow.',[
+  ['Go find '+tr.name+'.',null],
+  ['So no promotion for being cute?',()=>say('JAY — GENERAL MANAGER','Tuff has already tried to submit that policy. HR declined it.',[['Worth a shot.',null]])]
+ ]);
+}
+
+function getSavedJob(){try{return JSON.parse(localStorage.getItem('406life_v23')||'{}').job||'SERVER'}catch(e){return 'SERVER'}}
+function getTrainer(){const j=getSavedJob();if(j==='LINE COOK')return kellen;if(j==='BARTENDER'||j==='EXPO')return kyle;return tuff}
+function trainerIntro(){
+ const tr=getTrainer(),job=getSavedJob();
+ document.getElementById('obj').textContent='Orientation: Find '+tr.name+' for '+job+' training';
+ say('JAY — GENERAL MANAGER','You’re assigned to '+job+'. '+tr.name+' will finish your first training shift. Go find them—and yes, getting lost counts as unpaid cardio.',[['Go find '+tr.name+'.',null]]);
+}
+
 function updateWorkers(dt){
  for(const n of workers){
   const t=n.route[n.ri],dx=t[0]-n.x,dy=t[1]-n.y,m=Math.hypot(dx,dy);
@@ -114,6 +303,7 @@ function nearestWorker(max=125){
  return best;
 }
 function talkWorker(n){
+ if(specialWorkerTalk(n))return;
  const lines={
   BARTENDER:[
    n.line,
@@ -138,16 +328,35 @@ R(875,180,150,65,'#33251f');L('FRONT ENTRANCE',950,220,13,'#ffd09c');
 R(175,330,68,470,'#3b3028');R(184,405,50,310,'#b8c8bf');R(182,345,54,48,'#211b18');R(182,728,54,54,'#211b18');L('KITCHEN',285,500,13,'#f3d2ad');L('PASS',285,520,13,'#f3d2ad');
 [[320,275],[455,275],[585,300],[335,505],[470,525],[345,655],[500,675],[720,850],[850,850],[980,850],[1110,850],[1240,850]].forEach(a=>table(a[0],a[1]));
 R(600,410,700,350,'#3a2820',18);R(635,445,630,280,'#704730',12);R(690,485,520,200,'#2a211d',10);L('CENTER BAR',950,590,24,'#f4c38c');
+
+// TVs, jersey decor, ski photos, taps, bottles, place settings and warm lights
+for(const tv of [[700,350],[900,350],[1100,350]]){R(tv[0],tv[1],130,70,'#15191c',5);R(tv[0]+6,tv[1]+6,118,58,'#334b59',3);L('LIVE SPORTS',tv[0]+65,tv[1]+40,10,'#d8edf5')}
+R(1320,245,90,110,'#24201d',5);R(1330,255,70,90,'#b9aa85',4);L('VGK',1365,307,18,'#2b2925');
+R(1430,245,120,85,'#2a2521',5);R(1440,255,100,65,'#d8e3e6',3);L('SKI',1490,292,17,'#65777d');
+R(1570,245,120,85,'#2a2521',5);R(1580,255,100,65,'#e4edf0',3);L('WHITEFISH',1630,292,10,'#65777d');
+for(let x=735;x<=1165;x+=55){R(x,465,8,28,'#c4a469',3);ctx.fillStyle='#eee';ctx.beginPath();ctx.arc(x+4-cam.x,462-cam.y,5,0,Math.PI*2);ctx.fill()}
+for(let x=680;x<=1220;x+=36){R(x,700,18,15,['#8c5b3f','#5c704f','#6c4b66'][Math.floor(x/36)%3],2)}
+
 for(let xx=650;xx<1270;xx+=70){ctx.fillStyle='#943b34';ctx.beginPath();ctx.arc(xx-cam.x,392-cam.y,12,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(xx-cam.x,778-cam.y,12,0,Math.PI*2);ctx.fill()}
 [[300,310],[430,310],[560,330],[300,450],[430,470],[300,590],[430,610],[300,730],[430,740]].forEach(a=>table(a[0],a[1]));
 [[1450,310],[1620,310],[1450,490],[1620,490],[1450,670],[1620,670]].forEach(a=>table(a[0],a[1]));
 [[330,850],[470,850],[610,850],[330,1020],[470,1020],[610,1020]].forEach(a=>table(a[0],a[1]));
 for(let yy=370;yy<1050;yy+=95){R(1510,yy,220,65,'#693b32',12);R(1525,yy+11,190,43,'#834b40',9)}L('7 BOOTHS',1620,340,15,'#f5d2a9');
-R(40,680,90,250,'#78a8b7');for(let gy=700;gy<920;gy+=45)R(45,gy,80,4,'#d9e4e7');L('PATIO GARAGE DOORS →',230,810,15);R(110,610,210,80,'#302821',6);L('406',215,666,42,'#ffb25d');
-R(900,320,100,58,'#5c3d2b',8);L('HOST STAND',950,355,11,'#ffe0bd');
+R(40,680,90,250,'#5f8d9d');for(let gy=685;gy<930;gy+=48){R(44,gy,82,42,'#88b9c8');R(44,gy,82,3,'#dce7e8')}R(82,680,5,250,'#dce7e8');L('PATIO →',180,810,13,'#f7e4c9');R(110,610,210,80,'#26211d',6);R(118,618,194,64,'#6d6258',4);
+ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',215,666,42,'#ffb25d');ctx.shadowBlur=0;
+L('MONTANA',215,680,9,'#f1d0a4');
+R(902,322,96,52,'#4a2f21',7);R(908,326,84,8,'#b68458',4);R(918,338,64,25,'#2d201a',3);
+R(926,330,48,25,'#d7c9ad',2);L('WAIT LIST',950,349,8,'#493629');
+R(890,377,120,8,'#2a211d',4);
 [[1130,340],[520,350],[1400,800],[750,850],[1180,930]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
 person(host,'#8b5c45','HOST');
 workers.forEach(drawWorker);
+if(gameDay==='ORIENTATION'){
+ person(jay,'#384f68','JAY');
+ person(kellen,'#5c4d3f','KELLEN');
+ person(kyle,'#384f45','KYLE');
+ R(1040,815,80,70,'#222',8);L('TIME',1080,842,11,'#f3ad67');L('CLOCK',1080,858,11,'#f3ad67');
+}
 person(tuff,'#5b7658','TUFF');playerPerson(p);
 }
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -168,6 +377,7 @@ function blocked(nx,ny){
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
+ if(orientationInteract())return;
  const nw=nearestWorker(); if(nw){talkWorker(nw);return;}
  if(stage===1&&dist(p,host)<145){
    stage=2;document.getElementById('obj').textContent='Objective: Ask the host where to find Tuff';
@@ -220,7 +430,13 @@ function hire(job,trainer){stage=6;document.getElementById('obj').textContent='O
  ['What if I’m late?',()=>say('TUFF — MANAGER','Then your first game achievement will be “Disappointed Tuff.” It is not rare.',[['I’ll be early.',()=>saveHire(job)]])],
  ['Do employees get hot goss immediately or after training?',()=>say('TUFF — MANAGER','Benefits begin immediately. Context arrives never.',[['Perfect. I accept.',()=>saveHire(job)]])]
  ])}
-function saveHire(job){localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit,style:p.style,accessory:p.accessory}));say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[['Finish Phase 1',null]])}
+function saveHire(job){
+ localStorage.setItem('406life_v23',JSON.stringify({name:p.name,pronouns:p.pronouns,job:job,skin:p.skin,hair:p.hair,outfit:p.outfit,style:p.style,accessory:p.accessory}));
+ say('TUFF — MANAGER','Welcome to Craggy, '+p.name+'. Enjoy your last peaceful weekend.',[
+  ['Start Monday orientation →',()=>startOrientation()],
+  ['Stay and explore for a minute.',null]
+ ]);
+}
 
 function syncPreview(){
  const skin=document.getElementById('charSkin').value;
@@ -251,6 +467,33 @@ function syncPreview(){
  if(acc==='Round glasses') a.style.cssText+='left:20px;top:16px;width:13px;height:13px;border:2px solid #332;border-radius:50%;box-shadow:17px 0 0 -2px transparent,17px 0 0 0 #332';
  if(acc==='Gold chain') a.style.cssText+='left:27px;top:48px;width:18px;height:12px;border:2px solid #e7c34c;border-top:0;border-radius:0 0 50% 50%';
  if(acc==='Pink cowboy hat') a.style.cssText+='left:10px;top:-12px;width:52px;height:10px;background:#ff69b4;border-radius:50%;box-shadow:12px -8px 0 2px #ff69b4';
+
+ const pc=document.getElementById('creatorCanvas'),c=pc.getContext('2d');c.clearRect(0,0,pc.width,pc.height);
+ const cx=90,cy=72;
+ let oc=outfit==='tie-dye'?null:outfit;
+ if(oc)c.fillStyle=oc;else{let g=c.createLinearGradient(70,60,110,120);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');c.fillStyle=g}
+ c.beginPath();c.roundRect(cx-22,cy,44,58,12);c.fill();
+ c.fillStyle=skin;c.beginPath();c.arc(cx,cy-18,19,0,Math.PI*2);c.fill();
+ let hc=hair;if(hc==='tie-dye'){let g=c.createLinearGradient(65,25,115,60);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');c.fillStyle=g}else c.fillStyle=hc;
+ if(style!=='Bald'){c.beginPath();
+  if(style==='Mohawk'){c.moveTo(cx-7,cy-35);c.lineTo(cx,cy-62);c.lineTo(cx+7,cy-35);c.arc(cx,cy-26,17,Math.PI,Math.PI*2)}
+  else if(style==='Afro')c.arc(cx,cy-30,28,0,Math.PI*2);
+  else if(style==='Long'){c.arc(cx,cy-29,22,Math.PI,Math.PI*2);c.fill();c.fillRect(cx-22,cy-29,8,43);c.fillRect(cx+14,cy-29,8,43);c.beginPath()}
+  else if(style==='Braids'){c.arc(cx,cy-29,18,Math.PI,Math.PI*2);c.fill();c.fillRect(cx-21,cy-26,6,45);c.fillRect(cx+15,cy-26,6,45);c.beginPath()}
+  else if(style==='Bun'){c.arc(cx,cy-29,18,Math.PI,Math.PI*2);c.fill();c.beginPath();c.arc(cx,cy-48,10,0,Math.PI*2)}
+  else if(style==='Ponytail'){c.arc(cx,cy-29,18,Math.PI,Math.PI*2);c.fill();c.beginPath();c.ellipse(cx+23,cy-18,8,25,-.2,0,Math.PI*2)}
+  else if(style==='Curly'){c.arc(cx,cy-31,22,Math.PI,Math.PI*2);c.arc(cx-14,cy-30,10,0,Math.PI*2);c.arc(cx+14,cy-30,10,0,Math.PI*2)}
+  else if(style==='Shaggy')c.ellipse(cx,cy-29,23,17,0,Math.PI,Math.PI*2);
+  else if(style==='Fade')c.arc(cx,cy-30,15,Math.PI,Math.PI*2);
+  else c.arc(cx,cy-30,18,Math.PI,Math.PI*2);
+  c.fill();
+ }
+ c.fillStyle='#241b17';c.beginPath();c.arc(cx-7,cy-20,2,0,Math.PI*2);c.arc(cx+7,cy-20,2,0,Math.PI*2);c.fill();
+ if(acc==='Sunglasses'){c.strokeStyle='#111';c.lineWidth=4;c.strokeRect(cx-15,cy-25,12,8);c.strokeRect(cx+3,cy-25,12,8);c.beginPath();c.moveTo(cx-3,cy-21);c.lineTo(cx+3,cy-21);c.stroke()}
+ if(acc==='Round glasses'){c.strokeStyle='#332';c.lineWidth=2;c.beginPath();c.arc(cx-9,cy-21,7,0,Math.PI*2);c.arc(cx+9,cy-21,7,0,Math.PI*2);c.stroke()}
+ if(acc==='Gold chain'){c.strokeStyle='#e7c34c';c.lineWidth=3;c.beginPath();c.arc(cx,cy+12,13,0,Math.PI);c.stroke()}
+ if(acc==='Pink cowboy hat'){c.fillStyle='#ff69b4';c.fillRect(cx-28,cy-48,56,7);c.beginPath();c.ellipse(cx,cy-53,18,12,0,Math.PI,Math.PI*2);c.fill()}
+
 }
 function enterWorld(e){
  if(e){e.preventDefault();e.stopPropagation();}
@@ -281,11 +524,27 @@ function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
 function update(dt){
 updateWorkers(dt);
+if(clockedIn&&!dialogue){
+ life.minutes+=dt*1.4;
+ life.energy=clamp(life.energy-dt*.10,0,100);
+ life.hunger=clamp(life.hunger-dt*.075,0,100);
+ if(life.energy<20)life.stress=clamp(life.stress+dt*.04,0,100);
+ updateLifeHud();
+ if(life.energy<15)achievement('I’M TIRED, GRANDPA','Reach critically low energy during a shift.');
+}
 if(!dialogue){let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x,dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+joy.y,m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}let nx=p.x+dx*p.s*dt,ny=p.y+dy*p.s*dt;if(!blocked(nx,p.y))p.x=nx;if(!blocked(p.x,ny))p.y=ny}
 if(stage===0&&p.y>220){stage=1;document.getElementById('obj').textContent='Objective: Turn in your application at the host stand';say('NARRATOR','You step inside Craggy Range. TVs glow over the bar, silverware clatters, and somebody is already in the weeds.',[['Find the host stand.',null]])}
 if(follow){let tx=1480,ty=1000,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(m>10){tuff.x+=dx/m*115*dt;tuff.y+=dy/m*115*dt}else{follow=false;stage=4;document.getElementById('obj').textContent='Objective: Sit with Tuff for your interview'}}
 cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
-let pr='';if(stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(stage===2&&dist(p,tuff)<145)pr='INTERACT · Talk to Tuff';if(stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
+let pr='';
+if(gameDay==='ORIENTATION'){
+ if((orientationStep===0||orientationStep===2)&&dist(p,jay)<155)pr='INTERACT · Talk to Jay';
+ else if(orientationStep===4&&dist(p,jay)<150)pr='INTERACT · Continue with Jay';
+ else if(orientationStep===5&&Math.hypot(p.x-1080,p.y-850)<130)pr='INTERACT · Clock in';
+ else if(orientationStep>=6&&orientationStep<=11){const ts=tourStops[tourIndex];if(ts&&Math.hypot(p.x-ts.x,p.y-ts.y)<150)pr='INTERACT · Learn about '+ts.name}
+ else if(orientationStep===12&&dist(p,getTrainer())<150)pr='INTERACT · Start training with '+getTrainer().name;
+}
+if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(stage===2&&dist(p,tuff)<145)pr='INTERACT · Talk to Tuff';if(stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 </script></body></html>
