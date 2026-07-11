@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v7.1</title><style>
+<title>406 Life v7.2</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · REGULARS, GOSSIP & WALK-IN v7.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · RESTAURANT CLEANUP & WALK-IN v7.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -517,7 +517,7 @@ const kellen={x:350,y:500,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
 
 const dietCokeDave={
- name:'DIET COKE DAVE',x:760,y:350,col:'#7d755f',
+ name:'DIET COKE DAVE',x:1245,y:335,col:'#7d755f',
  skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',
  accessory:'Sunglasses',moving:false,walkPhase:0,regular:true
 };
@@ -804,7 +804,7 @@ function addBarGuest(seatX,seatY){
  const g=makeGuest(940,230,['#776080','#4d6d79','#6a7550'][guestFlow.barGuests.length%3]);
  Object.assign(g,{seatX,seatY,state:'ARRIVING'});guestFlow.barGuests.push(g)
 }
-function startBarTraffic(){dietCokeDave.x=760;dietCokeDave.y=350;if(guestFlow.barGuests.length)return;addBarGuest(760,350);addBarGuest(920,350);addBarGuest(1080,350)}
+function startBarTraffic(){dietCokeDave.x=1245;dietCokeDave.y=335;if(guestFlow.barGuests.length)return;addBarGuest(760,350);addBarGuest(920,350);addBarGuest(1080,350)}
 
 
 const recovery={
@@ -823,7 +823,7 @@ function applyRecovery(type){
 
 function walkInInteraction(){
  if(dialogue)return false;
- if(p.x>155&&p.x<225&&p.y>1040&&p.y<1180){
+ if(p.x>85&&p.x<175&&p.y>1030&&p.y<1190){
   socialWorld.walkInVisits++;
   say('WALK-IN COOLER','Cold air, stacked kegs, cases of water, Red Bull and approximately six seconds of peace.',[
    ['Drink water.',()=>{applyRecovery('water');say('NARRATOR','You drink water beside the kegs like a responsible adult hiding from responsibility.',[['Refreshing.',null]])}],
@@ -1522,6 +1522,10 @@ function talkWorker(n){
 function draw(){
 ctx.fillStyle='#4a4d4e';ctx.fillRect(0,0,W,H);
 R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
+// structural walls and trim
+R(40,190,1820,18,'#49362c');R(40,1192,1820,18,'#49362c');
+R(40,190,18,1020,'#49362c');R(1842,190,18,1020,'#49362c');
+R(320,340,105,425,'#59473b',5);
 // subtle floor planks and warm overhead pools
 for(let yy=210;yy<1200;yy+=34)R(45,yy,1810,2,'#8d6a4d');
 for(const light of [[760,310],[1025,520],[350,520],[980,930]]){ctx.fillStyle='#ffe0a512';ctx.beginPath();ctx.arc(light[0]-cam.x,light[1]-cam.y,115,0,Math.PI*2);ctx.fill()}
@@ -1569,7 +1573,7 @@ R(710,270,100,62,'#4a2f21',7);R(716,276,88,9,'#b68458',4);R(726,290,68,26,'#2d20
 R(734,293,52,18,'#d7c9ad',2);L('HOST',760,306,9,'#493629');
 
 // POS 1 / POS 3 / POS 2
-for(const q of [[500,340,'POS 1'],[260,470,'POS 3'],[500,720,'POS 2']]){
+for(const q of [[455,340,'POS 1'],[255,470,'POS 3'],[500,720,'POS 2']]){
  R(q[0]-42,q[1]-30,84,60,'#292d30',8);R(q[0]-30,q[1]-20,60,30,'#9dc1c7',4);L(q[2],q[0],q[1]+22,11,'#1e3338');
 }
 R(536,692,24,42,'#17191b',5);R(541,698,14,12,'#79c79b',2);L('TIME',548,726,7,'#f3ad67');
@@ -1579,16 +1583,20 @@ R(205,530,70,190,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,62
 R(455,530,70,190,'#6d6258',6);L('DRINK',490,605,10,'#f1e1ca');L('STATION',490,620,9,'#f1e1ca');
 
 // tables per supplied plan
-[[130,275],[300,275],[470,275],[150,380],[330,380],[130,840],[300,840],[470,840],
- [1470,285],[1640,285],[1780,285],[1470,430],[1640,430],
- [760,820],[980,820],[1200,820],[760,960],[980,960],[1200,960]].forEach(a=>table(a[0],a[1]));
+[[140,290],[325,290],[510,290],[180,435],[380,435],
+ [145,850],[330,850],[515,850],
+ [1435,300],[1435,455],
+ [760,835],[1000,835],[1240,835],
+ [760,980],[1000,980],[1240,980]].forEach(a=>table(a[0],a[1]));
 
 // east booth row
+// east wall and booth row
+R(1788,250,72,860,'#5c493c',6);
 for(let yy=300;yy<=1030;yy+=120){
- R(1540,yy,240,72,'#693b32',12);R(1555,yy+12,210,48,'#834b40',9);
- R(1488,yy+18,58,36,'#704c34',6);R(1504,yy+8,4,12,'#f1c27a',2);
+ R(1545,yy,218,72,'#693b32',12);R(1560,yy+12,188,48,'#834b40',9);
+ R(1488,yy+18,54,36,'#704c34',6);R(1504,yy+8,4,12,'#f1c27a',2);
 }
-L('BOOTH ROW',1660,275,13,'#f5d2a9');
+L('BOOTH ROW',1655,275,13,'#f5d2a9');
 
 // patio garage doors along south wall
 R(620,1080,720,90,'#5f8d9d');for(let x=630;x<1330;x+=115){R(x,1088,105,72,'#88b9c8');R(x,1088,4,72,'#dce7e8')}
@@ -1601,25 +1609,26 @@ L('BUSSING',180,957,10,'#eef4f5');L('STATION',180,1018,9,'#eef4f5');
 
 
 // walk-in cooler behind the bussing station
-R(70,1035,260,150,'#aeb9bd',8);R(88,1050,92,120,'#dce5e8',5);R(195,1050,115,120,'#89979c',5);
-L('WALK-IN',200,1068,12,'#263238');
-L('COOLER',200,1084,12,'#263238');
-for(let y=1095;y<=1145;y+=25){R(212,y,78,12,'#64777e',3)}
-for(let x=218;x<=278;x+=20){ctx.fillStyle='#d94141';ctx.fillRect(x-cam.x,1102-cam.y,10,22);ctx.fillStyle='#2c7cc4';ctx.fillRect(x-cam.x,1130-cam.y,10,22)}
-for(let x=105;x<=165;x+=28){ctx.fillStyle='#8f8f8f';ctx.beginPath();ctx.arc(x-cam.x,1110-cam.y,11,0,Math.PI*2);ctx.fill();R(x-9,1110,18,42,'#6f777a',4)}
-R(285,1100,10,28,'#4d585c',3);
-
+R(70,1035,280,150,'#7f8d92',8);
+R(82,1048,76,124,'#dbe4e7',5);L('DOOR',120,1110,9,'#36464b');
+R(170,1048,165,124,'#aeb9bd',5);L('WALK-IN COOLER',252,1067,11,'#263238');
+R(178,1080,66,76,'#66777d',4);L('KEGS',211,1122,9,'#eef4f5');
+R(252,1080,36,76,'#d94141',4);L('RED',270,1112,7,'#fff');L('BULL',270,1123,7,'#fff');
+R(296,1080,30,76,'#5ea6cf',4);L('H2O',311,1121,8,'#fff');
+R(145,1090,10,28,'#4d585c',3);
+L('ENTER HERE',120,1178,8,'#f4dfad');
 // west wall 406 sign
 R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
 ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',195,860,9,'#f1d0a4');
 
 // decor
 for(const tv of [[850,300],[1050,300],[1250,300]]){R(tv[0],tv[1],120,62,'#15191c',5);R(tv[0]+6,tv[1]+6,108,50,'#334b59',3);L('LIVE SPORTS',tv[0]+60,tv[1]+35,9,'#d8edf5')}
-R(1420,520,90,110,'#24201d',5);R(1430,530,70,90,'#b9aa85',4);L('VGK',1465,582,18,'#2b2925');
-R(1420,650,100,78,'#2a2521',5);R(1430,660,80,58,'#d8e3e6',3);
-ctx.fillStyle='#8da4b0';ctx.beginPath();ctx.moveTo(1436-cam.x,712-cam.y);ctx.lineTo(1470-cam.x,670-cam.y);ctx.lineTo(1504-cam.x,712-cam.y);ctx.fill();
-ctx.strokeStyle='#30363b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1474-cam.x,682-cam.y);ctx.lineTo(1464-cam.x,698-cam.y);ctx.lineTo(1480-cam.x,704-cam.y);ctx.stroke();
-L('SKI PHOTO',1470,722,8,'#65777d');
+// east wall art beyond booth backs
+R(1810,505,72,108,'#24201d',5);R(1818,515,56,88,'#b9aa85',4);L('VGK',1846,565,15,'#2b2925');
+R(1804,635,80,90,'#2a2521',5);R(1812,644,64,72,'#d8e3e6',3);
+ctx.fillStyle='#8da4b0';ctx.beginPath();ctx.moveTo(1818-cam.x,706-cam.y);ctx.lineTo(1844-cam.x,658-cam.y);ctx.lineTo(1870-cam.x,706-cam.y);ctx.fill();
+ctx.strokeStyle='#30363b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1848-cam.x,674-cam.y);ctx.lineTo(1838-cam.x,693-cam.y);ctx.lineTo(1854-cam.x,699-cam.y);ctx.stroke();
+L('SKI PHOTO',1844,720,8,'#65777d');
 
 // ambient staff/guests
 [[1400,800],[620,340],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
@@ -1678,10 +1687,13 @@ if(serverTraining.active){
 
 for(const party of guestFlow.parties)for(const g of party.members)drawCharacter(g,g.col,'');
 for(const bg of guestFlow.barGuests)drawCharacter(bg,bg.col,'');
-drawCharacter(dietCokeDave,dietCokeDave.col,'DIET COKE DAVE');
-ctx.fillStyle='#d9e9f1';ctx.fillRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
-ctx.fillStyle='#5b3a22';ctx.fillRect(dietCokeDave.x+22-cam.x,dietCokeDave.y-5-cam.y,6,13);
-ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
+if(stage>=6){
+ drawCharacter(dietCokeDave,dietCokeDave.col,'DIET COKE DAVE');
+L("DAVE'S STOOL",dietCokeDave.x,dietCokeDave.y+46,8,'#f1d2a8');
+ ctx.fillStyle='#d9e9f1';ctx.fillRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
+ ctx.fillStyle='#5b3a22';ctx.fillRect(dietCokeDave.x+22-cam.x,dietCokeDave.y-5-cam.y,6,13);
+ ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
+}
 workers.forEach(drawWorker);
 person(kellen,'#5c4d3f','KELLEN');
 person(kyle,'#384f45','KYLE');
@@ -1701,10 +1713,18 @@ const solidRects=[
  {x:330,y:355,w:82,h:390},
  {x:75,y:430,w:75,h:330},
  {x:205,y:530,w:70,h:190},{x:455,y:530,w:70,h:190}
+
 ,
- {x:70,y:1035,w:100,h:150},{x:210,y:1035,w:120,h:150},{x:170,y:1035,w:40,h:18}
+ {x:70,y:1035,w:12,h:150},{x:158,y:1035,w:192,h:150},{x:82,y:1035,w:76,h:14}
 ];
-const tableBlocks=[[130,275],[300,275],[470,275],[150,380],[330,380],[130,840],[300,840],[470,840],[1470,285],[1640,285],[1780,285],[1470,430],[1640,430],[760,820],[980,820],[1200,820],[760,960],[980,960],[1200,960],[1660,336],[1660,456],[1660,576],[1660,696],[1660,816],[1660,936],[1660,1056]];
+const tableBlocks=[
+ [140,290],[325,290],[510,290],[180,435],[380,435],
+ [145,850],[330,850],[515,850],
+ [1435,300],[1435,455],
+ [760,835],[1000,835],[1240,835],
+ [760,980],[1000,980],[1240,980],
+ [1660,336],[1660,456],[1660,576],[1660,696],[1660,816],[1660,936],[1660,1056]
+];
 function blocked(nx,ny){
  if(nx<50||ny<50||nx>1850||ny>1200)return true;
  for(const s of solidRects)if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
@@ -1715,9 +1735,8 @@ function blocked(nx,ny){
 function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
- if(dist(p,dietCokeDave)<150){dietCokeDaveTalk();return}
  if(stage>=6&&dist(p,tuff)<165&&socialWorld.gossipClues.length>0){tuffGossipTalk();return}
- if(Math.hypot(p.x-1470,p.y-690)<120){
+ if(Math.hypot(p.x-1844,p.y-685)<120){
   say('SKI PHOTO','This photo of the skier hiking the mountain is absolutely Nick Winn.',[
    ['That is definitely Nick Winn.',null],
    ['Enhance.',()=>say('SKI PHOTO','The pixels refuse to cooperate, but spiritually? Nick Winn.',[['Case closed.',null]])]
@@ -1729,6 +1748,9 @@ function interact(){
  if(postShiftInteract())return;
  if(serverTrainingInteract())return;
  if(orientationInteract())return;
+ if(stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150){
+  dietCokeDaveTalk();return;
+ }
  const nw=nearestWorker(); if(nw){talkWorker(nw);return;}
  const nm=nearestManager(); if(nm){talkManager(nm);return;}
  if(stage===1&&dist(p,host)<145){
@@ -1956,9 +1978,10 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep>=6&&orientationStep<=11){const ts=tourStops[tourIndex];if(ts&&Math.hypot(p.x-ts.x,p.y-ts.y)<150)pr='INTERACT · Learn about '+ts.name}
  else if(orientationStep===12&&dist(p,getTrainer())<150)pr='INTERACT · Start training with '+getTrainer().name;
 }
-if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1470,p.y-690)<120)pr='INTERACT · Inspect ski photo';if(!pr&&!fridayShift.active&&!serverTraining.active&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Employee break';
-if(!pr&&p.x>155&&p.x<225&&p.y>1040&&p.y<1180)pr='INTERACT · Walk-in cooler';
+if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1844,p.y-685)<120)pr='INTERACT · Inspect ski photo';if(!pr&&!fridayShift.active&&!serverTraining.active&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Employee break';
+if(!pr&&p.x>85&&p.x<175&&p.y>1030&&p.y<1190)pr='INTERACT · ENTER WALK-IN COOLER';
 if(!pr&&!fridayShift.active&&Math.hypot(p.x-395,p.y-650)<130)pr='INTERACT · Suspicious walk-in Red Bull';
+if(!pr && stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150)pr='INTERACT · Talk to Diet Coke Dave';
 const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
