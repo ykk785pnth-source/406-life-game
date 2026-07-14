@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v9.0</title><style>
+<title>406 Life v9.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -94,7 +94,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.style.display='block';q.textContent='Game error: '+m+' · line '+l;};
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
-const world={w:3050,h:1380};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
+const world={w:1900,h:1250,minY:-860};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
 
 
 const career={
@@ -311,11 +311,21 @@ function taskRows(){
    ['Clock in at POS 2',orientationStep>5],
    ['Tour 1: Host Stand',orientationStep>6],
    ['Tour 2: Service Well & Bar Entry',orientationStep>7],
-   ['Tour 3: Kitchen Pass',orientationStep>8],
-   ['Tour 4: POS 2 & Time Clock',orientationStep>9],
-   ['Tour 5: Center Bar',orientationStep>10],
-   ['Tour 6: Patio Garage Doors',orientationStep>11],
-   ['Find your trainer',orientationStep>12]
+   ['Tour 3: POS 2 & Time Clock',orientationStep>8],
+   ['Tour 4: Center Bar',orientationStep>9],
+   ['Tour 5: Patio Garage Doors',orientationStep>10],
+   ['Tour 6: Kitchen Swinging Doors',orientationStep>11],
+   ['Tour 7: Salad Line',orientationStep>12],
+   ['Tour 8: Prep Tables',orientationStep>13],
+   ['Tour 9: Prep Stove',orientationStep>14],
+   ['Tour 10: Prep Wall',orientationStep>15],
+   ['Tour 11: Fryers & Grill',orientationStep>16],
+   ['Tour 12: Hot-Line Working Aisle',orientationStep>17],
+   ['Tour 13: Cold Line',orientationStep>18],
+   ['Tour 14: Kitchen Pass',orientationStep>19],
+   ['Tour 15: Fry Freezer',orientationStep>20],
+   ['Tour 16: Dish Corridor',orientationStep>21],
+   ['Find your trainer',orientationStep>22]
   ];
   return rows;
  }
@@ -639,7 +649,7 @@ const kyle={x:820,y:500,name:'KYLE'};
 
 
 const maverick={
- name:'MAVERICK',x:2200,y:500,col:'#6f6e82',
+ name:'MAVERICK',x:1100,y:-360,col:'#6f6e82',
  skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',
  moving:false,walkPhase:0,facing:'down',bandana:true,paintClothes:true
 };
@@ -775,11 +785,11 @@ function orientationInteract(){
   document.getElementById('obj').textContent='Orientation: Walk the restaurant with Jay';
   say('TIME CLOCK','CLOCKED IN · 4:00 PM',[['Start the building tour.',()=>startBuildingTour()]]);return true;
  }
- if(orientationStep>=6&&orientationStep<=11){return tourInteract()}
- if(orientationStep===12){
+ if(orientationStep>=6&&orientationStep<=21){return tourInteract()}
+ if(orientationStep===22){
   const trainer=getTrainer();
   if(dist(p,trainer)<175){
-   orientationStep=13;tutorialDone=true;rep(5,'Completed orientation');
+   orientationStep=23;tutorialDone=true;rep(5,'Completed orientation');
    const role=getSavedJob();
    if(role==='SERVER'||role==='HOST'){
     say('DESARAE — SUPERVISOR','Orientation is over. Now you get one supervised table. I’ll train you through the entire service cycle—greeting, drinks, POS, food, check-back, payment, and tip.',[
@@ -799,20 +809,30 @@ function orientationInteract(){
 }
 const tourStops=[
  {x:760,y:300,name:'HOST STAND',text:'This is the host stand: wait list, reservations, seating rotation, and the first person blamed for a table that chose to sit themselves.'},
- {x:800,y:430,name:'SERVICE WELL & BAR ENTRY',text:'This is the service well and the open staff entrance into the bar. Servers pick up drinks here; bartenders use the opening to get in and out. Keep the lane clear.'},
- {x:350,y:500,name:'KITCHEN PASS',text:'The pass connects FOH and BOH. Finished food lands here. If expo yells “HANDS,” bring food. Standing nearby pretending not to hear is a reputation choice.'},
- {x:500,y:720,name:'POS 2 & TIME CLOCK',text:'POS 2 contains the time clock. Ring orders accurately, check modifiers, and clock in before you start working—not after Tuff notices you have been here for twenty minutes.'},
- {x:1080,y:520,name:'BAR',text:'The bar has an outer guest rail, an open staff entrance on the kitchen-pass side, a bartender walkway, and a center island with taps and liquor.'},
- {x:980,y:1040,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. In summer, this section prints money and destroys step counts.'}
+ {x:800,y:430,name:'SERVICE WELL & BAR ENTRY',text:'Servers pick up drinks here. Keep the lane clear and never make Jelena hunt for her bar rag.'},
+ {x:500,y:720,name:'POS 2 & TIME CLOCK',text:'POS 2 contains the time clock. Ring accurately and clock in before Tuff notices you working for free.'},
+ {x:1080,y:520,name:'CENTER BAR',text:'The bar has a guest rail, staff entry, bartender walkway, taps, bottles, and Diet Coke Dave’s permanent ecosystem.'},
+ {x:980,y:1040,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. Summer money lives out there, along with twelve thousand steps.'},
+ {x:470,y:125,name:'KITCHEN SWINGING DOORS',text:'These swinging doors lead north into the kitchen. Call corner, behind, hot, and sharp. Silence is how people collide.'},
+ {x:430,y:-650,name:'SALAD LINE',text:'The salad line runs horizontally against the street wall. Salads, cold bowls, garnishes, dressings, and a shocking number of no-onion tickets.'},
+ {x:355,y:-470,name:'PREP TABLES',text:'Prep tables handle slicing, portioning, labeling, and every task that keeps service from collapsing later.'},
+ {x:685,y:-250,name:'PREP STOVE',text:'The prep stove handles soup, sauces, and stock. Do not eyeball eighteen quarts of anything unless you enjoy consequences.'},
+ {x:817,y:-330,name:'PREP WALL',text:'This solid wall separates prep from the hot line. It is a wall—not a walkway. We have now documented this extensively.'},
+ {x:970,y:-500,name:'FRYERS & GRILL',text:'Fryers, grill, and sauté run vertically beside the prep wall. This side is hot, loud, and not a sightseeing lane.'},
+ {x:1165,y:-330,name:'HOT-LINE WORKING AISLE',text:'This aisle belongs to cooks working fry, grill, and sauté. Use callouts and do not park yourself in it.'},
+ {x:1350,y:-330,name:'COLD LINE',text:'The cold line is its own vertical station against the wall. It is separate from the kitchen pass.'},
+ {x:1527,y:-330,name:'KITCHEN PASS',text:'The kitchen pass is the separate vertical station on the far right. Finished plates land here and expo calls HANDS.'},
+ {x:775,y:-690,name:'FRY FREEZER',text:'The fry freezer sits against the street wall. Restock it before the rush, not while three people are asking for tots.'},
+ {x:1570,y:245,name:'DISH CORRIDOR',text:'This corridor leads down to dish. Bus tubs, dirty plates, clean racks, and the heartbeat nobody appreciates until it stops.'}
 ];
 let tourIndex=0,tourJayLeading=false;
 function startBuildingTour(){
  tourIndex=0;orientationStep=6;tourJayLeading=true;
  const s=tourStops[0];
- document.getElementById('obj').textContent='Tour 1/6: Follow Jay to '+s.name;
+ document.getElementById('obj').textContent='Tour 1/16: Follow Jay to '+s.name;
 }
 function advanceJayTour(dt){
- if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>11||!tourJayLeading)return;
+ if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>21||!tourJayLeading)return;
  const s=tourStops[tourIndex],dx=s.x-jay.x,dy=s.y-jay.y,m=Math.hypot(dx,dy);
  if(m>12){
   jay.moving=true;jay.walkPhase=(jay.walkPhase||0)+dt*9;
@@ -820,7 +840,7 @@ function advanceJayTour(dt){
   jay.x+=dx/m*78*dt;jay.y+=dy/m*78*dt;
  }else{
   jay.x=s.x;jay.y=s.y;jay.moving=false;tourJayLeading=false;
-  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/6: Interact with Jay at ${s.name}`;
+  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/16: Interact with Jay at ${s.name}`;
  }
 }
 function tourInteract(){
@@ -830,7 +850,7 @@ function tourInteract(){
    tourIndex++;orientationStep++;
    if(tourIndex<tourStops.length){
     tourJayLeading=true;
-    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/6: Follow Jay to ${tourStops[tourIndex].name}`;
+    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/16: Follow Jay to ${tourStops[tourIndex].name}`;
    }else finishTour();
   }]]);
   return true;
@@ -838,7 +858,7 @@ function tourInteract(){
  return false;
 }
 function finishTour(){
- orientationStep=12;const tr=getTrainer(),job=getSavedJob();
+ orientationStep=22;const tr=getTrainer(),job=getSavedJob();
  document.getElementById('obj').textContent='Orientation: Find '+tr.name+' for '+job+' training';
  say('JAY — GENERAL MANAGER','That’s the building. You’re assigned to '+job+', so '+tr.name+' takes it from here. Work well, your reputation rises and better shifts and promotions unlock. Make mistakes, learn from them. Keep making the same mistakes? Your career gets very slow.',[
   ['Go find '+tr.name+'.',null],
@@ -1108,31 +1128,39 @@ function setFridayObjective(t){document.getElementById('obj').textContent='FRIDA
 
 const kitchenWorld={
  unlocked:true,
- entered:false,
+ minY:-860,
  stations:[
-  {id:'salad',name:'SALAD LINE',x:1950,y:255,w:250,h:85,color:'#e84d9b'},
-  {id:'fryFreezer',name:'FRY FREEZER',x:2240,y:250,w:170,h:65,color:'#e84d9b'},
-  {id:'prep1',name:'PREP TABLE',x:1970,y:430,w:125,h:190,color:'#e84d9b'},
-  {id:'prep2',name:'PREP TABLE',x:1970,y:760,w:125,h:190,color:'#e84d9b'},
-  {id:'prep3',name:'PREP TABLE',x:2260,y:390,w:110,h:145,color:'#e84d9b'},
-  {id:'prepStove',name:'PREP STOVE',x:2260,y:590,w:110,h:145,color:'#e84d9b'},
-  {id:'fryers',name:'FRYERS',x:2440,y:390,w:125,h:145,color:'#e84d9b'},
-  {id:'grill',name:'GRILL',x:2440,y:590,w:125,h:145,color:'#e84d9b'},
-  {id:'saute',name:'SAUTÉ',x:2440,y:790,w:125,h:145,color:'#e84d9b'},
-  {id:'coldLine',name:'COLD LINE',x:2730,y:355,w:110,h:590,color:'#65d8c8'},
-  {id:'kitchenPass',name:'KITCHEN PASS',x:2870,y:355,w:80,h:590,color:'#c9b18a'}
+  {id:'salad',name:'SALAD LINE',x:300,y:-760,w:260,h:95,color:'#d84b91'},
+  {id:'fryFreezer',name:'FRY FREEZER',x:660,y:-755,w:230,h:78,color:'#d84b91'},
+  {id:'prep1',name:'PREP TABLE',x:285,y:-565,w:145,h:185,color:'#d84b91'},
+  {id:'prep2',name:'PREP TABLE',x:285,y:-310,w:145,h:185,color:'#d84b91'},
+  {id:'prep3',name:'PREP TABLE',x:620,y:-590,w:130,h:160,color:'#d84b91'},
+  {id:'prepStove',name:'PREP STOVE',x:620,y:-335,w:130,h:175,color:'#d84b91'},
+  {id:'fryers',name:'FRYERS',x:900,y:-600,w:145,h:165,color:'#d84b91'},
+  {id:'grill',name:'GRILL',x:900,y:-360,w:145,h:165,color:'#d84b91'},
+  {id:'saute',name:'SAUTÉ',x:900,y:-115,w:145,h:145,color:'#d84b91'},
+  {id:'coldLine',name:'COLD LINE',x:1290,y:-650,w:120,h:625,color:'#61d3c0'},
+  {id:'kitchenPass',name:'KITCHEN PASS',x:1480,y:-650,w:95,h:625,color:'#c9aa7e'}
  ],
  walls:[
-  {x:2375,y:355,w:45,h:590},
-  {x:1900,y:190,w:1100,h:18},
-  {x:1900,y:1030,w:1000,h:34}
+  {x:790,y:-635,w:55,h:600},             // prep wall
+  {x:80,y:-820,w:1640,h:24},             // street wall
+  {x:80,y:-820,w:24,h:990},              // west wall
+  {x:1696,y:-820,w:24,h:990},            // east wall
+  {x:80,y:155,w:245,h:28},               // south wall left
+  {x:425,y:155,w:90,h:28},                // between swing doors
+  {x:615,y:155,w:1081,h:28}               // south wall right
  ],
- hallway:{x:1900,y:1030,w:1000,h:125},
- dishCorridor:{x:2820,y:1030,w:130,h:330},
- entrance:{x:1845,y:960,w:70,h:120}
+ hallway:{x:105,y:35,w:1570,h:120},
+ dishCorridor:{x:1480,y:155,w:180,h:245},
+ doors:[
+  {x:325,y:145,w:100,h:50,name:'WEST KITCHEN DOOR'},
+  {x:515,y:145,w:100,h:50,name:'EAST KITCHEN DOOR'}
+ ],
+ mechanical:{x:105,y:-790,w:175,h:190}
 };
 function kitchenStation(id){return kitchenWorld.stations.find(s=>s.id===id)}
-function inKitchen(){return p.x>1900&&p.x<3000&&p.y>190&&p.y<1360}
+function inKitchen(){return p.x>80&&p.x<1720&&p.y>-820&&p.y<180}
 function nearStation(id,r=130){
  const s=kitchenStation(id);if(!s)return false;
  const cx=s.x+s.w/2,cy=s.y+s.h/2;
@@ -1409,7 +1437,7 @@ ${shiftEngine.tables.map(x=>'Table '+x.id+' · '+x.party+' top').join('\n')}`,[
   shiftEngine.carrying='';t.status='COOKING';setDynamicPhase('PICKUP_FOOD',`Answer HANDS at the kitchen pass`);
   say(`TABLE ${t.id}`,'Drinks delivered. The order is cooking. Expo calls for hands.',[['Head to the pass.',null]]);return true;
  }
- if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x-350,p.y-500)<175){
+ if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x-1527,p.y+330)<175){
   shiftEngine.carrying='food';setDynamicPhase('DELIVER_FOOD',`Run hot food to Table ${t.id}`);
   say('EXPO',`Table ${t.id} is up. Verify the modifiers before leaving the window.`,[
    ['Verify every plate.',()=>{shiftEngine.score+=2}],
@@ -1650,7 +1678,7 @@ function fridayShiftInteract(){
    ['“It came from the exact same container.”',()=>fridayMistake(1,'Destroyed the ranch illusion')]
   ]);return true;
  }
- if(fridayShift.step===19&&Math.hypot(p.x-350,p.y-500)<165){
+ if(fridayShift.step===19&&Math.hypot(p.x-1527,p.y+330)<165){
   fridayShift.carrying='food';fridayShift.step=20;setFridayObjective('Run Table 31 food');
   achievement('FRIDAY HANDS','Answer the pass during your first real rush.');
   say('EXPO','31 is up. Classic Cheese no onion and Baja Tacos. Read the ticket before you move.',[
@@ -1669,7 +1697,7 @@ function fridayShiftInteract(){
   fridayShift.step=22;setFridayObjective('Run Tables 32 and 33 food');
   say('BUSSING STATION','Dishes dropped safely. Somewhere, a dishwasher briefly believes in teamwork.',[['Answer the next HANDS call.',null]]);return true;
  }
- if(fridayShift.step===22&&Math.hypot(p.x-350,p.y-500)<165){
+ if(fridayShift.step===22&&Math.hypot(p.x-1527,p.y+330)<165){
   fridayShift.carrying='food';fridayShift.step=23;setFridayObjective('Run Table 32 food');
   say('EXPO','32 and 33 are both up. Table 32 first. Protect the salad modifier and the bison burger.',[['Verify everything.',()=>fridayGood(4,'Protected complex tickets')]]);return true;
  }
@@ -1835,7 +1863,7 @@ function serverTrainingInteract(){
    ['Three bowls of ranch',()=>{serverMistake(3,'Ranch is not an entrée');serverTraining.step=9;setServerObjective('Pick up the actual food at the kitchen pass');}]
   ]);return true;
  }
- if(serverTraining.step===9&&Math.hypot(p.x-350,p.y-500)<160){
+ if(serverTraining.step===9&&Math.hypot(p.x-1527,p.y+330)<160){
   serverTraining.carrying='food';serverTraining.step=10;setServerObjective('Run food to Table 62');
   achievement('I NEED HANDS!','Answer the expo call and pick up food.');
   say('EXPO','HANDS! Table 62. Burger no onion, chicken sandwich, fries. Check the ticket before you leave.',[
@@ -2001,6 +2029,11 @@ for(let yy=210;yy<1200;yy+=34)R(45,yy,1810,2,'#8d6a4d');
 for(const light of [[760,310],[1025,520],[350,520],[980,930]]){ctx.fillStyle='#ffe0a512';ctx.beginPath();ctx.arc(light[0]-cam.x,light[1]-cam.y,115,0,Math.PI*2);ctx.fill()}
 for(let i=0;i<1900;i+=130)R(i,95,75,5,'#d9ca86');
 
+
+// openings in the north wall for swinging kitchen doors
+R(325,180,100,42,'#a17b59',0);R(515,180,100,42,'#a17b59',0);
+L('KITCHEN',375,205,8,'#f5d2a9');L('KITCHEN',565,205,8,'#f5d2a9');
+
 // north garage windows + entrance
 R(80,195,560,25,'#83b9cb');R(1260,195,560,25,'#83b9cb');
 L('GARAGE WINDOWS',360,245,13,'#eaf9ff');L('GARAGE WINDOWS',1540,245,13,'#eaf9ff');
@@ -2090,39 +2123,121 @@ R(145,1042,10,28,'#4d585c',3);
 L('WALK THROUGH DOOR',120,1028,8,'#f4dfad');
 
 
-// doorway from dining room into the new kitchen wing
-R(1842,900,18,160,'#2f251f',2);
-L('KITCHEN →',1810,940,10,'#ffe1a8');
+// NORTH CRAGGY KITCHEN — fully connected to dining room
+R(80,-820,1640,1000,'#d8d0c1',10);
+R(80,-820,1640,24,'#4e4942');
+L('STREET WALL',900,-785,16,'#27231f');
 
-// CRAGGY KITCHEN — official layout
-R(1900,190,1100,1165,'#d8d3c8',8);
-R(1900,190,1100,18,'#66615a');
-L('STREET WALL',2450,180,13,'#2f2a25');
-
-// mechanical/crawl-space room
-R(1900,208,180,180,'#3466d8',12);
-L('MECHANICAL',1990,260,11,'#fff');
-L('CRAWL SPACE',1990,278,11,'#fff');
-L('ENTRANCE',1990,296,11,'#fff');
-
-// stations
-for(const s of kitchenWorld.stations){
- R(s.x,s.y,s.w,s.h,s.color,8);
- L(s.name,s.x+s.w/2,s.y+s.h/2,11,s.id==='coldLine'?'#153a34':'#2d2028');
+// textured commercial tile floor
+for(let yy=-780;yy<155;yy+=42){
+ for(let xx=110;xx<1690;xx+=42){
+  R(xx,yy,40,40,((xx/42+yy/42)%2===0)?'#d7d1c6':'#cec8bc',1);
+ }
 }
+
+// mechanical / crawl-space room
+R(105,-790,175,190,'#3564cc',14);
+R(122,-770,140,150,'#284c9f',8);
+L('MECHANICAL',192,-720,12,'#fff');
+L('CRAWL SPACE',192,-700,12,'#fff');
+L('ACCESS',192,-680,11,'#fff');
+R(145,-650,95,20,'#1f356d',4);
+
+// salad station details
+R(300,-760,260,95,'#d84b91',9);
+R(315,-742,230,55,'#ece8df',6);
+for(let x=330;x<=520;x+=38){R(x,-730,26,24,['#6ead5a','#d9bf63','#b65e4c','#ece1c5'][Math.floor(x/38)%4],4)}
+L('SALAD LINE',430,-675,13,'#442334');
+
+// fry freezer
+R(660,-755,230,78,'#d84b91',9);
+R(678,-740,194,45,'#c6d7dc',6);
+for(let x=695;x<=845;x+=38)R(x,-730,28,25,'#e7edf0',3);
+L('FRY FREEZER',775,-670,13,'#442334');
+
+// prep tables
+for(const id of ['prep1','prep2','prep3']){
+ const s=kitchenStation(id);R(s.x,s.y,s.w,s.h,'#d84b91',9);
+ R(s.x+12,s.y+12,s.w-24,34,'#d9ddd9',4);
+ for(let y=s.y+58;y<s.y+s.h-15;y+=35)R(s.x+18,y,s.w-36,22,'#ece8df',3);
+}
+L('PREP',357,-470,12,'#442334');L('PREP',357,-215,12,'#442334');L('PREP',685,-500,12,'#442334');
+
+// prep stove
+R(620,-335,130,175,'#d84b91',9);R(635,-318,100,140,'#4f5355',5);
+for(const a of [[660,-285],[705,-285],[660,-225],[705,-225]]){ctx.fillStyle='#202426';ctx.beginPath();ctx.arc(a[0]-cam.x,a[1]-cam.y,17,0,Math.PI*2);ctx.fill()}
+L('PREP STOVE',685,-145,11,'#442334');
+
 // prep wall
-R(2375,355,45,590,'#8c8984',5);L('PREP WALL',2397,650,11,'#1e1d1c');
-// bottom hallway
-R(kitchenWorld.hallway.x,kitchenWorld.hallway.y,kitchenWorld.hallway.w,kitchenWorld.hallway.h,'#b8b4ad',4);
-L('KITCHEN WALKWAY',2400,1095,14,'#3e3a35');
-// dish corridor
-R(kitchenWorld.dishCorridor.x,kitchenWorld.dishCorridor.y,kitchenWorld.dishCorridor.w,kitchenWorld.dishCorridor.h,'#aaa7a2',4);
-L('TO DISH',2885,1200,12,'#3b3834');
-// entry from dining room
-R(1845,960,70,120,'#5e493c',4);L('KITCHEN',1880,1018,9,'#f4d4ad');
-// subtle traffic arrows
-ctx.strokeStyle='#8c8a84';ctx.lineWidth=3;
-ctx.beginPath();ctx.moveTo(1950-cam.x,1095-cam.y);ctx.lineTo(2820-cam.x,1095-cam.y);ctx.stroke();
+R(790,-635,55,600,'#8c8881',5);
+for(let y=-610;y<-50;y+=45)R(798,y,39,4,'#77736d');
+L('PREP WALL',817,-330,12,'#272522');
+
+// hot line: fryer, grill, saute
+const fryer=kitchenStation('fryers');R(fryer.x,fryer.y,fryer.w,fryer.h,'#d84b91',9);
+R(915,-580,52,120,'#565b5d',4);R(980,-580,52,120,'#565b5d',4);
+for(const x of [941,1006]){ctx.strokeStyle='#e3c36b';ctx.lineWidth=3;ctx.strokeRect(x-18-cam.x,-558-cam.y,36,45)}
+L('FRYERS',972,-420,13,'#442334');
+
+const grill=kitchenStation('grill');R(grill.x,grill.y,grill.w,grill.h,'#d84b91',9);
+R(915,-340,115,105,'#414648',4);
+for(let y=-325;y<-245;y+=13)R(925,y,95,3,'#858b8c');
+ctx.fillStyle='#e26c3f55';ctx.fillRect(925-cam.x,-332-cam.y,95,74);
+L('GRILL',972,-180,13,'#442334');
+
+const saute=kitchenStation('saute');R(saute.x,saute.y,saute.w,saute.h,'#d84b91',9);
+R(915,-95,115,88,'#555b5c',4);
+for(const x of [938,974,1010]){ctx.fillStyle='#2d3233';ctx.beginPath();ctx.arc(x-cam.x,-54-cam.y,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#aaa';ctx.stroke()}
+L('SAUTÉ',972,18,13,'#442334');
+
+// open working aisle between hot line and cold line
+R(1070,-650,195,680,'#c3bdb1',4);
+for(let y=-600;y<-20;y+=75){ctx.strokeStyle='#a9a399';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(1120-cam.x,y-cam.y);ctx.lineTo(1210-cam.x,y-cam.y);ctx.stroke()}
+L('WORKING AISLE',1168,-330,11,'#514c45');
+
+// cold line — separate station
+R(1290,-650,120,625,'#61d3c0',9);
+R(1305,-630,90,590,'#b9ebe3',5);
+for(let y=-600;y<-60;y+=72){R(1317,y,66,42,['#8fc96e','#e8c965','#d98d62','#e7e4d8'][Math.abs(Math.floor(y/72))%4],5)}
+L('COLD LINE',1350,-330,14,'#163e37');
+
+// kitchen pass — separate far-right station
+R(1480,-650,95,625,'#a67b4f',8);
+R(1492,-632,71,585,'#3b3028',4);
+for(let y=-600;y<-70;y+=70){
+ R(1502,y,51,34,'#e8e1d1',5);
+ R(1508,y+7,39,4,'#c9b27f',2);
+}
+for(let y=-610;y<-60;y+=55)R(1578,y,86,5,'#f0e5c8',2);
+L('KITCHEN PASS',1527,-330,13,'#ffe1b0');
+L('EXPO / HANDS',1620,-300,11,'#4c3b2c');
+
+// main bottom walkway
+R(105,35,1570,120,'#a9a49c',5);
+for(let x=150;x<1640;x+=85)R(x,92,52,3,'#8c8882');
+L('MAIN KITCHEN WALKWAY',890,105,15,'#3d3934');
+
+// corridor to dish
+R(1480,155,180,245,'#9f9b95',5);
+for(let y=185;y<385;y+=38)R(1535,y,70,3,'#83807b');
+L('TO DISH',1570,270,12,'#35322f');
+
+// two swinging doors into dining room
+for(const d of kitchenWorld.doors){
+ R(d.x,d.y,d.w,d.h,'#5b4435',5);
+ R(d.x+8,d.y+7,d.w-16,d.h-14,'#8a6b50',4);
+ ctx.fillStyle='#d4e5e8';ctx.beginPath();ctx.arc(d.x+d.w/2-cam.x,d.y+18-cam.y,9,0,Math.PI*2);ctx.fill();
+}
+L('KITCHEN DOORS',470,142,10,'#ffe0b7');
+
+// warm line lights and heat glow
+for(const light of [[430,-650],[970,-500],[970,-250],[1350,-350],[1525,-350]]){
+ ctx.fillStyle='#ffd27b18';ctx.beginPath();ctx.arc(light[0]-cam.x,light[1]-cam.y,95,0,Math.PI*2);ctx.fill();
+}
+
+// kitchen traffic calls
+L('BEHIND!',1120,-100,9,'#9b3e35');
+L('HANDS!',1608,-500,10,'#9b3e35');
 
 // west wall 406 sign
 R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
@@ -2137,6 +2252,24 @@ ctx.fillStyle='#8da4b0';ctx.beginPath();ctx.moveTo(1818-cam.x,706-cam.y);ctx.lin
 ctx.strokeStyle='#30363b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1848-cam.x,674-cam.y);ctx.lineTo(1838-cam.x,693-cam.y);ctx.lineTo(1854-cam.x,699-cam.y);ctx.stroke();
 L('SKI PHOTO',1844,720,8,'#65777d');
 
+
+// animated kitchen crew
+const kitchenCrew=[
+ {x:965,y:-500,name:'FRY COOK',col:'#4f5967'},
+ {x:965,y:-270,name:'GRILL COOK',col:'#5d4c42'},
+ {x:965,y:-60,name:'SAUTÉ COOK',col:'#586b56'},
+ {x:1350,y:-420,name:'COLD COOK',col:'#54766e'},
+ {x:1528,y:-260,name:'EXPO',col:'#755a46'}
+];
+for(const kc of kitchenCrew){
+ const bob=Math.sin(life.minutes*.8+kc.x)*2;
+ drawCharacter({...kc,y:kc.y+bob,moving:false,style:'Short'},kc.col,kc.name);
+}
+// steam and fryer bubbles
+for(const a of [[940,-570],[1005,-570],[948,-305],[990,-305],[940,-80]]){
+ ctx.fillStyle='#ffffff28';ctx.beginPath();ctx.arc(a[0]-cam.x,a[1]-cam.y+Math.sin(life.minutes+a[0])*8,8,0,Math.PI*2);ctx.fill();
+}
+
 // ambient staff/guests
 [[1400,800],[620,340],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
 person(host,'#8b5c45','HOST');
@@ -2144,12 +2277,12 @@ person(host,'#8b5c45','HOST');
 
 
 
-if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=11){
+if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=21){
  const ts=tourStops[tourIndex];
  if(ts){
   const pulse=8+Math.sin(life.minutes*4)*3;
   ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(ts.x-cam.x,ts.y-cam.y,34+pulse,0,Math.PI*2);ctx.stroke();
-  L(`TOUR ${tourIndex+1}/6`,ts.x,ts.y-55,11,'#ffdc69');
+  L(`TOUR ${tourIndex+1}/16`,ts.x,ts.y-55,11,'#ffdc69');
  }
 }
 
@@ -2165,7 +2298,7 @@ if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
  else if(['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(phase)&&target){mx=target.x;my=target.y;label='TABLE '+target.id}
  else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(phase)){mx=500;my=720;label='POS 2'}
  else if(phase==='PICKUP_DRINKS'){mx=800;my=430;label='SERVICE WELL'}
- else if(phase==='PICKUP_FOOD'){mx=350;my=500;label='KITCHEN PASS'}
+ else if(phase==='PICKUP_FOOD'){mx=1527;my=-330;label='KITCHEN PASS'}
  if(mx!==undefined){ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(mx-cam.x,my-cam.y,42+Math.sin(life.minutes*5)*4,0,Math.PI*2);ctx.stroke();L(label,mx,my-58,10,'#ffdc69')}
  L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · TURN ${shiftEngine.turn}/${shiftEngine.totalTurns}`,1050,1120,13,'#fff3d2');
 }
@@ -2262,7 +2395,7 @@ function blocked(nx,ny){
   for(const s of kitchenWorld.stations)if(nx>s.x&&nx<s.x+s.w&&ny>s.y&&ny<s.y+s.h)return true;
  }
 
- if(nx<50||ny<50||nx>1850||ny>1200)return true;
+ if(nx<50||ny<world.minY+20||nx>1850||ny>1200)return true;
  for(const s of solidRects)if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
  for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<40)return true;
  return false;
@@ -2461,7 +2594,7 @@ updateTaskPanel();
 updateWorkers(dt);updateGuestFlow(dt);advanceJayTour(dt);
 
 if(stage>=6&&!dialogue){
- const mx=2200+Math.sin(life.minutes*.25)*110,my=500+Math.cos(life.minutes*.21)*140;
+ const mx=1080+Math.sin(life.minutes*.25)*95,my=-360+Math.cos(life.minutes*.21)*150;
  moveEntityToward(maverick,mx,my,24,dt);
 }
 
@@ -2498,7 +2631,7 @@ if(stage===2&&!dialogue&&!follow){
 }
 if(stage===0&&p.y>220){stage=1;document.getElementById('obj').textContent='Objective: Turn in your application at the host stand';say('NARRATOR','You step inside Craggy Range. TVs glow over the bar, silverware clatters, and somebody is already in the weeds.',[['Find the host stand.',null]])}
 if(follow){let tx=1490,ty=1015,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(m>10){tuff.moving=true;tuff.walkPhase=(tuff.walkPhase||0)+dt*10;tuff.x+=dx/m*115*dt;tuff.y+=dy/m*115*dt}else{tuff.moving=false;follow=false;stage=4;document.getElementById('obj').textContent='Objective: Sit with Tuff for your interview'}}
-cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
+cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(world.minY,Math.min(Math.max(0,world.h-H),cam.y));
 let pr='';
 if(shiftEngine.active){
  const t=currentDynamicTable();
@@ -2506,7 +2639,7 @@ if(shiftEngine.active){
  else if(t&&['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(shiftEngine.phase)&&Math.hypot(p.x-t.x,p.y-t.y)<165)pr=`INTERACT · Table ${t.id}`;
  else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(shiftEngine.phase)&&Math.hypot(p.x-500,p.y-720)<170)pr='INTERACT · POS 2 / Side Station';
  else if(shiftEngine.phase==='PICKUP_DRINKS'&&Math.hypot(p.x-800,p.y-430)<175)pr='INTERACT · Pick up drinks';
- else if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x-350,p.y-500)<180)pr='INTERACT · Answer HANDS';
+ else if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x-1527,p.y+330)<180)pr='INTERACT · Answer HANDS';
 }
 if(fridayShift.active){
  const F=fridayShift,A=fridayTable('31'),B=fridayTable('32'),C=fridayTable('33');
@@ -2518,7 +2651,7 @@ if(fridayShift.active){
  else if([6,12,14,16,17].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
  else if(F.step===31&&Math.hypot(p.x-500,p.y-720)<180)pr='INTERACT · ENTER TIPS & CLOSE CHECKS';
  else if(F.step===7&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
- else if([19,22].includes(F.step)&&Math.hypot(p.x-350,p.y-500)<170)pr='INTERACT · Kitchen pass';
+ else if([19,22].includes(F.step)&&Math.hypot(p.x-1527,p.y+330)<170)pr='INTERACT · Kitchen pass';
  else if([21,26].includes(F.step)&&Math.hypot(p.x-180,p.y-980)<155)pr='INTERACT · Bussing station';
  else if(F.step===32&&dist(p,desarae)<220)pr='INTERACT · COMPLETE FRIDAY REVIEW';
 }
@@ -2530,7 +2663,7 @@ if(serverTraining.active){
  else if([2,3,6,7,10,11,13,14].includes(serverTraining.step)&&Math.hypot(p.x-T.x,p.y-T.y)<160)pr='INTERACT · Table 62';
  else if([4,8,12,15].includes(serverTraining.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · Server POS / Station';
  else if(serverTraining.step===5&&Math.hypot(p.x-800,p.y-430)<160)pr='INTERACT · Pick up drinks';
- else if(serverTraining.step===9&&Math.hypot(p.x-350,p.y-500)<165)pr='INTERACT · Answer HANDS call';
+ else if(serverTraining.step===9&&Math.hypot(p.x-1527,p.y+330)<165)pr='INTERACT · Answer HANDS call';
  else if(serverTraining.step===16&&dist(p,desarae)<180)pr='INTERACT · Shift review';
 }
 
@@ -2539,7 +2672,7 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep===4&&jayFollow)pr=dist(p,jay)<210?'FOLLOW JAY · POS 2':'FOLLOW JAY';
  else if(orientationStep===4&&!jayFollow&&dist(p,jay)<175)pr='INTERACT · Talk to Jay at POS 2';
  else if(orientationStep===5&&Math.hypot(p.x-500,p.y-720)<130)pr='INTERACT · Clock in';
- else if(orientationStep>=6&&orientationStep<=11){
+ else if(orientationStep>=6&&orientationStep<=21){
   const ts=tourStops[tourIndex];
   if(tourJayLeading)pr=dist(p,jay)<220?`FOLLOW JAY · ${ts.name}`:'FOLLOW JAY';
   else if(dist(p,jay)<180)pr='INTERACT · Learn about '+ts.name;
@@ -2554,6 +2687,7 @@ if(!pr&&inWalkIn()&&Math.hypot(p.x-125,p.y-1125)<68)pr='INTERACT · Take walk-in
 
 if(!pr&&stage>=6&&dist(p,maverick)<160)pr='INTERACT · Talk to Maverick';
 if(!pr && stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150)pr='INTERACT · Talk to Diet Coke Dave';
+if(!pr&&!inKitchen()&&p.y<230&&p.y>130&&((p.x>315&&p.x<435)||(p.x>505&&p.x<625)))pr='WALK NORTH · Enter kitchen';
 if(!pr&&inKitchen()){
  const ks=kitchenWorld.stations.find(s=>Math.hypot(p.x-(s.x+s.w/2),p.y-(s.y+s.h/2))<145);
  if(ks)pr='INTERACT · '+ks.name;
