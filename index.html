@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v8.0</title><style>
+<title>406 Life v8.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -306,7 +306,7 @@ function taskRows(){
    ['Open Phone → Swim Schedule',orientationStep>1],
    ['Return to Jay',orientationStep>2],
    ['Open Phone → Wallet',orientationStep>3],
-   ['Follow Jay to POS 2',orientationStep>4],
+   ['Follow Jay from host stand to POS 2',orientationStep>4],
    ['Talk to Jay at POS 2',orientationStep>5],
    ['Clock in at POS 2',orientationStep>5],
    ['Complete Jay’s building tour',orientationStep>11],
@@ -480,11 +480,17 @@ document.querySelector('.phoneBack').onclick=()=>{document.getElementById('appVi
 document.querySelectorAll('.app').forEach(b=>b.onclick=()=>{
  openApp(b.dataset.app);
  if(gameDay==='ORIENTATION'&&orientationStep===1&&b.dataset.app==='swim'){orientationStep=2;life.scheduleUnlocked=true;document.getElementById('obj').textContent='Orientation: Talk to Jay after checking Swim Schedule'}
- if(gameDay==='ORIENTATION'&&orientationStep===3&&b.dataset.app==='wallet'){orientationStep=4;document.getElementById('obj').textContent='Orientation: Follow Jay to the time clock';jay.x=565;jay.y=750}
+ if(gameDay==='ORIENTATION'&&orientationStep===3&&b.dataset.app==='wallet'){
+ orientationStep=4;jayFollow=true;
+ document.getElementById('obj').textContent='Orientation: Follow Jay from the host stand to POS 2';
+ say('JAY — GENERAL MANAGER','Good. Wallet is the part where the game reminds you that Whitefish rent does not accept vibes. Come with me—I’ll walk you to POS 2 and show you the time clock.',[
+  ['Follow Jay.',null]
+ ]);
+}
 });
 updateLifeHud();
 
-let cam={x:0,y:0},keys={},joy={x:0,y:0},stage=0,dialogue=false,follow=false;
+let cam={x:0,y:0},keys={},joy={x:0,y:0},stage=0,dialogue=false,follow=false,jayFollow=false;
 let tuffWanderIndex=0;
 const tuffWanderRoute=[[330,790],[430,820],[390,900],[285,875],[350,815]];
 addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
@@ -674,7 +680,7 @@ function specialWorkerTalk(n){
 }
 function startOrientation(){
  saveCheckpoint('ORIENTATION');
- gameDay='ORIENTATION';stage=10;orientationStep=0;clockedIn=false;life.minutes=15*60+56;
+ gameDay='ORIENTATION';stage=10;orientationStep=0;clockedIn=false;jayFollow=false;jay.x=860;jay.y=305;life.minutes=15*60+56;
  p.x=950;p.y=255;tuff.x=360;tuff.y=820;updateLifeHud();
  document.getElementById('obj').textContent='Orientation: Find Jay at the host stand';
  say('NARRATOR','MONDAY · 3:56 PM. Two weeks ago you left the big city. Now you live in Whitefish, Montana, your apartment is mostly empty, rent is coming, and your first job here starts in four minutes. No pressure.',[
@@ -699,9 +705,9 @@ function orientationInteract(){
    ['Can I pay rent in vibes?',()=>say('JAY — GENERAL MANAGER','Your landlord has reviewed the proposal and requested actual money.',[['Fine. Show me Wallet.',()=>openPhone()]])]
   ]);return true;
  }
- if(orientationStep===4&&dist(p,jay)<150){
-  orientationStep=5;document.getElementById('obj').textContent='Orientation: Interact with the time clock';
-  say('JAY — GENERAL MANAGER','Clocking in starts the shift timer. While you work, Energy and Hunger slowly fall. Mistakes raise Stress and can hurt Craggy Reputation. One mistake won’t ruin you. Repeating the same mistake will absolutely annoy Tuff.',[
+ if(orientationStep===4&&!jayFollow&&dist(p,jay)<165){
+  orientationStep=5;document.getElementById('obj').textContent='Orientation: Use the time clock built into POS 2';
+  say('JAY — GENERAL MANAGER','This is POS 2, and the time clock is built into it. Clocking in starts the shift timer. While you work, Energy and Hunger slowly fall. Mistakes raise Stress and can hurt Craggy Reputation. One mistake won’t ruin you. Repeating the same mistake will absolutely annoy Tuff.',[
    ['What happens if I’m late?',()=>say('JAY — GENERAL MANAGER','You unlock a very special achievement. Tuff’s disappointment has excellent range and projection.',[['That sounds bad.',null]])],
    ['Is the time clock judging me?',()=>say('JAY — GENERAL MANAGER','Only silently. Like most of management before coffee. Also, keep your fingers off anything labeled “manager override” unless you enjoy uncomfortable conversations.',[
      ['Moderately professional. Got it.',null],
@@ -967,36 +973,40 @@ function applyRecovery(type){
  updateLifeHud();saveCheckpoint(fridayShift.active?'DYNAMIC_SHIFT':'POST_SHIFT');
 }
 
+function inWalkIn(){return p.x>82&&p.x<338&&p.y>1050&&p.y<1180}
 function walkInInteraction(){
- if(dialogue)return false;
- if(p.x>85&&p.x<175&&p.y>1030&&p.y<1190){
+ if(dialogue||!inWalkIn())return false;
+ if(Math.hypot(p.x-311,p.y-1120)<58){
+  socialWorld.walkInVisits++;applyRecovery('water');
+  say('WALK-IN WATER SHELF','You crack a cold water beside the backup kegs. Hydration: rude, practical, effective.',[['Back to work.',null]]);return true;
+ }
+ if(Math.hypot(p.x-270,p.y-1120)<55){
   socialWorld.walkInVisits++;
-  say('WALK-IN COOLER','Cold air, stacked kegs, cases of water, Red Bull and approximately six seconds of peace.',[
-   ['Drink water.',()=>{applyRecovery('water');say('NARRATOR','You drink water beside the kegs like a responsible adult hiding from responsibility.',[['Refreshing.',null]])}],
-   ['Chug a Red Bull.',()=>{applyRecovery('redbull');achievement('WALK-IN MEDICINE','Chug a Red Bull in the walk-in.');say('DESARAE','Jay does not know about this.',[['Neither does my heart.',null]])}],
-   ['Take a sixty-second walk-in break.',()=>{life.stress=clamp(life.stress-12,0,100);life.energy=clamp(life.energy+4,0,100);updateLifeHud();say('NARRATOR','The compressor hums. Nobody asks you for ranch. This is luxury.',[['Return to society.',null]])}],
-   ['Inspect the kegs.',()=>say('WALK-IN COOLER','Beer kegs, backup CO₂ and one keg that will absolutely blow during the worst possible rush.',[['Naturally.',null]])],
-   ['Leave.',null]
+  say('RED BULL CASE','A cold Red Bull waits in the walk-in like emergency medicine.',[
+   ['Chug it.',()=>{applyRecovery('redbull');achievement('WALK-IN MEDICINE','Chug a Red Bull in the walk-in.');say('DESARAE','Jay does not know about this.',[['Neither does my heart.',null]])}],
+   ['Show restraint.',null]
   ]);return true;
+ }
+ if(Math.hypot(p.x-211,p.y-1120)<62){
+  say('KEG STACK','Backup kegs, CO₂, and one keg that will absolutely blow during the worst possible rush.',[
+   ['Inspect the keg labels.',()=>say('NARRATOR','Everything is labeled except the one thing somebody will urgently need later.',[['Restaurant tradition.',null]])],
+   ['Leave them alone.',null]
+  ]);return true;
+ }
+ if(Math.hypot(p.x-125,p.y-1125)<68){
+  socialWorld.walkInVisits++;life.stress=clamp(life.stress-12,0,100);life.energy=clamp(life.energy+4,0,100);updateLifeHud();
+  say('WALK-IN BREAK','The compressor hums. Nobody asks you for ranch for sixty beautiful seconds.',[['Return to society.',null]]);return true;
  }
  return false;
 }
-
 function recoveryInteraction(){
  if(dialogue)return false;
  // Employee meal / drink station at POS 2.
- if(Math.hypot(p.x-500,p.y-720)<145&&!fridayShift.active&&!serverTraining.active){
+ if(gameDay!=='ORIENTATION'&&postShiftStep===0&&Math.hypot(p.x-500,p.y-720)<145&&!fridayShift.active&&!serverTraining.active&&!shiftEngine.active){
   say('EMPLOYEE BREAK','You have approximately four minutes before somebody needs you again.',[
    ['Eat a burger as fast as humanly possible.',()=>{applyRecovery('burger');achievement('THIRTY-SEVEN SECOND MEAL','Consume an employee burger with terrifying efficiency.');say('JAY','You ate that in thirty-seven seconds. I am impressed and concerned.',[['Calories don’t count on doubles.',null]])}],
    ['Drink coffee.',()=>{applyRecovery('coffee');say('NARRATOR','Coffee restores enough energy to continue making questionable decisions.',[['Perfect.',null]])}],
    ['Drink water like a responsible adult.',()=>{applyRecovery('water');say('NARRATOR','Hydration. Annoyingly effective.',[['Fine.',null]])}]
-  ]);return true;
- }
- // Walk-in Red Bull hotspot.
- if(Math.hypot(p.x-395,p.y-650)<130&&!fridayShift.active){
-  say('WALK-IN COOLER','A cold Red Bull sits behind the prep containers like contraband.',[
-   ['Chug it.',()=>{applyRecovery('redbull');achievement('WALK-IN MEDICINE','Chug a Red Bull in the walk-in.');say('DESARAE','Jay does not know about this.',[['Neither does my heart.',null]])}],
-   ['Practice restraint.',null]
   ]);return true;
  }
  return false;
@@ -1840,14 +1850,15 @@ L('BUSSING',180,957,10,'#eef4f5');L('STATION',180,1018,9,'#eef4f5');
 
 
 // walk-in cooler behind the bussing station
-R(70,1035,280,150,'#7f8d92',8);
-R(82,1048,76,124,'#dbe4e7',5);L('DOOR',120,1110,9,'#36464b');
+R(70,1035,280,150,'#6f7d82',8);
+R(82,1048,76,124,'#c6d2d6',2);L('OPEN DOOR',120,1066,8,'#36464b');
 R(170,1048,165,124,'#aeb9bd',5);L('WALK-IN COOLER',252,1067,11,'#263238');
 R(178,1080,66,76,'#66777d',4);L('KEGS',211,1122,9,'#eef4f5');
 R(252,1080,36,76,'#d94141',4);L('RED',270,1112,7,'#fff');L('BULL',270,1123,7,'#fff');
 R(296,1080,30,76,'#5ea6cf',4);L('H2O',311,1121,8,'#fff');
-R(145,1090,10,28,'#4d585c',3);
-L('ENTER HERE',120,1178,8,'#f4dfad');
+R(94,1080,58,76,'#829095',4);L('BREAK',123,1115,8,'#fff');L('SPOT',123,1127,8,'#fff');
+R(145,1042,10,28,'#4d585c',3);
+L('WALK THROUGH DOOR',120,1028,8,'#f4dfad');
 // west wall 406 sign
 R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
 ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',195,860,9,'#f1d0a4');
@@ -1945,8 +1956,13 @@ const solidRects=[
  {x:75,y:430,w:75,h:330},
  {x:205,y:530,w:70,h:190},{x:455,y:530,w:70,h:190}
 
+
 ,
- {x:70,y:1035,w:12,h:150},{x:158,y:1035,w:192,h:150},{x:82,y:1035,w:76,h:14}
+ {x:70,y:1035,w:12,h:150},
+ {x:338,y:1035,w:12,h:150},
+ {x:70,y:1035,w:22,h:14},
+ {x:158,y:1035,w:192,h:14},
+ {x:70,y:1172,w:280,h:13}
 ];
 const tableBlocks=[
  [140,290],[325,290],[510,290],[180,435],[380,435],
@@ -1973,12 +1989,12 @@ function interact(){
    ['Enhance.',()=>say('SKI PHOTO','The pixels refuse to cooperate, but spiritually? Nick Winn.',[['Case closed.',null]])]
   ]);return;
  }
- if(walkInInteraction())return;
- if(recoveryInteraction())return;
+ if(orientationInteract())return;
  if(fridayShiftInteract())return;
  if(postShiftInteract())return;
  if(serverTrainingInteract())return;
- if(orientationInteract())return;
+ if(walkInInteraction())return;
+ if(recoveryInteraction())return;
  if(stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150){
   dietCokeDaveTalk();return;
  }
@@ -2166,6 +2182,17 @@ if(!dialogue){
  p.moving=m>.08;if(p.moving){p.walkPhase+=dt*10;p.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}
  let nx=p.x+dx*p.s*dt,ny=p.y+dy*p.s*dt;if(!blocked(nx,p.y))p.x=nx;if(!blocked(p.x,ny))p.y=ny
 }else p.moving=false;
+if(gameDay==='ORIENTATION'&&orientationStep===4&&jayFollow&&!dialogue){
+ const tx=565,ty=750,dx=tx-jay.x,dy=ty-jay.y,m=Math.hypot(dx,dy);
+ if(m>9){
+  jay.moving=true;jay.walkPhase=(jay.walkPhase||0)+dt*9;
+  jay.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+  jay.x+=dx/m*82*dt;jay.y+=dy/m*82*dt;
+ }else{
+  jay.x=tx;jay.y=ty;jay.moving=false;jayFollow=false;
+  document.getElementById('obj').textContent='Orientation: Talk to Jay beside POS 2';
+ }
+}
 if(stage===2&&!dialogue&&!follow){
  const wt=tuffWanderRoute[tuffWanderIndex],dx=wt[0]-tuff.x,dy=wt[1]-tuff.y,m=Math.hypot(dx,dy);
  if(dist(p,tuff)<115){/* close enough: let the player interact */}
@@ -2204,14 +2231,18 @@ if(serverTraining.active){
 
 if(gameDay==='ORIENTATION'){
  if((orientationStep===0||orientationStep===2)&&dist(p,jay)<155)pr='INTERACT · Talk to Jay';
- else if(orientationStep===4&&dist(p,jay)<150)pr='INTERACT · Continue with Jay';
+ else if(orientationStep===4&&jayFollow)pr=dist(p,jay)<210?'FOLLOW JAY · POS 2':'FOLLOW JAY';
+ else if(orientationStep===4&&!jayFollow&&dist(p,jay)<175)pr='INTERACT · Talk to Jay at POS 2';
  else if(orientationStep===5&&Math.hypot(p.x-500,p.y-720)<130)pr='INTERACT · Clock in';
  else if(orientationStep>=6&&orientationStep<=11){const ts=tourStops[tourIndex];if(ts&&Math.hypot(p.x-ts.x,p.y-ts.y)<150)pr='INTERACT · Learn about '+ts.name}
  else if(orientationStep===12&&dist(p,getTrainer())<150)pr='INTERACT · Start training with '+getTrainer().name;
 }
 if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1844,p.y-685)<120)pr='INTERACT · Inspect ski photo';if(!pr&&!fridayShift.active&&!serverTraining.active&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Employee break';
-if(!pr&&p.x>85&&p.x<175&&p.y>1030&&p.y<1190)pr='INTERACT · ENTER WALK-IN COOLER';
-if(!pr&&!fridayShift.active&&Math.hypot(p.x-395,p.y-650)<130)pr='INTERACT · Suspicious walk-in Red Bull';
+if(!pr&&inWalkIn()&&Math.hypot(p.x-311,p.y-1120)<58)pr='INTERACT · Drink water';
+if(!pr&&inWalkIn()&&Math.hypot(p.x-270,p.y-1120)<55)pr='INTERACT · Chug Red Bull';
+if(!pr&&inWalkIn()&&Math.hypot(p.x-211,p.y-1120)<62)pr='INTERACT · Inspect kegs';
+if(!pr&&inWalkIn()&&Math.hypot(p.x-125,p.y-1125)<68)pr='INTERACT · Take walk-in break';
+
 if(!pr && stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150)pr='INTERACT · Talk to Diet Coke Dave';
 const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
