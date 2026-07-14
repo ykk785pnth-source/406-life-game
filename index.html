@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v8.1</title><style>
+<title>406 Life v9.0</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -94,7 +94,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.style.display='block';q.textContent='Game error: '+m+' · line '+l;};
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
-const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
+const world={w:3050,h:1380};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
 
 
 const career={
@@ -309,7 +309,12 @@ function taskRows(){
    ['Follow Jay from host stand to POS 2',orientationStep>4],
    ['Talk to Jay at POS 2',orientationStep>5],
    ['Clock in at POS 2',orientationStep>5],
-   ['Complete Jay’s building tour',orientationStep>11],
+   ['Tour 1: Host Stand',orientationStep>6],
+   ['Tour 2: Service Well & Bar Entry',orientationStep>7],
+   ['Tour 3: Kitchen Pass',orientationStep>8],
+   ['Tour 4: POS 2 & Time Clock',orientationStep>9],
+   ['Tour 5: Center Bar',orientationStep>10],
+   ['Tour 6: Patio Garage Doors',orientationStep>11],
    ['Find your trainer',orientationStep>12]
   ];
   return rows;
@@ -328,12 +333,19 @@ function taskRows(){
   return labels.map((t,i)=>[t,i<current]);
  }
  if(gameDay==='DYNAMIC_SHIFT'){
-  const total=shiftEngine.section?shiftEngine.section.tables.length*shiftEngine.totalTurns:0;
+  const t=shiftEngine.currentTable,total=shiftEngine.section?shiftEngine.section.tables.length*shiftEngine.totalTurns:0;
+  const phaseNames={
+   BRIEFING:'Check section at host stand',GREET:t?`Walk to and greet Table ${t.id}`:'Find table',
+   RING_ORDER:'Ring order at POS 2',PICKUP_DRINKS:'Pick up drinks at service well',
+   DELIVER_DRINKS:t?`Deliver drinks to Table ${t.id}`:'Deliver drinks',
+   PICKUP_FOOD:'Answer HANDS at kitchen pass',DELIVER_FOOD:t?`Run food to Table ${t.id}`:'Run food',
+   GET_NEEDS:'Gather requests at POS 2',DELIVER_NEEDS:t?`Deliver requests to Table ${t.id}`:'Deliver requests',
+   PRESENT_CHECK:t?`Present check at Table ${t.id}`:'Present check',CLOSE_POS:'Close check at POS 2'
+  };
   return [
    [`${shiftEngine.day} · ${shiftEngine.section?shiftEngine.section.name:'Generated section'}`,!shiftEngine.active],
-   [`Turn ${shiftEngine.turn}/${shiftEngine.totalTurns}`,false],
-   [`Tables served: ${shiftEngine.totalTablesServed}/${total}`,false],
-   [`Events: ${shiftEngine.events?.map(e=>e.name).join(', ')||'None'}`,false]
+   [`Turn ${shiftEngine.turn}/${shiftEngine.totalTurns} · Tables served ${shiftEngine.totalTablesServed}/${total}`,false],
+   [phaseNames[shiftEngine.phase]||'Continue serving',false]
   ];
  }
  if(gameDay==='SERVER_TRAINING'){
@@ -511,7 +523,8 @@ const staffLooks={
  BARBACK:{skin:'#b87650',hair:'#161312',style:'Short',shirt:'#745366',pants:'#23252b',apron:true,height:1},
  SERVER:{skin:'#d69a70',hair:'#5b3525',style:'Ponytail',shirt:'#49657b',pants:'#25272d',apron:true,height:1},
  BUSSER:{skin:'#b87650',hair:'#201814',style:'Curly',shirt:'#55705d',pants:'#25272b',apron:true,height:1},
- DIET_COKE_DAVE:{skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',apron:false,height:1.02,build:1.05}
+ DIET_COKE_DAVE:{skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',apron:false,height:1.02,build:1.05},
+ MAVERICK:{skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',apron:true,height:1.03,build:1.0,redBandana:true,paintClothes:true}
 };
 function colorFill(value,sx,sy,w=30,h=45){
  if(value==='tie-dye'){let g=ctx.createLinearGradient(sx-w/2,sy-h/2,sx+w/2,sy+h/2);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');ctx.fillStyle=g}else ctx.fillStyle=value;
@@ -540,7 +553,7 @@ function drawAccessory(sx,sy,look,scale){
 }
 function spriteLook(n,col){
  if(n===p)return {skin:p.skin,hair:p.hair,style:p.style,shirt:p.outfit,pants:'#252832',accessory:p.accessory,apron:clockedIn,height:1.05,brows:true,build:1};
- const base=(n.regular?staffLooks.DIET_COKE_DAVE:staffLooks[n.name])||{skin:'#d69a70',hair:'#3a241a',style:'Short',shirt:col||'#536273',pants:'#25272d',apron:false,height:1};
+ const base=(n.name==='MAVERICK'?staffLooks.MAVERICK:(n.regular?staffLooks.DIET_COKE_DAVE:staffLooks[n.name]))||{skin:'#d69a70',hair:'#3a241a',style:'Short',shirt:col||'#536273',pants:'#25272d',apron:false,height:1};
  return {...base,shirt:base.shirt||col};
 }
 function drawCharacter(n,col,label){
@@ -561,7 +574,13 @@ function drawCharacter(n,col,label){
  if(!look.apron){ctx.strokeStyle='#ffffff35';ctx.strokeRect(sx+4*scale,sy+4*scale+bob,7*scale,6*scale)}
  if(look.apron){ctx.fillStyle='#252426';ctx.beginPath();ctx.moveTo(sx-10*scale,sy+2*scale+bob);ctx.lineTo(sx+10*scale,sy+2*scale+bob);ctx.lineTo(sx+13*scale,sy+22*scale+bob);ctx.lineTo(sx-13*scale,sy+22*scale+bob);ctx.closePath();ctx.fill();ctx.strokeStyle='#ddd';ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(sx-9*scale,sy+2*scale+bob);ctx.lineTo(sx-13*scale,sy-8*scale+bob);ctx.moveTo(sx+9*scale,sy+2*scale+bob);ctx.lineTo(sx+13*scale,sy-8*scale+bob);ctx.stroke()}
 
- if(look.hipKnife){
+ 
+ if(look.paintClothes){
+  const splats=[[-10,4,'#e86da4'],[8,10,'#5bb7e8'],[-4,20,'#f0c34f'],[12,28,'#ec6d5c']];
+  for(const [dx,dy,c] of splats){ctx.fillStyle=c;ctx.beginPath();ctx.arc(sx+dx*scale,sy+dy*scale+bob,2.4*scale,0,Math.PI*2);ctx.fill()}
+ }
+
+if(look.hipKnife){
   ctx.fillStyle='#32261f';ctx.fillRect(sx+13*scale,sy+8*scale+bob,6*scale,19*scale);
   ctx.fillStyle='#8c6b4d';ctx.fillRect(sx+14*scale,sy+5*scale+bob,4*scale,7*scale);
  }
@@ -591,11 +610,11 @@ function drawCharacter(n,col,label){
  if(look.beard){ctx.strokeStyle='#3a241b';ctx.lineWidth=3*scale;ctx.beginPath();ctx.arc(sx,sy-22*scale+bob,9*scale,.1,Math.PI-.1);ctx.stroke()}
  drawAccessory(sx,sy+bob,look,scale);
  // carried training items
- const carryItem=serverTraining.active?serverTraining.carrying:(fridayShift.active?fridayShift.carrying:'');
+ const carryItem=serverTraining.active?serverTraining.carrying:(fridayShift.active?fridayShift.carrying:(shiftEngine.active?shiftEngine.carrying:''));
  if(n===p&&carryItem){
   if(carryItem==='drinks'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+7,18,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#743b24';ctx.fillRect(sx+13,sy-6,5,12);ctx.fillRect(sx+22,sy-6,5,12);ctx.fillStyle='#cfeaff';ctx.fillRect(sx+31,sy-6,5,12)}
   if(carryItem==='food'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+6,19,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c68039';ctx.beginPath();ctx.arc(sx+22,sy+3,8,0,Math.PI*2);ctx.fill()}
-  if(carryItem==='ranch'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}if(carryItem==='towel'){ctx.fillStyle='#d7ecf2';ctx.fillRect(sx+13,sy-7,24,15)}
+  if(carryItem==='ranch'||carryItem==='supplies'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}if(carryItem==='towel'){ctx.fillStyle='#d7ecf2';ctx.fillRect(sx+13,sy-7,24,15)}
  }
  if(label)L(label,n.x,n.y-58*scale,12);
 }
@@ -617,6 +636,40 @@ updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
 const kellen={x:350,y:500,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
+
+
+const maverick={
+ name:'MAVERICK',x:2200,y:500,col:'#6f6e82',
+ skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',
+ moving:false,walkPhase:0,facing:'down',bandana:true,paintClothes:true
+};
+function maverickTalk(){
+ gainRelationship('Maverick',1,'Talked with Maverick');
+ const rel=relationshipLevel('Maverick');
+ const lines=rel===0?[
+  'I’m only here until the student loans stop personally attacking me.',
+  'I paint full-time emotionally and serve food part-time financially.',
+  'I was going to talk to that girl at the bar, but then she looked in my direction.'
+ ]:rel===1?[
+  'I sent you twelve Instagram reels. Four are funny, three are painting videos, and five are relationship advice I will not personally use.',
+  'Do you think “hey” is too forward? Never mind. I’ll just like her story.',
+  'The paint on these pants is from work. The sauce is from this work.'
+ ]:rel===2?[
+  'I flirt with confidence right up until asking somebody out becomes a possibility.',
+  'I could paint her portrait. That might be romantic or a felony depending on timing.',
+  'I have excellent rizz in theory.'
+ ]:[
+  'Okay, serious question: do I ask her out or send another reel and wait six months?',
+  'You are now my official relationship consultant. The position is unpaid because of the student loans.',
+  'One day I’m going to ask someone out. Statistically. Probably.'
+ ];
+ say('MAVERICK — PAINTER / RELUCTANT SERVER',rand(lines),[
+  ['Ask about painting.',()=>say('MAVERICK','Painting is the real job. Craggy is the “please stop accruing interest” job.',[['Student loans are evil.',null]])],
+  ['Ask about his love life.',()=>say('MAVERICK',rel<2?'I am actively talking to several girls and asking out exactly zero of them.':'I have made progress. I drafted a message and then sent her a reel instead.',[['Strong strategy.',null]])],
+  ['Ask what reel he sent last.',()=>say('MAVERICK','A raccoon stealing a sandwich with the caption “me taking your heart.” I deleted it before sending. Growth.',[['Proud of you.',null]])],
+  ['Leave him to flirt harmlessly.',null]
+ ]);
+}
 
 const dietCokeDave={
  name:'DIET COKE DAVE',x:1245,y:335,col:'#7d755f',
@@ -752,12 +805,34 @@ const tourStops=[
  {x:1080,y:520,name:'BAR',text:'The bar has an outer guest rail, an open staff entrance on the kitchen-pass side, a bartender walkway, and a center island with taps and liquor.'},
  {x:980,y:1040,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. In summer, this section prints money and destroys step counts.'}
 ];
-let tourIndex=0;
-function startBuildingTour(){tourIndex=0;orientationStep=6;document.getElementById('obj').textContent='Tour: Go to '+tourStops[0].name}
+let tourIndex=0,tourJayLeading=false;
+function startBuildingTour(){
+ tourIndex=0;orientationStep=6;tourJayLeading=true;
+ const s=tourStops[0];
+ document.getElementById('obj').textContent='Tour 1/6: Follow Jay to '+s.name;
+}
+function advanceJayTour(dt){
+ if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>11||!tourJayLeading)return;
+ const s=tourStops[tourIndex],dx=s.x-jay.x,dy=s.y-jay.y,m=Math.hypot(dx,dy);
+ if(m>12){
+  jay.moving=true;jay.walkPhase=(jay.walkPhase||0)+dt*9;
+  jay.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+  jay.x+=dx/m*78*dt;jay.y+=dy/m*78*dt;
+ }else{
+  jay.x=s.x;jay.y=s.y;jay.moving=false;tourJayLeading=false;
+  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/6: Interact with Jay at ${s.name}`;
+ }
+}
 function tourInteract(){
  const s=tourStops[tourIndex];
- if(Math.hypot(p.x-s.x,p.y-s.y)<150){
-  say('JAY — GENERAL MANAGER',s.text,[['Next stop.',()=>{tourIndex++;orientationStep++;if(tourIndex<tourStops.length)document.getElementById('obj').textContent='Tour: Go to '+tourStops[tourIndex].name;else finishTour()}]]);
+ if(!tourJayLeading&&Math.hypot(p.x-jay.x,p.y-jay.y)<175){
+  say('JAY — GENERAL MANAGER',s.text,[['Next stop.',()=>{
+   tourIndex++;orientationStep++;
+   if(tourIndex<tourStops.length){
+    tourJayLeading=true;
+    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/6: Follow Jay to ${tourStops[tourIndex].name}`;
+   }else finishTour();
+  }]]);
   return true;
  }
  return false;
@@ -883,7 +958,7 @@ function tuffGossipTalk(){
  achievement('ACTUAL HOT GOSS','Piece together enough clues to make Tuff tell the real story.');
 }
 
-const relationshipDefaults={Tuff:0,Jay:0,Kellen:0,Kyle:0,Jelena:0,Desarae:0,Dave:0};
+const relationshipDefaults={Tuff:0,Jay:0,Kellen:0,Kyle:0,Jelena:0,Desarae:0,Dave:0,Maverick:0};
 function ensureRelationships(){
  if(!socialWorld.relationships)socialWorld.relationships={...relationshipDefaults};
  for(const k of Object.keys(relationshipDefaults))if(typeof socialWorld.relationships[k]!=='number')socialWorld.relationships[k]=0;
@@ -1030,10 +1105,102 @@ function fridayMistake(points,msg){fridayShift.mistakes++;fridayShift.score=Math
 function setFridayObjective(t){document.getElementById('obj').textContent='FRIDAY SHIFT: '+t}
 
 
+
+const kitchenWorld={
+ unlocked:true,
+ entered:false,
+ stations:[
+  {id:'salad',name:'SALAD LINE',x:1950,y:255,w:250,h:85,color:'#e84d9b'},
+  {id:'fryFreezer',name:'FRY FREEZER',x:2240,y:250,w:170,h:65,color:'#e84d9b'},
+  {id:'prep1',name:'PREP TABLE',x:1970,y:430,w:125,h:190,color:'#e84d9b'},
+  {id:'prep2',name:'PREP TABLE',x:1970,y:760,w:125,h:190,color:'#e84d9b'},
+  {id:'prep3',name:'PREP TABLE',x:2260,y:390,w:110,h:145,color:'#e84d9b'},
+  {id:'prepStove',name:'PREP STOVE',x:2260,y:590,w:110,h:145,color:'#e84d9b'},
+  {id:'fryers',name:'FRYERS',x:2440,y:390,w:125,h:145,color:'#e84d9b'},
+  {id:'grill',name:'GRILL',x:2440,y:590,w:125,h:145,color:'#e84d9b'},
+  {id:'saute',name:'SAUTÉ',x:2440,y:790,w:125,h:145,color:'#e84d9b'},
+  {id:'coldLine',name:'COLD LINE',x:2730,y:355,w:110,h:590,color:'#65d8c8'},
+  {id:'kitchenPass',name:'KITCHEN PASS',x:2870,y:355,w:80,h:590,color:'#c9b18a'}
+ ],
+ walls:[
+  {x:2375,y:355,w:45,h:590},
+  {x:1900,y:190,w:1100,h:18},
+  {x:1900,y:1030,w:1000,h:34}
+ ],
+ hallway:{x:1900,y:1030,w:1000,h:125},
+ dishCorridor:{x:2820,y:1030,w:130,h:330},
+ entrance:{x:1845,y:960,w:70,h:120}
+};
+function kitchenStation(id){return kitchenWorld.stations.find(s=>s.id===id)}
+function inKitchen(){return p.x>1900&&p.x<3000&&p.y>190&&p.y<1360}
+function nearStation(id,r=130){
+ const s=kitchenStation(id);if(!s)return false;
+ const cx=s.x+s.w/2,cy=s.y+s.h/2;
+ return Math.hypot(p.x-cx,p.y-cy)<r;
+}
+function kitchenInteract(){
+ if(dialogue||!inKitchen())return false;
+ if(nearStation('salad',150)){
+  say('SALAD LINE','Cold bowls, chopped greens, dressings, garnishes, and tickets that somehow all say “no onion.”',[
+   ['Inspect the ticket rail.',()=>say('SALAD LINE','Caesar, house, Cobb, side salad. Everything looks organized until the rush starts.',[['Back away slowly.',null]])],
+   ['Ask who stole the ramekins.',()=>say('MAVERICK','Not me. I only steal hearts. Allegedly. Mostly I just send reels.',[['Sure, Maverick.',null]])]
+  ]);return true;
+ }
+ if(nearStation('fryFreezer',145)){
+  say('FRY FREEZER','Backup fries, onion rings, tots, and the exact item somebody will forget to restock before Saturday.',[
+   ['Check inventory.',()=>say('NARRATOR','Enough fries for now. That sentence has never aged well in restaurant history.',[['Naturally.',null]])],
+   ['Close the freezer.',null]
+  ]);return true;
+ }
+ if(nearStation('prep1',145)||nearStation('prep2',145)||nearStation('prep3',145)){
+  say('PREP AREA','Cambros, knives, cutting boards, labels, and enough containers to make organization look possible.',[
+   ['Inspect prep labels.',()=>say('PREP AREA','Most are correct. One says “mystery sauce,” which feels emotionally honest.',[['Valid.',null]])],
+   ['Leave prep alone.',null]
+  ]);return true;
+ }
+ if(nearStation('prepStove',145)){
+  say('PREP STOVE','Stock pots, sauces, soup, and the dangerous confidence of somebody saying “I can eyeball it.”',[
+   ['Check the soup.',()=>say('PREP STOVE','It needs one more stir and absolutely no one dropping eighteen quarts on the floor.',[['Too soon.',null]])],
+   ['Step away from the heat.',null]
+  ]);return true;
+ }
+ if(nearStation('fryers',145)){
+  say('FRY STATION','Timers beep. Baskets move. Somebody is already asking whether their fries are up.',[
+   ['Call “behind.”',()=>{gainRelationship('Maverick',1,'Used kitchen communication');say('MAVERICK','Look at you, sounding like you work here.',[['I do work here.',null]])}],
+   ['Do not touch anything.',null]
+  ]);return true;
+ }
+ if(nearStation('grill',145)){
+  say('GRILL','Burgers, bison, chicken, heat, and one cook staring into the middle distance during a twelve-ticket push.',[
+   ['Read the modifiers.',()=>say('GRILL','No onion. No cheese. Add bacon. Medium. Gluten warning. Beautiful chaos.',[['Got it.',null]])],
+   ['Leave the grill cook alone.',null]
+  ]);return true;
+ }
+ if(nearStation('saute',145)){
+  say('SAUTÉ','Hot pans, sauces, steam, and the station most likely to yell “CORNER” with genuine spiritual urgency.',[
+   ['Say “behind, hot.”',()=>fridayGood(1,'Used proper kitchen callout')],
+   ['Quietly disappear.',null]
+  ]);return true;
+ }
+ if(nearStation('coldLine',150)){
+  say('COLD LINE','This is a separate vertical station against the wall: cold garnishes, dressings, chilled components, and final cold-side setup.',[
+   ['Inspect cold items.',()=>say('COLD LINE','Everything is separate from the pass. Very separate. We learned this the hard way.',[['Correct.',null]])],
+   ['Keep moving.',null]
+  ]);return true;
+ }
+ if(nearStation('kitchenPass',145)){
+  say('KITCHEN PASS','This is the separate vertical pass on the far-right edge, facing the dining room. Finished plates land here before servers run them.',[
+   ['Check the tickets.',()=>say('EXPO','Table 32 needs hands. Verify modifiers before leaving the pass.',[['HANDS!',null]])],
+   ['Step out of expo’s way.',null]
+  ]);return true;
+ }
+ return false;
+}
+
 const shiftEngine={
  active:false,shift:null,day:'Friday',weather:'Clear',patio:false,events:[],
  difficulty:1,section:null,tables:[],completed:0,totalTips:0,
- turn:1,totalTurns:2,currentIndex:0,totalTablesServed:0,score:0,mistakes:0
+ turn:1,totalTurns:2,currentIndex:0,totalTablesServed:0,score:0,mistakes:0,phase:'IDLE',carrying:'',currentTable:null
 };
 
 const guestTypes=[
@@ -1158,61 +1325,123 @@ function startGeneratedShift(shiftOrDay){
  career.dayIndex=shift.dayIndex>=0?shift.dayIndex:career.dayIndex;
  career.activeShiftId=shift.id;saveCareer();
  p.x=900;p.y=260;desarae.x=690;desarae.y=770;
- document.getElementById('obj').textContent=`${shift.day.toUpperCase()} · ${shiftEngine.section.name} · Turn 1`;
+ shiftEngine.phase='BRIEFING';shiftEngine.currentIndex=0;shiftEngine.currentTable=shiftEngine.tables[0];
+ document.getElementById('obj').textContent=`${shift.day.toUpperCase()} · Go to the host stand for ${shiftEngine.section.name}`;
  say('SHIFT BRIEFING',dynamicShiftSummary(),[
-  ['Start the first turn.',()=>openDynamicTable(0)],
-  ['Ask Des what today feels like.',()=>say('DESARAE',shiftEngine.day==='Saturday'?'Fast turns, patio pressure, and every guest suddenly needs ranch at the same time.':shiftEngine.events[0].text,[['Let’s work.',()=>openDynamicTable(0)]])]
+  ['Check the seating chart at the host stand.',null],
+  ['Ask Des what today feels like.',()=>say('DESARAE',shiftEngine.day==='Saturday'?'Fast turns, patio pressure, and every guest suddenly needs ranch at the same time.':shiftEngine.events[0].text,[['Go check your section.',null]])]
  ]);
  updateLifeHud();saveCheckpoint('DYNAMIC_SHIFT');
 }
-function openDynamicTable(index){
- const t=shiftEngine.tables[index];
- if(!t){finishDynamicTurn();return}
- shiftEngine.currentIndex=index;
- document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · T${t.id} · Turn ${shiftEngine.turn}/${shiftEngine.totalTurns}`;
- const needs=t.needs.length?t.needs.join(', '):'nothing extra yet';
- const eventLine=shiftEngine.events[index%shiftEngine.events.length]?.text||'The restaurant keeps moving.';
- say(`TABLE ${t.id} · ${t.type.name}`,`${t.party} guests. Requests: ${needs}.\n\n${eventLine}`,[
-  ['Greet, take drinks and write the order.',()=>openDynamicPOS(index)],
-  ['Try to memorize everything while looking confident.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Trusted chaotic memory');openDynamicPOS(index)}]
- ]);
+function currentDynamicTable(){return shiftEngine.tables[shiftEngine.currentIndex]||null}
+function setDynamicPhase(phase,text){
+ shiftEngine.phase=phase;shiftEngine.currentTable=currentDynamicTable();
+ document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · ${text}`;
+ updateTaskPanel();
 }
-function openDynamicPOS(index){
- const t=shiftEngine.tables[index];
+function beginDynamicTable(index){
+ shiftEngine.currentIndex=index;
+ const t=currentDynamicTable();
+ if(!t){finishDynamicTurn();return}
+ setDynamicPhase('GREET',`Walk to Table ${t.id} and greet the ${t.party}-top`);
+}
+function dynamicOrderChoices(t){
+ return t.order.map(o=>{
+  const correct=engineMenu.find(m=>m.item===o.item);
+  const wrong=shuffle(engineMenu.filter(m=>m.item!==o.item)).slice(0,2).map(m=>m.item);
+  return {items:shuffle([o.item,...wrong]),sides:shuffle(correct.sides),mods:shuffle(correct.mods)};
+ });
+}
+function openDynamicPOS(){
+ const t=currentDynamicTable();if(!t)return;
  openOrderPOS({
   title:`POS 2 · TABLE ${t.id} · TURN ${shiftEngine.turn}`,
-  instructions:`Match ${t.party} generated orders. Every turn uses a new party and menu combination.`,
-  guests:t.order.map(o=>{
-   const correct=engineMenu.find(m=>m.item===o.item);
-   const wrong=shuffle(engineMenu.filter(m=>m.item!==o.item)).slice(0,2).map(m=>m.item);
-   return {items:shuffle([o.item,...wrong]),sides:shuffle(correct.sides),mods:shuffle(correct.mods)};
-  })
+  instructions:`Match all ${t.party} orders, sides and modifiers.`,
+  guests:dynamicOrderChoices(t)
  },vals=>{
   const ok=posMatches(vals,t.order);
   if(ok){shiftEngine.score+=5;fridayGood(3,'Generated order entered correctly')}
   else{shiftEngine.mistakes++;fridayMistake(4,'Generated order error')}
-  resolveDynamicNeeds(index);
+  setDynamicPhase('PICKUP_DRINKS','Pick up drinks at the service well');
  });
 }
-function resolveDynamicNeeds(index){
- const t=shiftEngine.tables[index];
- const needs=t.needs.join(', ')||'the check';
- say(`TABLE ${t.id} · MID-MEAL NEEDS`,`They need ${needs}.`,[
-  ['Bring every requested item and refill drinks.',()=>{shiftEngine.score+=3;fridayGood(2,'Handled generated needs');closeDynamicTable(index)}],
-  ['Bring most of it and forget one tiny thing.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Missed generated need');closeDynamicTable(index)}],
-  ['Use charm to buy time, then fix it.',()=>{shiftEngine.score+=1;gainRelationship('Desarae',1,'Recovered a table');closeDynamicTable(index)}]
- ]);
-}
-function closeDynamicTable(index){
- const t=shiftEngine.tables[index];t.status='PAID';releaseParty(t.id);
+function closeCurrentDynamicTable(){
+ const t=currentDynamicTable();if(!t)return;
+ t.status='PAID';releaseParty(t.id);
  let base=45+t.party*22;
  if(shiftEngine.events.some(e=>e.effects.includes('tips')))base+=18;
  const tip=Math.max(5,Math.round(base*.18*t.type.tip*shiftEngine.difficulty));
  shiftEngine.totalTips+=tip;shiftEngine.completed++;shiftEngine.totalTablesServed++;
  life.cash+=tip;updateLifeHud();
- say(`TABLE ${t.id} CLOSED`,`Tip: $${tip}. Table reset. A new party can use this table later in the shift.`,[
-  ['Next table.',()=>openDynamicTable(index+1)]
+ say(`TABLE ${t.id} CLOSED`,`Tip: $${tip}. The party leaves and the table is reset for its next turn.`,[
+  ['Continue.',()=>beginDynamicTable(shiftEngine.currentIndex+1)]
  ]);
+}
+function dynamicShiftInteract(){
+ if(!shiftEngine.active||dialogue)return false;
+ const t=currentDynamicTable();
+
+ if(shiftEngine.phase==='BRIEFING'&&dist(p,host)<155){
+  say('HOST STAND — SEATING CHART',`${shiftEngine.section.name}
+Turn ${shiftEngine.turn}/${shiftEngine.totalTurns}
+${shiftEngine.tables.map(x=>'Table '+x.id+' · '+x.party+' top').join('\n')}`,[
+   ['Confirm section.',()=>beginDynamicTable(0)]
+  ]);return true;
+ }
+ if(!t)return false;
+
+ if(shiftEngine.phase==='GREET'&&Math.hypot(p.x-t.x,p.y-t.y)<160){
+  t.status='ORDER';
+  const needs=t.needs.join(', ')||'nothing extra yet';
+  say(`TABLE ${t.id} · ${t.type.name}`,`${t.party} guests. They order drinks and mention they may need ${needs}.`,[
+   ['Greet warmly and write everything down.',()=>{shiftEngine.score+=2;setDynamicPhase('RING_ORDER',`Ring Table ${t.id} at POS 2`)}],
+   ['Trust your restaurant memory.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Skipped writing order');setDynamicPhase('RING_ORDER',`Ring Table ${t.id} at POS 2`)}]
+  ]);return true;
+ }
+ if(shiftEngine.phase==='RING_ORDER'&&Math.hypot(p.x-500,p.y-720)<160){
+  openDynamicPOS();return true;
+ }
+ if(shiftEngine.phase==='PICKUP_DRINKS'&&Math.hypot(p.x-800,p.y-430)<170){
+  shiftEngine.carrying='drinks';setDynamicPhase('DELIVER_DRINKS',`Deliver drinks to Table ${t.id}`);
+  say('SERVICE WELL',`Drinks for Table ${t.id}. Full tray—use both hands and do not baptize the tourists.`,[['Carry drinks.',null]]);return true;
+ }
+ if(shiftEngine.phase==='DELIVER_DRINKS'&&Math.hypot(p.x-t.x,p.y-t.y)<160){
+  shiftEngine.carrying='';t.status='COOKING';setDynamicPhase('PICKUP_FOOD',`Answer HANDS at the kitchen pass`);
+  say(`TABLE ${t.id}`,'Drinks delivered. The order is cooking. Expo calls for hands.',[['Head to the pass.',null]]);return true;
+ }
+ if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x-350,p.y-500)<175){
+  shiftEngine.carrying='food';setDynamicPhase('DELIVER_FOOD',`Run hot food to Table ${t.id}`);
+  say('EXPO',`Table ${t.id} is up. Verify the modifiers before leaving the window.`,[
+   ['Verify every plate.',()=>{shiftEngine.score+=2}],
+   ['Grab and pray.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Skipped food verification')}]
+  ]);return true;
+ }
+ if(shiftEngine.phase==='DELIVER_FOOD'&&Math.hypot(p.x-t.x,p.y-t.y)<160){
+  shiftEngine.carrying='';t.status='EATING';setDynamicPhase('GET_NEEDS',`Get ${t.needs.join(', ')||'a refill'} from POS 2 / side station`);
+  say(`TABLE ${t.id} · CHECK-BACK`,`Food is down. They ask for ${t.needs.join(', ')||'a refill'}.`,[
+   ['Acknowledge every request.',()=>{shiftEngine.score+=2}],
+   ['Visibly regret asking “anything else?”',()=>{}]
+  ]);return true;
+ }
+ if(shiftEngine.phase==='GET_NEEDS'&&Math.hypot(p.x-500,p.y-720)<165){
+  shiftEngine.carrying='supplies';setDynamicPhase('DELIVER_NEEDS',`Bring requested items to Table ${t.id}`);
+  say('SIDE STATION',`You gather ${t.needs.join(', ')||'a refill'} for Table ${t.id}.`,[['Carry supplies.',null]]);return true;
+ }
+ if(shiftEngine.phase==='DELIVER_NEEDS'&&Math.hypot(p.x-t.x,p.y-t.y)<160){
+  shiftEngine.carrying='';t.status='CHECK';setDynamicPhase('PRESENT_CHECK',`Return to Table ${t.id} with the check`);
+  say(`TABLE ${t.id}`,'Requests delivered. They are ready for the check.',[
+   ['Prebus and thank them.',()=>{shiftEngine.score+=3}],
+   ['Drop the check and flee.',()=>{shiftEngine.mistakes++;fridayMistake(1,'Skipped prebus')}]
+  ]);return true;
+ }
+ if(shiftEngine.phase==='PRESENT_CHECK'&&Math.hypot(p.x-t.x,p.y-t.y)<160){
+  setDynamicPhase('CLOSE_POS',`Close Table ${t.id} at POS 2`);
+  say(`TABLE ${t.id}`,'They hand you the signed receipt.',[['Take it to POS 2.',null]]);return true;
+ }
+ if(shiftEngine.phase==='CLOSE_POS'&&Math.hypot(p.x-500,p.y-720)<165){
+  closeCurrentDynamicTable();return true;
+ }
+ return false;
 }
 function finishDynamicTurn(){
  if(shiftEngine.turn<shiftEngine.totalTurns){
@@ -1220,8 +1449,8 @@ function finishDynamicTurn(){
   life.minutes+=55;
   const label=shiftEngine.turn===shiftEngine.totalTurns?'FINAL TURN':'NEXT TURN';
   say(label,`Your section has turned. Old guests leave, tables reset, and ${shiftEngine.section.tables.length} completely new parties are being seated.`,[
-   ['Start the new turn.',()=>{generateTurn(shiftEngine.turn);openDynamicTable(0)}],
-   ['Take ten seconds in the walk-in first.',()=>{life.stress=Math.max(0,life.stress-4);generateTurn(shiftEngine.turn);openDynamicTable(0)}]
+   ['Return to the host stand for the new seating chart.',()=>{generateTurn(shiftEngine.turn);shiftEngine.currentIndex=0;shiftEngine.currentTable=shiftEngine.tables[0];setDynamicPhase('BRIEFING','Check the new turn at the host stand')}],
+   ['Take ten seconds in the walk-in first.',()=>{life.stress=Math.max(0,life.stress-4);generateTurn(shiftEngine.turn);shiftEngine.currentIndex=0;shiftEngine.currentTable=shiftEngine.tables[0];setDynamicPhase('BRIEFING','Check the new turn at the host stand')} ]
   ]);
  }else finishDynamicShift();
 }
@@ -1859,6 +2088,42 @@ R(296,1080,30,76,'#5ea6cf',4);L('H2O',311,1121,8,'#fff');
 R(94,1080,58,76,'#829095',4);L('BREAK',123,1115,8,'#fff');L('SPOT',123,1127,8,'#fff');
 R(145,1042,10,28,'#4d585c',3);
 L('WALK THROUGH DOOR',120,1028,8,'#f4dfad');
+
+
+// doorway from dining room into the new kitchen wing
+R(1842,900,18,160,'#2f251f',2);
+L('KITCHEN →',1810,940,10,'#ffe1a8');
+
+// CRAGGY KITCHEN — official layout
+R(1900,190,1100,1165,'#d8d3c8',8);
+R(1900,190,1100,18,'#66615a');
+L('STREET WALL',2450,180,13,'#2f2a25');
+
+// mechanical/crawl-space room
+R(1900,208,180,180,'#3466d8',12);
+L('MECHANICAL',1990,260,11,'#fff');
+L('CRAWL SPACE',1990,278,11,'#fff');
+L('ENTRANCE',1990,296,11,'#fff');
+
+// stations
+for(const s of kitchenWorld.stations){
+ R(s.x,s.y,s.w,s.h,s.color,8);
+ L(s.name,s.x+s.w/2,s.y+s.h/2,11,s.id==='coldLine'?'#153a34':'#2d2028');
+}
+// prep wall
+R(2375,355,45,590,'#8c8984',5);L('PREP WALL',2397,650,11,'#1e1d1c');
+// bottom hallway
+R(kitchenWorld.hallway.x,kitchenWorld.hallway.y,kitchenWorld.hallway.w,kitchenWorld.hallway.h,'#b8b4ad',4);
+L('KITCHEN WALKWAY',2400,1095,14,'#3e3a35');
+// dish corridor
+R(kitchenWorld.dishCorridor.x,kitchenWorld.dishCorridor.y,kitchenWorld.dishCorridor.w,kitchenWorld.dishCorridor.h,'#aaa7a2',4);
+L('TO DISH',2885,1200,12,'#3b3834');
+// entry from dining room
+R(1845,960,70,120,'#5e493c',4);L('KITCHEN',1880,1018,9,'#f4d4ad');
+// subtle traffic arrows
+ctx.strokeStyle='#8c8a84';ctx.lineWidth=3;
+ctx.beginPath();ctx.moveTo(1950-cam.x,1095-cam.y);ctx.lineTo(2820-cam.x,1095-cam.y);ctx.stroke();
+
 // west wall 406 sign
 R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
 ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',195,860,9,'#f1d0a4');
@@ -1878,12 +2143,30 @@ person(host,'#8b5c45','HOST');
 
 
 
+
+if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=11){
+ const ts=tourStops[tourIndex];
+ if(ts){
+  const pulse=8+Math.sin(life.minutes*4)*3;
+  ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(ts.x-cam.x,ts.y-cam.y,34+pulse,0,Math.PI*2);ctx.stroke();
+  L(`TOUR ${tourIndex+1}/6`,ts.x,ts.y-55,11,'#ffdc69');
+ }
+}
+
 if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
  for(const t of shiftEngine.tables){
   const col=t.status==='PAID'?'#71b780':'#f3ad67';
   ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(t.x-42-cam.x,t.y-32-cam.y,84,64);
   L(`T${t.id} · ${t.status}`,t.x,t.y+58,10,col);
  }
+ const target=currentDynamicTable(),phase=shiftEngine.phase;
+ let mx,my,label='';
+ if(phase==='BRIEFING'){mx=host.x;my=host.y;label='HOST STAND'}
+ else if(['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(phase)&&target){mx=target.x;my=target.y;label='TABLE '+target.id}
+ else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(phase)){mx=500;my=720;label='POS 2'}
+ else if(phase==='PICKUP_DRINKS'){mx=800;my=430;label='SERVICE WELL'}
+ else if(phase==='PICKUP_FOOD'){mx=350;my=500;label='KITCHEN PASS'}
+ if(mx!==undefined){ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(mx-cam.x,my-cam.y,42+Math.sin(life.minutes*5)*4,0,Math.PI*2);ctx.stroke();L(label,mx,my-58,10,'#ffdc69')}
  L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · TURN ${shiftEngine.turn}/${shiftEngine.totalTurns}`,1050,1120,13,'#fff3d2');
 }
 
@@ -1930,7 +2213,8 @@ if(serverTraining.active){
 for(const party of guestFlow.parties)for(const g of party.members)drawCharacter(g,g.col,'');
 for(const bg of guestFlow.barGuests)drawCharacter(bg,bg.col,'');
 if(stage>=6){
- drawCharacter(dietCokeDave,dietCokeDave.col,'DIET COKE DAVE');
+ drawCharacter(maverick,maverick.col,'MAVERICK');
+drawCharacter(dietCokeDave,dietCokeDave.col,'DIET COKE DAVE');
 L("DAVE'S STOOL",dietCokeDave.x,dietCokeDave.y+46,8,'#f1d2a8');
  ctx.fillStyle='#d9e9f1';ctx.fillRect(dietCokeDave.x+20-cam.x,dietCokeDave.y-8-cam.y,10,18);
  ctx.fillStyle='#5b3a22';ctx.fillRect(dietCokeDave.x+22-cam.x,dietCokeDave.y-5-cam.y,6,13);
@@ -1973,6 +2257,11 @@ const tableBlocks=[
  [1660,336],[1660,456],[1660,576],[1660,696],[1660,816],[1660,936],[1660,1056]
 ];
 function blocked(nx,ny){
+ if(kitchenWorld.unlocked){
+  for(const w of kitchenWorld.walls)if(nx>w.x&&nx<w.x+w.w&&ny>w.y&&ny<w.y+w.h)return true;
+  for(const s of kitchenWorld.stations)if(nx>s.x&&nx<s.x+s.w&&ny>s.y&&ny<s.y+s.h)return true;
+ }
+
  if(nx<50||ny<50||nx>1850||ny>1200)return true;
  for(const s of solidRects)if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
  for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<40)return true;
@@ -1990,9 +2279,11 @@ function interact(){
   ]);return;
  }
  if(orientationInteract())return;
+ if(dynamicShiftInteract())return;
  if(fridayShiftInteract())return;
  if(postShiftInteract())return;
  if(serverTrainingInteract())return;
+ if(kitchenInteract())return;
  if(walkInInteraction())return;
  if(recoveryInteraction())return;
  if(stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150){
@@ -2167,7 +2458,13 @@ je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});
 function update(dt){
 document.getElementById('closeoutBtn').style.display=(fridayShift.active&&fridayShift.step>=31)?'block':'none';
 updateTaskPanel();
-updateWorkers(dt);updateGuestFlow(dt);
+updateWorkers(dt);updateGuestFlow(dt);advanceJayTour(dt);
+
+if(stage>=6&&!dialogue){
+ const mx=2200+Math.sin(life.minutes*.25)*110,my=500+Math.cos(life.minutes*.21)*140;
+ moveEntityToward(maverick,mx,my,24,dt);
+}
+
 if(clockedIn&&!dialogue){
  life.minutes+=dt*.55;
  life.energy=clamp(life.energy-dt*.10,0,100);
@@ -2203,6 +2500,14 @@ if(stage===0&&p.y>220){stage=1;document.getElementById('obj').textContent='Objec
 if(follow){let tx=1490,ty=1015,dx=tx-tuff.x,dy=ty-tuff.y,m=Math.hypot(dx,dy);if(m>10){tuff.moving=true;tuff.walkPhase=(tuff.walkPhase||0)+dt*10;tuff.x+=dx/m*115*dt;tuff.y+=dy/m*115*dt}else{tuff.moving=false;follow=false;stage=4;document.getElementById('obj').textContent='Objective: Sit with Tuff for your interview'}}
 cam.x+=(p.x-W/2-cam.x)*Math.min(1,dt*5);cam.y+=(p.y-H/2-cam.y)*Math.min(1,dt*5);cam.x=Math.max(0,Math.min(Math.max(0,world.w-W),cam.x));cam.y=Math.max(0,Math.min(Math.max(0,world.h-H),cam.y));
 let pr='';
+if(shiftEngine.active){
+ const t=currentDynamicTable();
+ if(shiftEngine.phase==='BRIEFING'&&dist(p,host)<160)pr='INTERACT · View generated seating chart';
+ else if(t&&['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(shiftEngine.phase)&&Math.hypot(p.x-t.x,p.y-t.y)<165)pr=`INTERACT · Table ${t.id}`;
+ else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(shiftEngine.phase)&&Math.hypot(p.x-500,p.y-720)<170)pr='INTERACT · POS 2 / Side Station';
+ else if(shiftEngine.phase==='PICKUP_DRINKS'&&Math.hypot(p.x-800,p.y-430)<175)pr='INTERACT · Pick up drinks';
+ else if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x-350,p.y-500)<180)pr='INTERACT · Answer HANDS';
+}
 if(fridayShift.active){
  const F=fridayShift,A=fridayTable('31'),B=fridayTable('32'),C=fridayTable('33');
  if(F.step===1&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Clock in';
@@ -2234,7 +2539,11 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep===4&&jayFollow)pr=dist(p,jay)<210?'FOLLOW JAY · POS 2':'FOLLOW JAY';
  else if(orientationStep===4&&!jayFollow&&dist(p,jay)<175)pr='INTERACT · Talk to Jay at POS 2';
  else if(orientationStep===5&&Math.hypot(p.x-500,p.y-720)<130)pr='INTERACT · Clock in';
- else if(orientationStep>=6&&orientationStep<=11){const ts=tourStops[tourIndex];if(ts&&Math.hypot(p.x-ts.x,p.y-ts.y)<150)pr='INTERACT · Learn about '+ts.name}
+ else if(orientationStep>=6&&orientationStep<=11){
+  const ts=tourStops[tourIndex];
+  if(tourJayLeading)pr=dist(p,jay)<220?`FOLLOW JAY · ${ts.name}`:'FOLLOW JAY';
+  else if(dist(p,jay)<180)pr='INTERACT · Learn about '+ts.name;
+ }
  else if(orientationStep===12&&dist(p,getTrainer())<150)pr='INTERACT · Start training with '+getTrainer().name;
 }
 if(!pr&&stage===1&&dist(p,host)<145)pr='INTERACT · Turn in application';if(!pr&&stage===2&&dist(p,tuff)<165)pr='INTERACT · Talk to Tuff';if(!pr&&stage===4&&dist(p,tuff)<155)pr='INTERACT · Start interview';if(!pr&&Math.hypot(p.x-1844,p.y-685)<120)pr='INTERACT · Inspect ski photo';if(!pr&&!fridayShift.active&&!serverTraining.active&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Employee break';
@@ -2243,7 +2552,12 @@ if(!pr&&inWalkIn()&&Math.hypot(p.x-270,p.y-1120)<55)pr='INTERACT · Chug Red Bul
 if(!pr&&inWalkIn()&&Math.hypot(p.x-211,p.y-1120)<62)pr='INTERACT · Inspect kegs';
 if(!pr&&inWalkIn()&&Math.hypot(p.x-125,p.y-1125)<68)pr='INTERACT · Take walk-in break';
 
+if(!pr&&stage>=6&&dist(p,maverick)<160)pr='INTERACT · Talk to Maverick';
 if(!pr && stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150)pr='INTERACT · Talk to Diet Coke Dave';
+if(!pr&&inKitchen()){
+ const ks=kitchenWorld.stations.find(s=>Math.hypot(p.x-(s.x+s.w/2),p.y-(s.y+s.h/2))<145);
+ if(ks)pr='INTERACT · '+ks.name;
+}
 const nw=nearestWorker();if(!pr&&nw)pr='INTERACT · Talk to '+nw.name;const nm=nearestManager();if(!pr&&nm)pr='INTERACT · Talk to '+nm.name;let el=document.getElementById('prompt');el.textContent=pr;el.style.display=pr?'block':'none';
 }
 let last=performance.now();function loop(n){let dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
