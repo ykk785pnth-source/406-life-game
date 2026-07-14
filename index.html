@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v7.2</title><style>
+<title>406 Life v8.0</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · RESTAURANT CLEANUP & WALK-IN v7.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · RUNTIME & TASK FIX v7.2.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -98,16 +98,118 @@ const world={w:1900,h:1250};const p={x:950,y:100,r:16,s:220,name:'Applicant',pro
 
 
 const career={
- week:1,dayIndex:0,
- pickedSaturday:false,
- fridayComplete:false,
- saturdayComplete:false,
+ week:1,dayIndex:0,shiftsWorked:0,firstFridayDone:false,
+ activeShiftId:null,completedShiftIds:[],pickedShiftIds:[],
  currentSchedule:[
-  {id:'fri1',day:'Friday',time:'4:00 PM',role:'SERVER',type:'scheduled',payHint:'3-table section'},
-  {id:'satOpen',day:'Saturday',time:'4:00 PM',role:'SERVER',type:'open',payHint:'Estimated tips $180–260'}
+  {id:'w1-fri',day:'Friday',dayIndex:4,time:'4:00 PM',role:'SERVER',type:'scheduled',theme:'First Friday',section:'Section 6',payHint:'First full three-table shift'},
+  {id:'w1-sat-open',day:'Saturday',dayIndex:5,time:'4:00 PM',role:'SERVER',type:'open',theme:'Saturday Patio Rush',section:'Patio Edge',payHint:'Optional cover · higher tips'},
+  {id:'w1-sun-open',day:'Sunday',dayIndex:6,time:'11:00 AM',role:'SERVER',type:'open',theme:'Sunday Lunch',section:'Booth Row',payHint:'Optional lunch cover'}
  ],
  history:[]
 };
+
+const weekdayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const shiftThemes=[
+ {name:'Midweek Locals',time:'4:00 PM',eventBias:'regulars',payHint:'Steady dinner · local regulars'},
+ {name:'VGK Watch Party',time:'4:00 PM',eventBias:'hockey',payHint:'Loud bar · beer and appetizer rush'},
+ {name:'Patio Lunch',time:'11:00 AM',eventBias:'patio',payHint:'Sunny patio · tourists and dogs'},
+ {name:'Friday Rush',time:'4:00 PM',eventBias:'rush',payHint:'Fast turns · stronger tips'},
+ {name:'Closing Dinner',time:'5:00 PM',eventBias:'closing',payHint:'Dinner rush plus closing side work'},
+ {name:'Sunday Lunch',time:'10:30 AM',eventBias:'family',payHint:'Families, tourists and soup questions'},
+ {name:'Live Music Night',time:'4:00 PM',eventBias:'music',payHint:'Stage crowd · longer table times'}
+];
+const sectionNames=['Section 6','North Windows','South Dining','Booth Row','Patio Edge','Garage Door Section','Bar-Side Tables'];
+
+function dayName(){return weekdayNames[career.dayIndex%7]}
+
+function seededNumber(seed){
+ let x=Math.sin(seed*999.91)*43758.5453;
+ return x-Math.floor(x);
+}
+function schedulePick(arr,seed){return arr[Math.floor(seededNumber(seed)*arr.length)%arr.length]}
+
+function makeShift(week,slot,dayIndex,type='scheduled'){
+ const theme=schedulePick(shiftThemes,week*31+slot*7+dayIndex);
+ const section=schedulePick(sectionNames,week*47+slot*11+dayIndex);
+ return {
+  id:`w${week}-${type==='open'?'open':'shift'}-${slot}`,
+  day:weekdayNames[dayIndex],dayIndex,time:theme.time,role:'SERVER',type,
+  theme:theme.name,eventBias:theme.eventBias,section,
+  payHint:theme.payHint,completed:false,picked:false
+ };
+}
+
+function generateWeeklySchedule(){
+ const w=career.week;
+ const rotations=[
+  [1,3,4], // Tue Thu Fri
+  [0,2,5], // Mon Wed Sat
+  [1,4,6], // Tue Fri Sun
+  [0,3,5]  // Mon Thu Sat
+ ];
+ const regularDays=rotations[(w-1)%rotations.length];
+ const used=new Set(regularDays);
+ const schedule=regularDays.map((d,i)=>makeShift(w,i,d,'scheduled'));
+ const openCandidates=[0,1,2,3,4,5,6].filter(d=>!used.has(d));
+ for(let i=0;i<2;i++){
+  const idx=Math.floor(seededNumber(w*101+i*17)*openCandidates.length);
+  const day=openCandidates.splice(idx,1)[0];
+  schedule.push(makeShift(w,regularDays.length+i,day,'open'));
+ }
+ career.currentSchedule=schedule.sort((a,b)=>a.dayIndex-b.dayIndex);
+ career.completedShiftIds=[];
+ career.pickedShiftIds=[];
+ career.activeShiftId=null;
+ saveCareer();
+}
+
+function ensureCareerState(){
+ if(!Array.isArray(career.completedShiftIds))career.completedShiftIds=[];
+ if(!Array.isArray(career.pickedShiftIds))career.pickedShiftIds=[];
+ if(!Array.isArray(career.currentSchedule)||!career.currentSchedule.length)generateWeeklySchedule();
+ career.currentSchedule.forEach((s,i)=>{
+  if(s.dayIndex===undefined)s.dayIndex=Math.max(0,weekdayNames.indexOf(s.day));
+  if(!s.id)s.id=`w${career.week}-legacy-${i}`;
+  if(!s.theme)s.theme=s.day==='Saturday'?'Saturday Rush':'Dinner Shift';
+  if(!s.section)s.section=sectionNames[i%sectionNames.length];
+  s.completed=career.completedShiftIds.includes(s.id);
+  s.picked=career.pickedShiftIds.includes(s.id);
+ });
+}
+function saveCareer(){localStorage.setItem('406life_career_v1',JSON.stringify(career))}
+function loadCareer(){
+ try{
+  const s=JSON.parse(localStorage.getItem('406life_career_v1')||'null');
+  if(s)Object.assign(career,s);
+ }catch(e){}
+ ensureCareerState();
+}
+function requiredShifts(){
+ return career.currentSchedule.filter(s=>s.type==='scheduled'||s.picked);
+}
+function allRequiredShiftsComplete(){
+ const req=requiredShifts();
+ return req.length>0&&req.every(s=>career.completedShiftIds.includes(s.id));
+}
+function completeCareerShift(shift,summary={}){
+ if(shift&&!career.completedShiftIds.includes(shift.id))career.completedShiftIds.push(shift.id);
+ if(shift)shift.completed=true;
+ career.shiftsWorked=(career.shiftsWorked||0)+1;
+ career.history.push({week:career.week,shiftId:shift?.id||'unknown',day:shift?.day||dayName(),...summary});
+ career.activeShiftId=null;
+ if(allRequiredShiftsComplete()){
+  career.week++;
+  career.dayIndex=0;
+  generateWeeklySchedule();
+  achievement('NEW SCHEDULE POSTED',`Complete Week ${career.week-1} and receive a new Swim Schedule.`);
+ }else saveCareer();
+}
+function advanceDay(days=1){
+ career.dayIndex+=days;
+ while(career.dayIndex>=7){career.dayIndex-=7}
+ saveCareer();
+}
+loadCareer();
 
 const economy={
  rent:750,
@@ -131,34 +233,7 @@ function projectedMonthlyExtra(){
  return projectedMonthlyIncome()-projectedMonthlyExpenses();
 }
 
-function dayName(){return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][career.dayIndex%7]}
-function advanceDay(days=1){career.dayIndex+=days;while(career.dayIndex>=7){career.dayIndex-=7;career.week++;generateWeeklySchedule()}}
-function generateWeeklySchedule(){
- const patterns=[
-  [{day:'Monday',time:'4:00 PM',role:'SERVER',payHint:'Dinner section'},
-   {day:'Wednesday',time:'4:00 PM',role:'SERVER',payHint:'Midweek dinner'},
-   {day:'Friday',time:'4:00 PM',role:'SERVER',payHint:'Friday rush'},
-   {day:'Saturday',time:'4:00 PM',role:'SERVER',type:'open',payHint:'Estimated tips $190–280'}],
-  [{day:'Tuesday',time:'4:00 PM',role:'SERVER',payHint:'Dinner shift'},
-   {day:'Thursday',time:'4:00 PM',role:'SERVER',payHint:'VGK game night'},
-   {day:'Friday',time:'4:00 PM',role:'SERVER',payHint:'Friday close'},
-   {day:'Saturday',time:'11:00 AM',role:'SERVER',type:'open',payHint:'Patio lunch'}],
-  [{day:'Monday',time:'4:00 PM',role:'SERVER',payHint:'Dinner section'},
-   {day:'Wednesday',time:'4:00 PM',role:'SERVER',payHint:'Midweek dinner'},
-   {day:'Friday',time:'4:00 PM',role:'SERVER',payHint:'Closing server'},
-   {day:'Sunday',time:'10:00 AM',role:'SERVER',type:'open',payHint:'Brunch cover'}]
- ];
- const p=patterns[(career.week-1)%patterns.length];
- career.currentSchedule=p.map((s,i)=>({id:'w'+career.week+'s'+i,type:s.type||'scheduled',...s}));
- career.pickedSaturday=false;career.fridayComplete=false;career.saturdayComplete=false;
-}
-function saveCareer(){
- localStorage.setItem('406life_career_v1',JSON.stringify(career));
-}
-function loadCareer(){
- try{const s=JSON.parse(localStorage.getItem('406life_career_v1')||'null');if(s)Object.assign(career,s)}catch(e){}
-}
-loadCareer();
+
 
 const life={
  cash:80,checking:220,rent:economy.rent,rentDue:14,energy:88,hunger:76,stress:12,rep:0,
@@ -200,7 +275,7 @@ function refreshContinueButton(){
 function continueCheckpoint(e){
  if(e){e.preventDefault();e.stopPropagation()}
  const cp=getCheckpoint();if(!cp)return;
- applySavedPlayer(cp.player);applySavedLife(cp.life);if(cp.career)Object.assign(career,cp.career);if(cp.socialWorld)Object.assign(socialWorld,cp.socialWorld);saveCareer();
+ applySavedPlayer(cp.player);applySavedLife(cp.life);if(cp.career)Object.assign(career,cp.career);if(cp.socialWorld)Object.assign(socialWorld,cp.socialWorld);ensureCareerState();ensureRelationships();saveCareer();
  document.getElementById('creator').style.display='none';
  if(cp.point==='ORIENTATION'){startOrientation();return}
  if(cp.point==='TRAINING'){
@@ -253,7 +328,13 @@ function taskRows(){
   return labels.map((t,i)=>[t,i<current]);
  }
  if(gameDay==='DYNAMIC_SHIFT'){
-  return [[`${shiftEngine.day} generated shift`,!shiftEngine.active],[`Tables completed: ${shiftEngine.completed}/${shiftEngine.tables.length}`,false],[`Random event: ${shiftEngine.event?shiftEngine.event.name:'None'}`,false]];
+  const total=shiftEngine.section?shiftEngine.section.tables.length*shiftEngine.totalTurns:0;
+  return [
+   [`${shiftEngine.day} · ${shiftEngine.section?shiftEngine.section.name:'Generated section'}`,!shiftEngine.active],
+   [`Turn ${shiftEngine.turn}/${shiftEngine.totalTurns}`,false],
+   [`Tables served: ${shiftEngine.totalTablesServed}/${total}`,false],
+   [`Events: ${shiftEngine.events?.map(e=>e.name).join(', ')||'None'}`,false]
+  ];
  }
  if(gameDay==='SERVER_TRAINING'){
   const labels=[
@@ -273,7 +354,7 @@ function taskRows(){
 }
 function updateTaskPanel(){
  const list=document.getElementById('taskList');if(!list)return;
- const rows=taskRows();
+ let rows;try{rows=taskRows()}catch(e){rows=[['Continue current objective',false]]}
  let currentAssigned=false;
  list.innerHTML=rows.map(([text,done])=>{
   const current=!done&&!currentAssigned; if(current)currentAssigned=true;
@@ -302,22 +383,33 @@ function rep(delta,reason){
  updateLifeHud();
 }
 function scheduleHTML(){
+ ensureCareerState();
  const upcoming=career.currentSchedule.map(s=>{
-  const action=s.type==='open'
-   ? `<button class="scheduleAction" data-shift="${s.id}">PICK UP SHIFT</button>`
-   : ((s.day==='Friday'&&!career.fridayComplete)||(s.day==='Saturday'&&career.pickedSaturday&&!career.saturdayComplete)
-      ? `<button class="scheduleAction" data-start="${s.id}">START SHIFT →</button>`:'');
-  return `<div class="scheduleRow"><b>${s.day}</b> · ${s.time}<br>${s.role} ${s.type==='open'?'<span class="badge">OPEN</span>':''}<br><small>${s.payHint||''}</small>${action}</div>`;
+  const completed=career.completedShiftIds.includes(s.id);
+  const picked=career.pickedShiftIds.includes(s.id);
+  let action='';
+  if(completed)action='<div style="margin-top:8px;color:#85cf91;font-weight:900">SHIFT COMPLETE ✓</div>';
+  else if(s.type==='open'&&!picked)action=`<button class="scheduleAction" data-pickup="${s.id}">PICK UP SHIFT</button>`;
+  else action=`<button class="scheduleAction" data-start="${s.id}">START SHIFT →</button>`;
+  return `<div class="scheduleRow">
+   <b>${s.day}</b> · ${s.time} ${s.type==='open'&&!picked?'<span class="badge">OPEN</span>':picked?'<span class="badge">PICKED UP</span>':''}<br>
+   <b>${s.theme}</b> · ${s.section}<br><small>${s.payHint||''}</small>${action}
+  </div>`;
  }).join('');
- return `<div class="scheduleHeader"><div class="scheduleLogo">swim</div><div><h2 style="margin:0">Swim Schedule</h2><small>Week ${career.week} · Whitefish MT</small></div></div>
- <div class="scheduleSection"><h3>Upcoming shifts</h3>${upcoming||'<div class="scheduleRow">No shifts posted yet.</div>'}</div>
+ const completed=career.completedShiftIds.length;
+ return `<div class="scheduleHeader"><div class="scheduleLogo">swim</div><div><h2 style="margin:0">Swim Schedule</h2><small>Week ${career.week} · ${completed} shift${completed===1?'':'s'} completed</small></div></div>
+ <div class="scheduleSection"><h3>Upcoming shifts</h3>${upcoming}</div>
  <div class="scheduleNav">
   <button data-snav="myschedule">My Schedule</button>
   <button data-snav="available">Available Shifts</button>
-  <button data-snav="trades">Shift Trades</button>
+  <button data-snav="relationships">Coworkers</button>
   <button data-snav="message">Message Wall</button>
  </div>
- <div class="scheduleSection"><h3>Manager note</h3><div class="scheduleRow">Schedule requests are due before the schedule is posted. No, remembering your cousin’s birthday afterward does not count.</div></div>`;
+ <div class="scheduleSection"><h3>Career</h3><div class="scheduleRow">
+ Shifts worked: <b>${career.shiftsWorked||0}</b><br>
+ Current reputation: <b>${Math.round(life.rep)}/100</b><br>
+ <small>A new weekly schedule posts after every scheduled—and voluntarily picked-up—shift is completed.</small>
+ </div></div>`;
 }
 function appHTML(app){
  const job=getSavedJob();
@@ -335,7 +427,7 @@ Estimated money left: <b>$${projectedMonthlyExtra()}</b><br>
 <div class="card"><small>BASIC MONTHLY EXPENSES</small><br>
 Rent $${economy.rent} · Utilities $${economy.utilities} · Phone $${economy.phone}<br>
 Groceries $${economy.groceries} · Transportation $${economy.transport}</div>`,
- calendar:`<h2>📅 Calendar</h2><div class="card"><b>Week ${career.week}</b><br>${career.currentSchedule.map(s=>s.day+' · '+s.time+' · '+s.role).join('<br>')}</div><div class="card"><b>Rent</b><br>Due in ${life.rentDue} days · $${life.rent}</div>`,
+ calendar:`<h2>📅 Calendar</h2><div class="card"><b>Week ${career.week}</b><br>${career.currentSchedule.map(s=>(career.completedShiftIds.includes(s.id)?'✓ ':'')+s.day+' · '+s.time+' · '+s.theme+' · '+s.section).join('<br>')}</div><div class="card"><b>Rent</b><br>Due in ${life.rentDue} days · $${life.rent}</div>`,
  messages:`<h2>💬 Messages</h2><div class="card"><b>Jay</b><br>Check Swim Schedule before asking when you work.</div><div class="card"><b>Tuff</b><br>Picking up a shift is appreciated. Picking it up and then trying to give it away six minutes later is less appreciated.</div>`,
  contacts:`<h2>☎️ Contacts</h2><div class="card">Tuff · Manager</div><div class="card">Jay · GM</div><div class="card">Kellen · Manager</div><div class="card">Kyle · Manager</div><div class="card">Jelena · Bartender 💗</div><div class="card">Desarae · Supervisor</div>`,
  achievements:`<h2>🏆 Achievements</h2>${life.achievements.length?life.achievements.map(x=>'<div class="card"><b>'+x+'</b></div>').join(''):'<div class="card">Nothing yet. Try not to disappoint Tuff immediately.</div>'}`
@@ -346,28 +438,32 @@ Groceries $${economy.groceries} · Transportation $${economy.transport}</div>`,
 function openPhone(){if(!life.phoneUnlocked){say('NARRATOR','You do have a phone, but Jay has not finished setting up your new Whitefish life systems yet.',[['Fine. I’ll be patient.',null]]);return}document.getElementById('phone').style.display='flex';}
 function bindAppActions(app){
  if(app!=='swim')return;
- document.querySelectorAll('[data-shift]').forEach(btn=>btn.onclick=()=>{
-  const id=btn.dataset.shift;
-  if(career.pickedSaturday){say('SWIM SCHEDULE','You already picked up the open shift. Commitment is beautiful and mildly inconvenient.',[['Okay.',null]]);return}
-  career.pickedSaturday=true;
-  const shift=career.currentSchedule.find(s=>s.id===id);if(shift)shift.type='scheduled';
-  saveCareer();achievement('VOLUNTARY EMOTIONAL DAMAGE','Pick up an open Saturday shift.');
-  openApp('swim');
+ document.querySelectorAll('[data-pickup]').forEach(btn=>btn.onclick=()=>{
+  const shift=career.currentSchedule.find(s=>s.id===btn.dataset.pickup);if(!shift)return;
+  shift.picked=true;if(!career.pickedShiftIds.includes(shift.id))career.pickedShiftIds.push(shift.id);
+  saveCareer();achievement('VOLUNTARY EMOTIONAL DAMAGE','Pick up an open shift.');
+  say('SWIM SCHEDULE',`${shift.day} ${shift.time} is now yours. You wanted more money; unfortunately, this is how that happens.`,[
+   ['Back to schedule.',()=>openApp('swim')]
+  ]);
  });
  document.querySelectorAll('[data-start]').forEach(btn=>btn.onclick=()=>{
-  const shift=career.currentSchedule.find(s=>s.id===btn.dataset.start);
+  const shift=career.currentSchedule.find(s=>s.id===btn.dataset.start);if(!shift)return;
+  career.activeShiftId=shift.id;career.dayIndex=shift.dayIndex;saveCareer();
   document.getElementById('phone').style.display='none';
-  if(shift&&shift.day==='Saturday')startSaturdayShift();
-  else if(career.week>1||career.fridayComplete)startGeneratedShift(shift?shift.day:'Friday');
-  else startFridayShift();
+  if(!career.firstFridayDone&&career.week===1&&shift.day==='Friday')startFridayShift();
+  else startGeneratedShift(shift);
  });
  document.querySelectorAll('[data-snav]').forEach(btn=>btn.onclick=()=>{
   const page=btn.dataset.snav;
+  if(page==='relationships'){
+   ensureRelationships();
+   const rows=Object.entries(socialWorld.relationships).map(([k,v])=>`${k}: ${v}/100`).join('<br>');
+   say('COWORKER RELATIONSHIPS',rows,[['Back to schedule.',()=>openApp('swim')]]);return;
+  }
   const text={
-   myschedule:'Your posted shifts are listed above. Future weeks generate after the current week is completed.',
-   available:'Open shifts can be picked up for more money, reputation and emotional damage.',
-   trades:'Shift trades unlock after you have more than one scheduled shift.',
-   message:'Message Wall: Tuff posted “Please stop leaving the flat top on.”'
+   myschedule:`Week ${career.week}: ${requiredShifts().length} committed shifts. Complete all of them to post the next week.`,
+   available:`There are ${career.currentSchedule.filter(s=>s.type==='open'&&!s.picked&&!s.completed).length} open shifts available. Pickup shifts pay extra but become part of your required week once accepted.`,
+   message:career.shiftsWorked<3?'Message Wall: “New hires—ask questions before guessing.”':career.shiftsWorked<8?'Message Wall: “Nice work this week. Also, whoever is hiding ramekins, stop.”':'Message Wall: “Experienced servers: help the new people before Des notices they are drowning.”'
   }[page];
   say('SWIM SCHEDULE',text,[['Back to schedule.',()=>openApp('swim')]]);
  });
@@ -525,12 +621,21 @@ const desarae=workers.find(n=>n.id==='desarae');
 
 function specialWorkerTalk(n){
  if(n.name==='JELENA'){
+  gainRelationship('Jelena',1,'Talked with Jelena');
   n.friendship=(n.friendship||0)+1;
-  const j=[
+  const rel=relationshipLevel('Jelena');
+  const j=rel===0?[
    'Oh, you’re the new hire. Tuff interviewed you? Be honest—how many times did he mention ranch?',
-   'My professional advice: never say “slow,” never steal my bar rag, and if Tuff starts speed-walking, get out of the lane.',
-   'Hot goss costs one friendship point. Congratulations, you now have '+n.friendship+'.',
-   'You seem fun. Survive orientation and then we can discuss who is secretly dating whom. Allegedly.'
+   'My professional advice: never say “slow,” never steal my bar rag, and stay out of the service well.'
+  ]:rel===1?[
+   'You survived a few shifts. I can officially tell you which regulars need a refill before they ask.',
+   'You are becoming useful. This is the highest compliment available behind a bar.'
+  ]:rel===2?[
+   'Okay, now you get medium-grade gossip. Nothing that gets either of us called into the office.',
+   'You know what? I trust you with my good bar rag. Do not make me regret this.'
+  ]:[
+   'You are crew now. Come find me after close and I will tell you the story that absolutely cannot go on the Message Wall.',
+   'At this point you know where everything is and who is lying about finishing side work.'
   ];
   say('JELENA — BARTENDER',j[(n.friendship-1)%j.length],[
    ['Ask for hot goss.',()=>say('JELENA — BARTENDER','Absolutely not on your first five minutes. Earn it. But watch the patio after close. That is all I’m saying.',[['I knew I liked you.',null]])],
@@ -540,11 +645,22 @@ function specialWorkerTalk(n){
   ]);return true;
  }
  if(n.name==='DESARAE'){
-  const lines=[
+  gainRelationship('Desarae',1,'Talked with Desarae');
+  const rel=relationshipLevel('Desarae');
+  const lines=rel===0?[
    'Hi new person! I’m Desarae. I serve, train, bartend, jump into the kitchen, and occasionally sing while telling everyone to please do literally anything.',
    '🎵 If you have time to lean, you have time to—WORK PLEASE! 🎵',
    'I’m not yelling. I’m projecting helpful information across the restaurant.',
    'If the food looks bad, send it back. We are not serving sadness on a plate.'
+  ]:rel===1?[
+   'You are getting faster. Now work on seeing what needs to happen before I say it.',
+   'You helped reset a table without being asked. I noticed. I always notice.'
+  ]:rel===2?[
+   'I can put you in a stronger section now without checking on you every three minutes.',
+   'The new servers are watching you. That means your bad habits are officially contagious.'
+  ]:[
+   'You are one of my people now. If you are buried, say it before you are underwater.',
+   'Soon I am making you train somebody. Yes, that was a threat and a compliment.'
   ];
   say('DESARAE — SUPERVISOR',lines[Math.floor(Math.random()*lines.length)],[
    ['Can you train every position?',()=>say('DESARAE — SUPERVISOR','Basically. My official position is “wherever the building is currently on fire.”',[['Iconic.',null]])],
@@ -720,6 +836,7 @@ function addGossipClue(clue){
  if(socialWorld.gossipClues.length>=3)socialWorld.tuffGossipUnlocked=true;
 }
 function dietCokeDaveTalk(){
+ gainRelationship('Dave',1,'Refilled Dave');
  socialWorld.dietCokeDaveFriendship++;
  socialWorld.daveRefills++;
  life.stress=clamp(life.stress-2,0,100);updateLifeHud();
@@ -760,6 +877,24 @@ function tuffGossipTalk(){
  achievement('ACTUAL HOT GOSS','Piece together enough clues to make Tuff tell the real story.');
 }
 
+const relationshipDefaults={Tuff:0,Jay:0,Kellen:0,Kyle:0,Jelena:0,Desarae:0,Dave:0};
+function ensureRelationships(){
+ if(!socialWorld.relationships)socialWorld.relationships={...relationshipDefaults};
+ for(const k of Object.keys(relationshipDefaults))if(typeof socialWorld.relationships[k]!=='number')socialWorld.relationships[k]=0;
+}
+function gainRelationship(name,amount,reason=''){
+ ensureRelationships();
+ socialWorld.relationships[name]=Math.min(100,socialWorld.relationships[name]+amount);
+ if(amount>0&&reason)rep(0,reason);saveCareer();
+}
+function relationshipLevel(name){
+ ensureRelationships();const n=socialWorld.relationships[name]||0;
+ return n>=60?3:n>=25?2:n>=8?1:0;
+}
+function relationshipTag(name){
+ ensureRelationships();return `${name} · ${socialWorld.relationships[name]||0}/100`;
+}
+ensureRelationships();
 const guestFlow={parties:[],hostEscort:null,barGuests:[],nextId:1};
 function makeGuest(x,y,color='#6f587d'){return{x,y,col:color,moving:false,walkPhase:0,facing:'down'}}
 function createParty(tableId,count){
@@ -770,11 +905,22 @@ function createParty(tableId,count){
  guestFlow.parties.push(party);return party;
 }
 function partyForTable(id){return guestFlow.parties.find(g=>g.tableId===id)}
-function tableSeatPositions(t,count){return [[t.x-45,t.y-4],[t.x+45,t.y-4],[t.x,t.y-50],[t.x,t.y+48]].slice(0,count)}
+function resolveTableLocation(tableId){
+ if(String(tableId)==='62')return serverTraining&&serverTraining.table?serverTraining.table:{id:'62',x:1240,y:835};
+ const friday=(typeof fridayTable==='function')?fridayTable(String(tableId)):null;if(friday)return friday;
+ const generated=(typeof shiftEngine!=='undefined'&&shiftEngine.tables)?shiftEngine.tables.find(t=>String(t.id)===String(tableId)):null;if(generated)return generated;
+ const fallback={31:{id:'31',x:760,y:835},32:{id:'32',x:1000,y:835},33:{id:'33',x:1240,y:835},34:{id:'34',x:760,y:980}};
+ return fallback[String(tableId)]||{id:String(tableId),x:1000,y:835};
+}
+function tableSeatPositions(t,count){
+ t=t||{x:1000,y:835};
+ return [[t.x-45,t.y-4],[t.x+45,t.y-4],[t.x,t.y-50],[t.x,t.y+48]].slice(0,count)
+}
 function beginHostEscort(party){if(!party)return;party.state='ESCORT';guestFlow.hostEscort=party;host.x=760;host.y=315}
 function seatParty(party){
- const t=party.tableId==='62'?serverTraining.table:fridayTable(party.tableId),seats=tableSeatPositions(t,party.count);
- party.members.forEach((g,i)=>{g.x=seats[i][0];g.y=seats[i][1];g.moving=false});party.state='SEATED';guestFlow.hostEscort=null
+ if(!party||!party.members)return;
+ const t=resolveTableLocation(party.tableId),seats=tableSeatPositions(t,party.count);
+ party.members.forEach((g,i)=>{const seat=seats[i]||seats[seats.length-1]||[t.x,t.y];g.x=seat[0];g.y=seat[1];g.moving=false});party.state='SEATED';guestFlow.hostEscort=null
 }
 function releaseParty(id){const party=partyForTable(id);if(party)party.state='LEAVING'}
 function clearTrainingGuests(){guestFlow.parties=guestFlow.parties.filter(p=>p.tableId!=='62')}
@@ -787,7 +933,7 @@ function updateGuestFlow(dt){
  for(const party of guestFlow.parties){
   if(party.state==='ARRIVING')party.members.forEach((g,i)=>moveEntityToward(g,party.queueX+(i-1)*18,party.queueY,62,dt));
   else if(party.state==='ESCORT'){
-   const t=party.tableId==='62'?serverTraining.table:fridayTable(party.tableId),done=moveEntityToward(host,t.x-95,t.y-75,70,dt);
+   const t=resolveTableLocation(party.tableId),done=moveEntityToward(host,t.x-95,t.y-75,70,dt);
    party.members.forEach((g,i)=>moveEntityToward(g,host.x-25-i*14,host.y+25+i*7,66,dt));if(done)seatParty(party)
   }else if(party.state==='LEAVING'){
    let done=true;party.members.forEach((g,i)=>{if(!moveEntityToward(g,940+i*14,220,72,dt))done=false});if(done)party.state='GONE'
@@ -875,142 +1021,226 @@ function setFridayObjective(t){document.getElementById('obj').textContent='FRIDA
 
 
 const shiftEngine={
- active:false,day:'Friday',weather:'Clear',patio:false,event:null,
- difficulty:1,tables:[],orders:[],needs:[],completed:0,totalTips:0
+ active:false,shift:null,day:'Friday',weather:'Clear',patio:false,events:[],
+ difficulty:1,section:null,tables:[],completed:0,totalTips:0,
+ turn:1,totalTurns:2,currentIndex:0,totalTablesServed:0,score:0,mistakes:0
 };
+
 const guestTypes=[
  {name:'Glacier tourists',patience:72,tip:1.15,needs:['menu question','refill']},
  {name:'Local regulars',patience:88,tip:1.22,needs:['ranch']},
- {name:'Hockey fans',patience:65,tip:1.08,needs:['beer refill','napkins']},
+ {name:'Hockey fans',patience:64,tip:1.10,needs:['beer refill','napkins']},
  {name:'Whitefish family',patience:70,tip:1.05,needs:['side plates','extra napkins']},
- {name:'Needy vacationers',patience:52,tip:.92,needs:['ranch','lemons','refill']},
- {name:'Industry table',patience:82,tip:1.30,needs:['water','check quickly']}
+ {name:'Needy vacationers',patience:50,tip:.92,needs:['ranch','lemons','refill']},
+ {name:'Industry table',patience:82,tip:1.32,needs:['water','check quickly']},
+ {name:'Ski crew',patience:76,tip:1.18,needs:['hot sauce','beer refill']},
+ {name:'Birthday group',patience:68,tip:1.20,needs:['side plates','birthday song']},
+ {name:'Quiet couple',patience:92,tip:1.25,needs:['one refill']},
+ {name:'Youth hockey family',patience:58,tip:1.02,needs:['kids cups','extra napkins','ranch']}
 ];
+
 const engineMenu=[
- {item:'Classic Cheese',mods:['No onion','Plain','Add bacon'],sides:['Fries','Tater Tots +$1.50']},
- {item:'Craggy Burger',mods:['No tomato','No onion','No modification'],sides:['Fries','House Salad +$3']},
- {item:'Fried Chicken Sandwich',mods:['No coleslaw','No bacon ranch','No modification'],sides:['Fries','Tater Tots +$1.50']},
+ {item:'Classic Cheese',mods:['No onion','Plain','Add bacon'],sides:['Fries','Tater Tots +$1.50','House Salad +$3']},
+ {item:'Craggy Burger',mods:['No tomato','No onion','No modification'],sides:['Fries','House Salad +$3','Sweet Potato Fries +$1.50']},
+ {item:'Fried Chicken Sandwich',mods:['No coleslaw','No bacon ranch','No modification'],sides:['Fries','Tater Tots +$1.50','Soup +$3']},
  {item:'Baja Tacos',mods:['No crema','No cilantro','No modification'],sides:['Fries','Soup +$3']},
  {item:'Bison Burger',mods:['No sage mayo','No cheese','No modification'],sides:['Fries','House Salad +$3']},
  {item:'Fish & Chips',mods:['Extra tartar','No coleslaw','No modification'],sides:['Fries','Tater Tots +$1.50']},
  {item:'Caesar Salad',mods:['Add crispy chicken','Add grilled chicken','No croutons'],sides:['No side']},
- {item:'Smashburger',mods:['Plain','No pickles','Add bacon'],sides:['Fries','Tater Tots +$1.50']}
+ {item:'Smashburger',mods:['Plain','No pickles','Add bacon'],sides:['Fries','Tater Tots +$1.50']},
+ {item:'Huckleberry Pulled Pork',mods:['No slaw','Extra sauce','No modification'],sides:['Fries','Sweet Potato Fries +$1.50']},
+ {item:'Range Dip',mods:['No onions','Extra au jus','No modification'],sides:['Fries','House Salad +$3']},
+ {item:'Chicken Tender Basket',mods:['Ranch','BBQ','No sauce'],sides:['Fries','Tater Tots +$1.50']},
+ {item:'Brew Pub Mac and Cheese',mods:['Add chicken','No breadcrumbs','No modification'],sides:['No side']},
+ {item:'Chicken Fiesta Bowl',mods:['No pico','No avocado','No modification'],sides:['No side']},
+ {item:'Mr. Mojo Risin’ Tacos',mods:['No onion','No cilantro','No modification'],sides:['Fries','Soup +$3']}
 ];
+
 const shiftEvents=[
- {name:'Birthday table',text:'A birthday party arrives wearing matching hats.',effect:'tips'},
- {name:'Keg blows',text:'The beer keg blows during the rush. Jelena looks personally betrayed.',effect:'delay'},
- {name:'Dropped tray',text:'A busser drops a tray near your section.',effect:'cleanup'},
- {name:'VGK game rush',text:'The Golden Knights game starts and the bar gets loud.',effect:'crowd'},
- {name:'Kitchen delay',text:'The kitchen is running eighteen minutes behind.',effect:'patience'},
- {name:'Dog on patio',text:'A dog on the patio becomes the most popular guest in the restaurant.',effect:'morale'}
+ {name:'Birthday table',text:'A birthday group arrives in matching hats.',effects:['tips','song']},
+ {name:'Keg blows',text:'A keg blows mid-rush. Jelena looks personally betrayed.',effects:['delay','bar']},
+ {name:'Dropped tray',text:'A busser drops a tray near the section.',effects:['cleanup']},
+ {name:'VGK game rush',text:'Puck drop fills the bar and every television becomes sacred.',effects:['crowd','beer']},
+ {name:'Kitchen delay',text:'The kitchen falls eighteen minutes behind.',effects:['patience']},
+ {name:'Dog on patio',text:'A patio dog becomes the most popular guest in the building.',effects:['morale','patio']},
+ {name:'Printer jam',text:'POS 2 prints half a ticket and then chooses violence.',effects:['accuracy']},
+ {name:'Tour bus',text:'A Glacier tour bus unloads all at once.',effects:['crowd','tourists']},
+ {name:'Regular request',text:'A regular asks specifically for your section.',effects:['relationship','tips']},
+ {name:'Ranch shortage',text:'The side station is somehow almost out of ranch.',effects:['needs']}
 ];
+
+const sectionPools=[
+ {name:'Section 6',tables:[{id:'31',x:760,y:835},{id:'32',x:1000,y:835},{id:'33',x:1240,y:835}]},
+ {name:'South Dining',tables:[{id:'41',x:760,y:980},{id:'42',x:1000,y:980},{id:'43',x:1240,y:980}]},
+ {name:'North Windows',tables:[{id:'11',x:140,y:290},{id:'12',x:325,y:290},{id:'13',x:510,y:290}]},
+ {name:'West Dining',tables:[{id:'21',x:180,y:435},{id:'22',x:380,y:435},{id:'23',x:145,y:850}]},
+ {name:'Booth Row',tables:[{id:'51',x:1488,y:330},{id:'52',x:1488,y:570},{id:'53',x:1488,y:810}]},
+ {name:'Patio Edge',tables:[{id:'P1',x:760,y:980},{id:'P2',x:1000,y:980},{id:'P3',x:1240,y:980},{id:'P4',x:1435,y:455}]}
+];
+
 function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function generateOrder(){
  const m=rand(engineMenu);
  return {item:m.item,mod:rand(m.mods),side:rand(m.sides)};
 }
-function generateShift(day){
- shiftEngine.active=true;shiftEngine.day=day;
- shiftEngine.weather=rand(['Clear','Sunny','Rain','Cool']);
- shiftEngine.patio=day==='Saturday'&&shiftEngine.weather!=='Rain';
- shiftEngine.difficulty=day==='Saturday'?1.35:1;
- shiftEngine.event=rand(shiftEvents);
- shiftEngine.completed=0;shiftEngine.totalTips=0;
- const count=day==='Saturday'?4:3;
- shiftEngine.tables=Array.from({length:count},(_,i)=>{
-  const base=fridayShift.tables[i]||{id:String(34+i),x:760+(i%3)*220,y:i<3?820:960};
-  const type=rand(guestTypes),party=2+Math.floor(Math.random()*3);
-  return {id:base.id,x:base.x,y:base.y,status:'SAT',type,party,patience:type.patience,needs:[...type.needs],order:Array.from({length:party},generateOrder)};
+function chooseSection(shift){
+ let options=sectionPools;
+ if(shift?.section){
+  const preferred=sectionPools.find(s=>s.name===shift.section);
+  if(preferred)return preferred;
+ }
+ if(shift?.day==='Saturday'||shift?.eventBias==='patio')options=sectionPools.filter(s=>s.name==='Patio Edge'||s.name==='South Dining'||s.name==='Booth Row');
+ return rand(options);
+}
+function generateTable(base,turn){
+ const type=rand(guestTypes);
+ const party=2+Math.floor(Math.random()*(shiftEngine.day==='Saturday'?4:3));
+ const needCount=shiftEngine.day==='Saturday'?Math.min(type.needs.length,2+Math.floor(Math.random()*2)):1+Math.floor(Math.random()*Math.max(1,type.needs.length));
+ return {
+  ...base,turn,status:'SAT',type,party,patience:type.patience,
+  needs:shuffle(type.needs).slice(0,needCount),
+  order:Array.from({length:party},generateOrder),
+  visitId:`${base.id}-turn-${turn}`
+ };
+}
+function generateTurn(turn){
+ // Remove every prior party and seat entirely new guests.
+ guestFlow.parties.forEach(g=>{if(g.tableId!=='62')g.state='GONE'});
+ guestFlow.parties=guestFlow.parties.filter(g=>g.tableId==='62');
+ shiftEngine.tables=shiftEngine.section.tables.map(base=>generateTable(base,turn));
+ shiftEngine.currentIndex=0;
+ shiftEngine.tables.forEach(t=>{
+  const party=createParty(t.id,t.party);
+  party.state='SEATED';seatParty(party);
  });
+}
+function generateShift(shift){
+ shiftEngine.active=true;shiftEngine.shift=shift;
+ shiftEngine.day=shift?.day||'Friday';
+ shiftEngine.weather=rand(['Clear','Sunny','Rain','Cool','Snow flurries']);
+ shiftEngine.patio=(shiftEngine.day==='Saturday'||shift?.eventBias==='patio')&&shiftEngine.weather!=='Rain';
+ shiftEngine.difficulty=shiftEngine.day==='Saturday'?1.4:(shift?.eventBias==='rush'||shift?.eventBias==='hockey'?1.2:1);
+ shiftEngine.events=shuffle(shiftEvents).slice(0,shiftEngine.day==='Saturday'?3:2);
+ shiftEngine.section=chooseSection(shift);
+ shiftEngine.completed=0;shiftEngine.totalTips=0;shiftEngine.turn=1;
+ shiftEngine.totalTurns=shiftEngine.day==='Saturday'?3:2;
+ shiftEngine.totalTablesServed=0;shiftEngine.score=0;shiftEngine.mistakes=0;
+ generateTurn(1);
  return shiftEngine;
 }
 function dynamicShiftSummary(){
- return `${shiftEngine.day.toUpperCase()} · ${shiftEngine.weather}
-${shiftEngine.patio?'Patio open · ':''}${shiftEngine.tables.length} tables
-Event: ${shiftEngine.event.name}`;
+ return `${shiftEngine.day.toUpperCase()} · ${shiftEngine.shift?.theme||'Generated Shift'}
+Section: ${shiftEngine.section.name}
+Weather: ${shiftEngine.weather}${shiftEngine.patio?' · Patio open':''}
+Turns: ${shiftEngine.totalTurns}
+Events: ${shiftEngine.events.map(e=>e.name).join(' + ')}`;
 }
-function startGeneratedShift(day){
+function startGeneratedShift(shiftOrDay){
+ const shift=typeof shiftOrDay==='string'
+  ? {id:`generated-${career.week}-${Date.now()}`,day:shiftOrDay,dayIndex:weekdayNames.indexOf(shiftOrDay),theme:`${shiftOrDay} Shift`,section:null,type:'scheduled'}
+  : shiftOrDay;
  clearTrainingGuests();
- guestFlow.parties=guestFlow.parties.filter(p=>p.tableId!=='62');
- serverTraining.finished=false;serverTraining.active=false;
- guestFlow.parties=[];guestFlow.barGuests=[];startBarTraffic();
- generateShift(day);gameDay='DYNAMIC_SHIFT';fridayShift.active=false;serverTraining.active=false;
- clockedIn=true;life.minutes=day==='Saturday'?11*60:16*60;
- career.dayIndex=day==='Saturday'?5:4;
- p.x=900;p.y=260;
- shiftEngine.tables.forEach(t=>{const party=createParty(t.id,t.party);party.state='SEATED';seatParty(party)});
- document.getElementById('obj').textContent=`${day.toUpperCase()} SHIFT · Check your generated section`;
+ serverTraining.finished=false;serverTraining.active=false;fridayShift.active=false;
+ guestFlow.parties=[];guestFlow.hostEscort=null;guestFlow.barGuests=[];startBarTraffic();
+ generateShift(shift);gameDay='DYNAMIC_SHIFT';
+ clockedIn=true;life.minutes=shift.time&&shift.time.startsWith('11')?11*60:16*60;
+ career.dayIndex=shift.dayIndex>=0?shift.dayIndex:career.dayIndex;
+ career.activeShiftId=shift.id;saveCareer();
+ p.x=900;p.y=260;desarae.x=690;desarae.y=770;
+ document.getElementById('obj').textContent=`${shift.day.toUpperCase()} · ${shiftEngine.section.name} · Turn 1`;
  say('SHIFT BRIEFING',dynamicShiftSummary(),[
-  ['Start shift.',()=>openDynamicTable(0)],
-  ['What could possibly go wrong?',()=>say('DESARAE',shiftEngine.event.text,[['Of course.',()=>openDynamicTable(0)]])]
+  ['Start the first turn.',()=>openDynamicTable(0)],
+  ['Ask Des what today feels like.',()=>say('DESARAE',shiftEngine.day==='Saturday'?'Fast turns, patio pressure, and every guest suddenly needs ranch at the same time.':shiftEngine.events[0].text,[['Let’s work.',()=>openDynamicTable(0)]])]
  ]);
  updateLifeHud();saveCheckpoint('DYNAMIC_SHIFT');
 }
 function openDynamicTable(index){
- const t=shiftEngine.tables[index];if(!t){finishDynamicShift();return}
- document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} · Serve Table ${t.id}`;
- const needs=t.needs.length?t.needs.join(', '):'surprisingly nothing extra';
- say(`TABLE ${t.id} · ${t.type.name}`,`${t.party} guests. Needs: ${needs}.`,[
-  ['Take the order carefully.',()=>openDynamicPOS(index)],
-  ['Try to remember everything without writing it down.',()=>{fridayMistake(3,'Trusted chaotic memory');openDynamicPOS(index)}]
+ const t=shiftEngine.tables[index];
+ if(!t){finishDynamicTurn();return}
+ shiftEngine.currentIndex=index;
+ document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · T${t.id} · Turn ${shiftEngine.turn}/${shiftEngine.totalTurns}`;
+ const needs=t.needs.length?t.needs.join(', '):'nothing extra yet';
+ const eventLine=shiftEngine.events[index%shiftEngine.events.length]?.text||'The restaurant keeps moving.';
+ say(`TABLE ${t.id} · ${t.type.name}`,`${t.party} guests. Requests: ${needs}.\n\n${eventLine}`,[
+  ['Greet, take drinks and write the order.',()=>openDynamicPOS(index)],
+  ['Try to memorize everything while looking confident.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Trusted chaotic memory');openDynamicPOS(index)}]
  ]);
 }
 function openDynamicPOS(index){
  const t=shiftEngine.tables[index];
  openOrderPOS({
-  title:`POS 2 · TABLE ${t.id}`,
-  instructions:`Generated ${shiftEngine.day} order. Match every guest.`,
+  title:`POS 2 · TABLE ${t.id} · TURN ${shiftEngine.turn}`,
+  instructions:`Match ${t.party} generated orders. Every turn uses a new party and menu combination.`,
   guests:t.order.map(o=>{
    const correct=engineMenu.find(m=>m.item===o.item);
-   const wrong=engineMenu.filter(m=>m.item!==o.item).sort(()=>Math.random()-.5).slice(0,2).map(m=>m.item);
-   return {items:[o.item,...wrong].sort(()=>Math.random()-.5),sides:correct.sides,mods:correct.mods};
+   const wrong=shuffle(engineMenu.filter(m=>m.item!==o.item)).slice(0,2).map(m=>m.item);
+   return {items:shuffle([o.item,...wrong]),sides:shuffle(correct.sides),mods:shuffle(correct.mods)};
   })
  },vals=>{
-   const ok=posMatches(vals,t.order);
-   if(ok)fridayGood(5,'Generated order entered correctly');else fridayMistake(5,'Generated order error');
-   resolveDynamicNeeds(index);
+  const ok=posMatches(vals,t.order);
+  if(ok){shiftEngine.score+=5;fridayGood(3,'Generated order entered correctly')}
+  else{shiftEngine.mistakes++;fridayMistake(4,'Generated order error')}
+  resolveDynamicNeeds(index);
  });
 }
 function resolveDynamicNeeds(index){
  const t=shiftEngine.tables[index];
- const choices=[
-  ['Bring every requested item before food arrives.',()=>fridayGood(3,'Handled generated needs')],
-  ['Forget one thing and hope they stop asking.',()=>fridayMistake(2,'Missed generated need')],
-  ['Make a joke about Montana’s ranch economy.',()=>fridayGood(1,'Kept guests entertained')]
- ];
- say(`TABLE ${t.id} · FOLLOW-UP`,`They request: ${t.needs.join(', ')||'the check'}.`,choices.map(c=>[c[0],()=>{c[1]();closeDynamicTable(index)}]));
+ const needs=t.needs.join(', ')||'the check';
+ say(`TABLE ${t.id} · MID-MEAL NEEDS`,`They need ${needs}.`,[
+  ['Bring every requested item and refill drinks.',()=>{shiftEngine.score+=3;fridayGood(2,'Handled generated needs');closeDynamicTable(index)}],
+  ['Bring most of it and forget one tiny thing.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Missed generated need');closeDynamicTable(index)}],
+  ['Use charm to buy time, then fix it.',()=>{shiftEngine.score+=1;gainRelationship('Desarae',1,'Recovered a table');closeDynamicTable(index)}]
+ ]);
 }
 function closeDynamicTable(index){
  const t=shiftEngine.tables[index];t.status='PAID';releaseParty(t.id);
- const base=55+t.party*18,tip=Math.round(base*.18*t.type.tip*shiftEngine.difficulty);
- shiftEngine.totalTips+=tip;shiftEngine.completed++;
- life.cash+=tip;life.checking+=economy.averageHourlyWages;updateLifeHud();
- say(`TABLE ${t.id} CLOSED`,`Tip: $${tip}. ${shiftEngine.event.text}`,[
+ let base=45+t.party*22;
+ if(shiftEngine.events.some(e=>e.effects.includes('tips')))base+=18;
+ const tip=Math.max(5,Math.round(base*.18*t.type.tip*shiftEngine.difficulty));
+ shiftEngine.totalTips+=tip;shiftEngine.completed++;shiftEngine.totalTablesServed++;
+ life.cash+=tip;updateLifeHud();
+ say(`TABLE ${t.id} CLOSED`,`Tip: $${tip}. Table reset. A new party can use this table later in the shift.`,[
   ['Next table.',()=>openDynamicTable(index+1)]
  ]);
 }
+function finishDynamicTurn(){
+ if(shiftEngine.turn<shiftEngine.totalTurns){
+  shiftEngine.turn++;
+  life.minutes+=55;
+  const label=shiftEngine.turn===shiftEngine.totalTurns?'FINAL TURN':'NEXT TURN';
+  say(label,`Your section has turned. Old guests leave, tables reset, and ${shiftEngine.section.tables.length} completely new parties are being seated.`,[
+   ['Start the new turn.',()=>{generateTurn(shiftEngine.turn);openDynamicTable(0)}],
+   ['Take ten seconds in the walk-in first.',()=>{life.stress=Math.max(0,life.stress-4);generateTurn(shiftEngine.turn);openDynamicTable(0)}]
+  ]);
+ }else finishDynamicShift();
+}
 function finishDynamicShift(){
  shiftEngine.active=false;clockedIn=false;
- const grade=fridayShift.mistakes<=1?'A':fridayShift.mistakes<=3?'B':'C';
- career.history.push({week:career.week,shift:shiftEngine.day,tips:shiftEngine.totalTips,grade});
- if(shiftEngine.day==='Saturday'){career.saturdayComplete=true;advanceDay(2)}
- else career.fridayComplete=true;
+ guestFlow.parties.forEach(g=>g.state='LEAVING');
+ const grade=shiftEngine.mistakes<=1?'A':shiftEngine.mistakes<=4?'B':'C';
+ const wages=economy.averageHourlyWages;
+ life.checking+=wages;
+ gainRelationship('Desarae',grade==='A'?5:3,'Finished a generated shift');
+ gainRelationship('Jay',grade==='A'?3:1,'Completed scheduled work');
+ gainRelationship('Tuff',grade==='A'?3:1,'Built manager trust');
+ completeCareerShift(shiftEngine.shift,{tips:shiftEngine.totalTips,grade,tables:shiftEngine.totalTablesServed,section:shiftEngine.section.name});
  endDayRecovery();saveCareer();saveCheckpoint('DYNAMIC_DONE');
- document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} COMPLETE · Tips $${shiftEngine.totalTips}`;
- say('DESARAE — SHIFT REVIEW',`Grade ${grade}. Tips: $${shiftEngine.totalTips}. Energy restored after ending the day.`,[
-  ['Open Swim Schedule.',()=>{openPhone();openApp('swim')}],
-  ['Celebrate surviving.',null]
+ document.getElementById('obj').textContent=`${shiftEngine.day.toUpperCase()} COMPLETE · ${shiftEngine.totalTablesServed} tables · $${shiftEngine.totalTips} tips`;
+ say('DESARAE — SHIFT REVIEW',`Grade ${grade}. ${shiftEngine.totalTablesServed} tables served across ${shiftEngine.totalTurns} turns in ${shiftEngine.section.name}. Tips: $${shiftEngine.totalTips}. Wages: $${wages}.`,[
+  ['Open the new Swim Schedule.',()=>{openPhone();openApp('swim')}],
+  ['Ask how the relationships are going.',()=>say('DESARAE',career.shiftsWorked<4?'You are still new, but people are learning whether you follow through.':career.shiftsWorked<10?'You are becoming part of the crew. People notice when you help without being asked.':'You are not “the new person” anymore. That changes what people will tell you—and what they expect from you.',[['Good.',null]])]
  ]);
 }
 
-function startSaturdayShift(){
- career.dayIndex=5;saveCareer();
- achievement('WHY DID I PICK THIS UP?','Start the optional Saturday cover shift.');
- startGeneratedShift('Saturday');
-}
 
 function startFridayShift(){
- career.dayIndex=4;saveCareer();saveCheckpoint('FRIDAY_SHIFT');
+ career.dayIndex=4;
+ if(!career.activeShiftId){
+  const s=career.currentSchedule.find(x=>x.day==='Friday'&&!career.completedShiftIds.includes(x.id));
+  if(s)career.activeShiftId=s.id;
+ }
+ saveCareer();saveCheckpoint('FRIDAY_SHIFT');
  gameDay='FRIDAY_SHIFT';stage=20;postShiftStep=0;serverTraining.active=false;serverTraining.finished=true;
  fridayShift.active=true;fridayShift.step=1;fridayShift.score=0;fridayShift.mistakes=0;fridayShift.tips=0;fridayShift.carrying='';
  fridayShift.tables.forEach(t=>{t.status='EMPTY';t.happiness=100});
@@ -1282,17 +1512,16 @@ function openTipEntry(){
  document.getElementById('posModal').style.display='flex';
 }
 function finishFridayShift(){
- fridayShift.active=false;clockedIn=false;const s=fridayShift.score,m=fridayShift.mistakes;
+ fridayShift.active=false;clockedIn=false;career.firstFridayDone=true;
+ gainRelationship('Desarae',5,'Completed first Friday');
+ gainRelationship('Jay',3,'Completed first Friday');
+ gainRelationship('Tuff',3,'Completed first Friday');const s=fridayShift.score,m=fridayShift.mistakes;
  const grade=s>=55?'A':s>=40?'B':s>=25?'C':'NEEDS ANOTHER TRAINING SHIFT';
  if(s>=55)achievement('SECTION SURVIVOR','Complete your detailed Friday section with an A.');
  else achievement('FIRST FRIDAY DOWN','Survive your first detailed Friday shift.');
- career.fridayComplete=true;career.history.push({week:career.week,shift:'Friday',tips:fridayShift.tips,score:s});
- if(career.pickedSaturday){
-  document.getElementById('obj').textContent='FRIDAY COMPLETE · Saturday shift added to Swim Schedule';
- }else{
-  advanceDay(3);
- }
- saveCareer();saveCheckpoint('FRIDAY_DONE');
+ const active=career.currentSchedule.find(x=>x.id===career.activeShiftId)||career.currentSchedule.find(x=>x.day==='Friday'&&!career.completedShiftIds.includes(x.id));
+ completeCareerShift(active,{tips:fridayShift.tips,score:s,grade});
+ saveCheckpoint('FRIDAY_DONE');
  document.getElementById('obj').textContent='FRIDAY COMPLETE · Grade '+grade+' · Tips $'+fridayShift.tips.toFixed(2);
  say('DESARAE — SUPERVISOR','Friday score: '+s+' · Mistakes: '+m+' · Grade: '+grade+'. You handled three tables, real modifiers, a needy table, prebussing, closeout, and a ranch-related workplace disaster.',[
   ['Did I level up?',()=>say('DESARAE — SUPERVISOR',s>=40?'Your reputation moved up. Better sections and less supervision are getting closer.':'Not yet. Promotions are built from patterns, accuracy and teamwork—not surviving one ranch tornado.',[['Fair.',null]])],
@@ -1473,8 +1702,10 @@ function nearestManager(max=155){
  return best;
 }
 function talkManager(n){
+ const relName=n.name==='KELLEN'?'Kellen':'Kyle';gainRelationship(relName,1,'Talked with '+relName);
+ const rel=relationshipLevel(relName);
  if(n.name==='KELLEN'){
-  say('KELLEN — MANAGER','Kitchen side is controlled chaos. If you are lost, ask. If you are holding raw chicken, do not wander around looking philosophical.',[
+  say('KELLEN — MANAGER',rel>=2?'You have been here long enough that I can tell you the kitchen version of events instead of the FOH version.':'Kitchen side is controlled chaos. If you are lost, ask. If you are holding raw chicken, do not wander around looking philosophical.',[
    ['What do you train?',()=>say('KELLEN — MANAGER','Dish, prep, line, kitchen flow, cleaning, food safety—the glamorous empire.',[['Heard.',null]])],
    ['Any advice?',()=>say('KELLEN — MANAGER','Stay organized, communicate, and clean as you go. Future you will be grateful.',[['Thanks.',null]])],
    ['What do you do for fun?',()=>say('KELLEN — MANAGER','Uhh... uhh... Spider-Man.',[
@@ -1483,7 +1714,7 @@ function talkManager(n){
    ])]
   ]);
  }else{
-  say('KYLE — MANAGER','Bar and expo are the engine room. Slow is bad. Fast and wrong is also bad. Keep the ship steady, communicate, and don’t let one bad ticket turn into a mutiny.',[
+  say('KYLE — MANAGER',rel>=2?'You have weathered enough storms that I trust you near the helm.':'Bar and expo are the engine room. Slow is bad. Fast and wrong is also bad. Keep the ship steady, communicate, and don’t let one bad ticket turn into a mutiny.',[
    ['What do you train?',()=>say('KYLE — MANAGER','Bartenders and expo. Drinks, tickets, modifiers, communication, and yelling for hands with purpose. Every good ship needs a crew that answers the call.',[
      ['You really like ship metaphors.',()=>say('KYLE — MANAGER','A restaurant is a ship. The bar is the helm, expo is navigation, the kitchen is the engine room, and management is mostly plugging leaks while pretending the weather is fine.',[
        ['That was weirdly heartfelt.',()=>say('KYLE — MANAGER','People do better when they know somebody trusts them to hold their station. Keep your word, help the crew, and don’t abandon ship during the rush.',[['Okay, Dad.',null]])],
@@ -1642,7 +1873,7 @@ if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
   ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(t.x-42-cam.x,t.y-32-cam.y,84,64);
   L(`T${t.id} · ${t.status}`,t.x,t.y+58,10,col);
  }
- L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.weather}`,1050,1120,13,'#fff3d2');
+ L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · TURN ${shiftEngine.turn}/${shiftEngine.totalTurns}`,1050,1120,13,'#fff3d2');
 }
 
 if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
