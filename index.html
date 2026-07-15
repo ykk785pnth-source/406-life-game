@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v9.2</title><style>
+<title>406 Life v9.4</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · WEST KITCHEN REBUILD v9.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · KITCHEN POLISH & EXPO SERVICE v9.4</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -311,24 +311,25 @@ function taskRows(){
    ['Clock in at POS 2',orientationStep>5],
    ['Tour 1: Host Stand',orientationStep>6],
    ['Tour 2: Service Well & Bar Entry',orientationStep>7],
-   ['Tour 3: POS 2 & Time Clock',orientationStep>8],
-   ['Tour 4: Center Bar',orientationStep>9],
-   ['Tour 5: Patio Garage Doors',orientationStep>10],
-   ['Tour 6: North Kitchen Entry',orientationStep>11],
-   ['Tour 7: Salad Line',orientationStep>12],
-   ['Tour 8: Prep Tables',orientationStep>13],
-   ['Tour 9: Prep Stove',orientationStep>14],
-   ['Tour 10: Prep Wall',orientationStep>15],
-   ['Tour 11: Fryers',orientationStep>16],
-   ['Tour 12: Grill',orientationStep>17],
-   ['Tour 13: Sauté',orientationStep>18],
-   ['Tour 14: Hot-Line Aisle',orientationStep>19],
-   ['Tour 15: Cold Line',orientationStep>20],
-   ['Tour 16: Kitchen Pass',orientationStep>21],
-   ['Tour 17: Fry Freezer',orientationStep>22],
-   ['Tour 18: Dish Corridor',orientationStep>23],
-   ['Tour 19: South Kitchen Entry',orientationStep>24],
-   ['Find your trainer',orientationStep>25]
+   ['Tour 3: Pos 2 & Time Clock',orientationStep>8],
+   ['Tour 4: Expo & Server Station',orientationStep>9],
+   ['Tour 5: Center Bar',orientationStep>10],
+   ['Tour 6: Patio Garage Doors',orientationStep>11],
+   ['Tour 7: North Kitchen Entry',orientationStep>12],
+   ['Tour 8: Salad Line',orientationStep>13],
+   ['Tour 9: Prep Tables',orientationStep>14],
+   ['Tour 10: Prep Stove',orientationStep>15],
+   ['Tour 11: Prep Wall',orientationStep>16],
+   ['Tour 12: Fryers',orientationStep>17],
+   ['Tour 13: Grill',orientationStep>18],
+   ['Tour 14: Sauté',orientationStep>19],
+   ['Tour 15: Hot-Line Aisle',orientationStep>20],
+   ['Tour 16: Cold Line',orientationStep>21],
+   ['Tour 17: Kitchen Pass',orientationStep>22],
+   ['Tour 18: Fry Freezer',orientationStep>23],
+   ['Tour 19: Dish Corridor',orientationStep>24],
+   ['Tour 20: South Kitchen Entry',orientationStep>25],
+   ['Find your trainer',orientationStep>26]
   ];
   return rows;
  }
@@ -337,7 +338,7 @@ function taskRows(){
    'Clock in at POS 2','Check seating chart','Greet Table 31','Greet Table 32','Acknowledge Table 33',
    'Ring drinks','Pick up drinks & supplies','Deliver Table 31 drinks','Deliver Table 32 drinks','Deliver Table 33 supplies',
    'Take Table 31 order','Ring Table 31 at POS','Take Table 32 order','Ring Table 32 at POS','Take Table 33 order',
-   'Ring Table 33 at POS','Get needy-table refills','Deliver refills','Answer HANDS','Run Table 31 food',
+   'Ring Table 33 at POS','Get needy-table refills','Deliver refills','Pick up food from Kellen at Expo','Run Table 31 food',
    'Prebus Table 31','Drop dishes at bussing station','Pick up Tables 32 & 33','Run Table 32','Run Table 33',
    'Handle ranch incident','Get cleanup supplies','Clean broken dishes','Check Table 31','Check Table 32','Check Table 33',
    'Enter tips and close checks','Get Friday review'
@@ -351,7 +352,7 @@ function taskRows(){
    BRIEFING:'Check section at host stand',GREET:t?`Walk to and greet Table ${t.id}`:'Find table',
    RING_ORDER:'Ring order at POS 2',PICKUP_DRINKS:'Pick up drinks at service well',
    DELIVER_DRINKS:t?`Deliver drinks to Table ${t.id}`:'Deliver drinks',
-   PICKUP_FOOD:'Answer HANDS at kitchen pass',DELIVER_FOOD:t?`Run food to Table ${t.id}`:'Run food',
+   PICKUP_FOOD:'Pick up food from Kellen at Expo',DELIVER_FOOD:t?`Run food to Table ${t.id}`:'Run food',
    GET_NEEDS:'Gather requests at POS 2',DELIVER_NEEDS:t?`Deliver requests to Table ${t.id}`:'Deliver requests',
    PRESENT_CHECK:t?`Present check at Table ${t.id}`:'Present check',CLOSE_POS:'Close check at POS 2'
   };
@@ -365,7 +366,7 @@ function taskRows(){
   const labels=[
    'Meet Desarae at Table 62','Greet Table 62','Take drink order','Ring drinks at POS 2',
    'Pick up drinks at service well','Deliver drinks','Take food order','Ring food at POS 2',
-   'Answer HANDS at kitchen pass','Run food','Check back','Get ranch at POS 2',
+   'Pick up food from Kellen at Expo','Run food','Check back','Get ranch at POS 2',
    'Deliver ranch','Present check','Process payment','Return to Desarae'
   ];
   if(serverTraining.active){
@@ -647,7 +648,7 @@ const workers=[
 let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
 updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
-const kellen={x:350,y:500,name:'KELLEN'};
+const kellen={x:-6,y:610,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
 
 
@@ -788,11 +789,11 @@ function orientationInteract(){
   document.getElementById('obj').textContent='Orientation: Walk the restaurant with Jay';
   say('TIME CLOCK','CLOCKED IN · 4:00 PM',[['Start the building tour.',()=>startBuildingTour()]]);return true;
  }
- if(orientationStep>=6&&orientationStep<=24){return tourInteract()}
- if(orientationStep===25){
+ if(orientationStep>=6&&orientationStep<=25){return tourInteract()}
+ if(orientationStep===26){
   const trainer=getTrainer();
   if(dist(p,trainer)<175){
-   orientationStep=26;tutorialDone=true;rep(5,'Completed orientation');
+   orientationStep=27;tutorialDone=true;rep(5,'Completed orientation');
    const role=getSavedJob();
    if(role==='SERVER'||role==='HOST'){
     say('DESARAE — SUPERVISOR','Orientation is over. Now you get one supervised table. I’ll train you through the entire service cycle—greeting, drinks, POS, food, check-back, payment, and tip.',[
@@ -814,9 +815,10 @@ const tourStops=[
  {x:760,y:300,name:'HOST STAND',text:'This is the host stand: wait list, reservations, seating rotation, and the first person blamed for a table that chose to sit themselves.'},
  {x:800,y:430,name:'SERVICE WELL & BAR ENTRY',text:'Servers pick up drinks here. Keep the lane clear and never make Jelena hunt for her bar rag.'},
  {x:500,y:720,name:'POS 2 & TIME CLOCK',text:'POS 2 contains the time clock. Ring accurately and clock in before Tuff notices you working for free.'},
+{x:-6,y:610,name:'EXPO & SERVER STATION',text:'This is the real expo pickup line. Kellen coordinates finished food here; plates, supplies, and server traffic feed into this area. Plates, ramekins, supplies, side work, and server traffic live here. Food pickup does not happen at the window.'},
  {x:1080,y:520,name:'CENTER BAR',text:'The bar has a guest rail, staff entry, bartender walkway, taps, bottles, and Diet Coke Dave’s permanent ecosystem.'},
  {x:980,y:1040,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. Summer money lives out there, along with twelve thousand steps.'},
- {x:38,y:352,name:'NORTH KITCHEN ENTRY',text:'The kitchen is west of the dining room through this entrance beside the pass. We are not crossing the street to make a burger.'},
+ {x:38,y:352,name:'NORTH KITCHEN ENTRY',text:'The kitchen is west of the dining room through this entrance beside the BOH viewing window and expo station. We are not crossing the street to make a burger.'},
  {x:-912,y:310,name:'SALAD LINE',text:'The salad line runs horizontally against the road wall. Salads, cold bowls, dressings, garnishes, and an unreasonable number of modifications.'},
  {x:-960,y:585,name:'PREP TABLES',text:'Prep tables handle slicing, portioning, labeling, and everything that keeps dinner service from collapsing.'},
  {x:-628,y:815,name:'PREP STOVE',text:'The prep stove handles soup, sauces, and stock. Eyeballing eighteen quarts is how legends and write-ups are created.'},
@@ -826,7 +828,7 @@ const tourStops=[
  {x:-350,y:972,name:'SAUTÉ',text:'Sauté is hot pans, steam, sauces, and a very sincere need for everyone to call behind.'},
  {x:-221,y:650,name:'HOT-LINE AISLE',text:'This narrow aisle belongs to cooks working fry, grill, and sauté. Do not stand here contemplating your life.'},
  {x:-118,y:650,name:'COLD LINE',text:'The cold line is its own vertical station against the wall. It is separate from the kitchen pass.'},
- {x:-4,y:648,name:'KITCHEN PASS',text:'The separate vertical kitchen pass is on the far-right edge beside the dining room. Finished plates land here and expo calls HANDS.'},
+ {x:-4,y:648,name:'KITCHEN PASS',text:'The separate vertical kitchen pass is on the far-right edge beside the dining room. Kellen runs expo here and hands finished food to servers.'},
  {x:-590,y:312,name:'FRY FREEZER',text:'The fry freezer sits against the road wall. Restock before the rush instead of discovering the problem during it.'},
  {x:-70,y:1210,name:'DISH CORRIDOR',text:'This corridor leads to dish: dirty plates in, clean racks out, and the heartbeat everybody ignores until it stops.'},
  {x:38,y:942,name:'SOUTH KITCHEN ENTRY',text:'This lower entrance reconnects the kitchen’s main walkway to the dining room and keeps traffic flowing both directions.'}
@@ -835,10 +837,10 @@ let tourIndex=0,tourJayLeading=false;
 function startBuildingTour(){
  tourIndex=0;orientationStep=6;tourJayLeading=true;
  const s=tourStops[0];
- document.getElementById('obj').textContent='Tour 1/19: Follow Jay to '+s.name;
+ document.getElementById('obj').textContent='Tour 1/20: Follow Jay to '+s.name;
 }
 function advanceJayTour(dt){
- if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>24||!tourJayLeading)return;
+ if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>25||!tourJayLeading)return;
  const s=tourStops[tourIndex],dx=s.x-jay.x,dy=s.y-jay.y,m=Math.hypot(dx,dy);
  if(m>12){
   jay.moving=true;jay.walkPhase=(jay.walkPhase||0)+dt*9;
@@ -846,7 +848,7 @@ function advanceJayTour(dt){
   jay.x+=dx/m*78*dt;jay.y+=dy/m*78*dt;
  }else{
   jay.x=s.x;jay.y=s.y;jay.moving=false;tourJayLeading=false;
-  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/19: Interact with Jay at ${s.name}`;
+  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/20: Interact with Jay at ${s.name}`;
  }
 }
 function tourInteract(){
@@ -856,7 +858,7 @@ function tourInteract(){
    tourIndex++;orientationStep++;
    if(tourIndex<tourStops.length){
     tourJayLeading=true;
-    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/19: Follow Jay to ${tourStops[tourIndex].name}`;
+    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/20: Follow Jay to ${tourStops[tourIndex].name}`;
    }else finishTour();
   }]]);
   return true;
@@ -864,7 +866,7 @@ function tourInteract(){
  return false;
 }
 function finishTour(){
- orientationStep=25;const tr=getTrainer(),job=getSavedJob();
+ orientationStep=26;const tr=getTrainer(),job=getSavedJob();
  document.getElementById('obj').textContent='Orientation: Find '+tr.name+' for '+job+' training';
  say('JAY — GENERAL MANAGER','That’s the building. You’re assigned to '+job+', so '+tr.name+' takes it from here. Work well, your reputation rises and better shifts and promotions unlock. Make mistakes, learn from them. Keep making the same mistakes? Your career gets very slow.',[
   ['Go find '+tr.name+'.',null],
@@ -1136,7 +1138,7 @@ const kitchenWorld={
  unlocked:true,
  minX:-1160,
  stations:[
-  {id:'salad',name:'SALAD LINE',x:-1040,y:225,w:255,h:92,color:'#c14382'},
+  {id:'salad',name:'SALAD LINE',x:-850,y:225,w:285,h:92,color:'#c14382'},
   {id:'fryFreezer',name:'FRY FREEZER',x:-700,y:225,w:220,h:72,color:'#c14382'},
   {id:'prep1',name:'PREP TABLE',x:-1030,y:390,w:140,h:180,color:'#c14382'},
   {id:'prep2',name:'PREP TABLE',x:-1030,y:690,w:140,h:180,color:'#c14382'},
@@ -1163,7 +1165,7 @@ const kitchenWorld={
   {x:18,y:295,w:55,h:125,name:'NORTH KITCHEN ENTRY'},
   {x:18,y:885,w:55,h:125,name:'SOUTH KITCHEN ENTRY'}
  ],
- mechanical:{x:-1090,y:215,w:180,h:175}
+ mechanical:{x:-1090,y:215,w:165,h:175}
 };
 function kitchenStation(id){return kitchenWorld.stations.find(s=>s.id===id)}
 function inKitchen(){return p.x>-1120&&p.x<40&&p.y>190&&p.y<1300}
@@ -1453,12 +1455,12 @@ ${shiftEngine.tables.map(x=>'Table '+x.id+' · '+x.party+' top').join('\n')}`,[
   say('SERVICE WELL',`Drinks for Table ${t.id}. Full tray—use both hands and do not baptize the tourists.`,[['Carry drinks.',null]]);return true;
  }
  if(shiftEngine.phase==='DELIVER_DRINKS'&&Math.hypot(p.x-t.x,p.y-t.y)<160){
-  shiftEngine.carrying='';t.status='COOKING';setDynamicPhase('PICKUP_FOOD',`Answer HANDS at the kitchen pass`);
+  shiftEngine.carrying='';t.status='COOKING';setDynamicPhase('PICKUP_FOOD',`Pick up food from Kellen at Expo`);
   say(`TABLE ${t.id}`,'Drinks delivered. The order is cooking. Expo calls for hands.',[['Head to the pass.',null]]);return true;
  }
- if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x+4,p.y-648)<175){
+ if(shiftEngine.phase==='PICKUP_FOOD'&&dist(p,kellen)<175){
   shiftEngine.carrying='food';setDynamicPhase('DELIVER_FOOD',`Run hot food to Table ${t.id}`);
-  say('EXPO',`Table ${t.id} is up. Verify the modifiers before leaving the window.`,[
+  say('KELLEN — EXPO',`Table ${t.id} is up. Verify the modifiers before leaving the window.`,[
    ['Verify every plate.',()=>{shiftEngine.score+=2}],
    ['Grab and pray.',()=>{shiftEngine.mistakes++;fridayMistake(2,'Skipped food verification')}]
   ]);return true;
@@ -1697,7 +1699,7 @@ function fridayShiftInteract(){
    ['“It came from the exact same container.”',()=>fridayMistake(1,'Destroyed the ranch illusion')]
   ]);return true;
  }
- if(fridayShift.step===19&&Math.hypot(p.x+4,p.y-648)<165){
+ if(fridayShift.step===19&&dist(p,kellen)<165){
   fridayShift.carrying='food';fridayShift.step=20;setFridayObjective('Run Table 31 food');
   achievement('FRIDAY HANDS','Answer the pass during your first real rush.');
   say('EXPO','31 is up. Classic Cheese no onion and Baja Tacos. Read the ticket before you move.',[
@@ -1712,11 +1714,11 @@ function fridayShiftInteract(){
    ['Leave everything until they are done.',()=>fridayMistake(2,'Skipped easy prebus')]
   ]);return true;
  }
- if(fridayShift.step===21&&Math.hypot(p.x-180,p.y-980)<150){
+ if(fridayShift.step===21&&Math.hypot(p.x+80,p.y-1148)<150){
   fridayShift.step=22;setFridayObjective('Run Tables 32 and 33 food');
   say('BUSSING STATION','Dishes dropped safely. Somewhere, a dishwasher briefly believes in teamwork.',[['Answer the next HANDS call.',null]]);return true;
  }
- if(fridayShift.step===22&&Math.hypot(p.x+4,p.y-648)<165){
+ if(fridayShift.step===22&&dist(p,kellen)<165){
   fridayShift.carrying='food';fridayShift.step=23;setFridayObjective('Run Table 32 food');
   say('EXPO','32 and 33 are both up. Table 32 first. Protect the salad modifier and the bison burger.',[['Verify everything.',()=>fridayGood(4,'Protected complex tickets')]]);return true;
  }
@@ -1741,7 +1743,7 @@ function fridayShiftInteract(){
    ['Blame the busser immediately.',()=>fridayMistake(6,'Threw coworker under the bus')]
   ]);return true;
  }
- if(fridayShift.step===26&&Math.hypot(p.x-180,p.y-980)<150){
+ if(fridayShift.step===26&&Math.hypot(p.x+80,p.y-1148)<150){
   fridayShift.carrying='towel';fridayShift.step=27;setFridayObjective('Return with towels and clean Table 33 area');
   say('BUSSING STATION','You grab towels, a wet-floor cone, gloves and a bus tub.',[['Return to Table 33.',null]]);return true;
  }
@@ -1882,7 +1884,7 @@ function serverTrainingInteract(){
    ['Three bowls of ranch',()=>{serverMistake(3,'Ranch is not an entrée');serverTraining.step=9;setServerObjective('Pick up the actual food at the kitchen pass');}]
   ]);return true;
  }
- if(serverTraining.step===9&&Math.hypot(p.x+4,p.y-648)<160){
+ if(serverTraining.step===9&&dist(p,kellen)<160){
   serverTraining.carrying='food';serverTraining.step=10;setServerObjective('Run food to Table 62');
   achievement('I NEED HANDS!','Answer the expo call and pick up food.');
   say('EXPO','HANDS! Table 62. Burger no onion, chicken sandwich, fries. Check the ticket before you leave.',[
@@ -1991,7 +1993,7 @@ function talkManager(n){
  const relName=n.name==='KELLEN'?'Kellen':'Kyle';gainRelationship(relName,1,'Talked with '+relName);
  const rel=relationshipLevel(relName);
  if(n.name==='KELLEN'){
-  say('KELLEN — MANAGER',rel>=2?'You have been here long enough that I can tell you the kitchen version of events instead of the FOH version.':'Kitchen side is controlled chaos. If you are lost, ask. If you are holding raw chicken, do not wander around looking philosophical.',[
+  say('KELLEN — MANAGER',rel>=2?'You have been here long enough that I can tell you the kitchen version of events instead of the FOH version.':'Kitchen side is controlled chaos. I’m stationed at the real kitchen pass now; the BOH window is only for visibility. If you are lost, ask. If you are holding raw chicken, do not wander around looking philosophical.',[
    ['What do you train?',()=>say('KELLEN — MANAGER','Dish, prep, line, kitchen flow, cleaning, food safety—the glamorous empire.',[['Heard.',null]])],
    ['Any advice?',()=>say('KELLEN — MANAGER','Stay organized, communicate, and clean as you go. Future you will be grateful.',[['Thanks.',null]])],
    ['What do you do for fun?',()=>say('KELLEN — MANAGER','Uhh... uhh... Spider-Man.',[
@@ -2061,12 +2063,26 @@ R(40,295,22,125,'#17191a',2);R(40,885,22,125,'#17191a',2);
 R(48,310,16,95,'#76583f',2);R(48,900,16,95,'#76583f',2);
 L('KITCHEN',86,352,8,'#f6d6af');L('KITCHEN',86,942,8,'#f6d6af');
 
-// kitchen pass runs north/south on west side
-R(330,355,82,390,'#3b3028',4);R(338,365,66,370,'#b8c8bf',3);
-L('KITCHEN',371,450,13,'#f3d2ad');L('PASS',371,475,13,'#f3d2ad');
+// large decorative BOH viewing window — no interaction or pickup purpose
+R(320,345,112,430,'#151718',7);
+R(331,356,90,408,'#9fb4b9',4);
+for(let y=378;y<750;y+=62)R(339,y,74,4,'#d8e5e7',2);
+ctx.fillStyle='#ffffff18';ctx.fillRect(342-cam.x,366-cam.y,68,385);
+L('BOH WINDOW',376,790,10,'#e5eff1');
 
-// left wall heat lamp / expo
-R(75,430,75,330,'#4a3830',6);L('HEAT',112,555,12,'#f5d2a9');L('LAMP',112,575,12,'#f5d2a9');L('EXPO',112,595,12,'#f5d2a9');
+// FOH expo/server station between BOH window and real kitchen-pass route
+R(82,420,198,410,'#332c28',9);
+R(96,438,170,72,'#626b6d',6);
+L('EXPO',181,465,14,'#f4d09c');
+L('SERVER STATION',181,490,9,'#f4d09c');
+R(100,535,74,112,'#b4bcbc',5);
+R(188,535,74,112,'#91a4a8',5);
+L('PLATES',137,596,9,'#243033');
+L('SUPPLIES',225,596,9,'#243033');
+R(100,670,162,126,'#575e60',5);
+for(let y=687;y<784;y+=24)R(114,y,134,14,'#d9dede',3);
+L('SIDEWORK',181,816,9,'#f4d09c');
+R(282,420,28,410,'#8f6b4f',2);
 
 // service well
 R(700,350,110,78,'#496ca8',5);L('SERVICE',755,382,10,'#eef6ff');L('WELL',755,400,10,'#eef6ff');
@@ -2104,7 +2120,7 @@ for(const q of [[455,340,'POS 1'],[255,470,'POS 3'],[500,720,'POS 2']]){
 R(536,692,24,42,'#17191b',5);R(541,698,14,12,'#79c79b',2);L('TIME',548,726,7,'#f3ad67');
 
 // two server drink stations flanking pass
-R(205,530,70,190,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,620,9,'#f1e1ca');
+R(215,545,70,190,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,620,9,'#f1e1ca');
 R(455,530,70,190,'#6d6258',6);L('DRINK',490,605,10,'#f1e1ca');L('STATION',490,620,9,'#f1e1ca');
 
 // tables per supplied plan
@@ -2167,11 +2183,11 @@ R(18,1010,22,174,'#151718');
 L('ROAD / STREET WALL',-540,180,14,'#f0f2f2');
 
 // mechanical / crawl-space room
-R(-1090,215,180,175,'#263d73',12);
-R(-1074,230,148,142,'#17284f',7);
-L('MECHANICAL',-1000,275,12,'#e7efff');
-L('CRAWL SPACE',-1000,296,11,'#e7efff');
-R(-1045,326,90,28,'#0e1830',4);
+R(-1090,215,165,175,'#263d73',12);
+R(-1075,230,135,142,'#17284f',7);
+L('MECHANICAL',-1008,275,11,'#e7efff');
+L('CRAWL SPACE',-1008,296,10,'#e7efff');
+R(-1050,326,84,28,'#0e1830',4);
 for(let x=-1025;x<-960;x+=20)R(x,333,8,14,'#778ab9',2);
 
 // overhead ductwork and black ceiling beams
@@ -2180,13 +2196,13 @@ for(let x=-840;x<-150;x+=115)R(x,235,18,34,'#262b2d',3);
 R(-860,272,700,9,'#62686a',4);
 
 // salad line: stainless counter, ingredient pans, shelves
-R(-1040,225,255,92,'#c14382',9);
-R(-1026,239,227,42,'#dfe4e4',6);
-for(let x=-1010;x<-815;x+=39){
+R(-850,225,285,92,'#c14382',9);
+R(-836,239,257,42,'#dfe4e4',6);
+for(let x=-820;x<-590;x+=39){
  R(x,248,29,24,['#6fac60','#d6bf55','#c76e5a','#e8dfc8','#83aaca'][Math.abs(Math.floor(x/39))%5],4);
 }
-R(-1022,291,215,12,'#5c6264',3);
-L('SALAD LINE',-912,310,12,'#251d22');
+R(-832,291,249,12,'#5c6264',3);
+L('SALAD LINE',-708,310,12,'#251d22');
 
 // fry freezer
 R(-700,225,220,72,'#c14382',8);
@@ -2266,6 +2282,7 @@ L('COLD LINE',-118,650,12,'#153a33');
 R(-38,330,68,625,'#9a6e45',6);
 R(-29,340,49,605,'#2d2926',4);
 for(let y=365;y<925;y+=62){
+ if(y>565&&y<680)continue;
  R(-20,y,31,27,'#e9e5dc',5);
  ctx.strokeStyle='#c5b27c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16-cam.x,y+7-cam.y);ctx.lineTo(7-cam.x,y+7-cam.y);ctx.stroke();
 }
@@ -2320,6 +2337,64 @@ for(const a of [[-380,400],[-320,400],[-380,625],[-330,625],[-350,840]]){
 L('BEHIND!',-228,450,9,'#f5ce79');
 L('HANDS!',70,520,10,'#f5ce79');
 
+// extra commercial detail pass
+// anti-fatigue mats
+for(const r of [
+ [-435,545,170,38],[-435,765,170,38],[-435,960,170,30],
+ [-182,960,130,32],[-50,960,85,32]
+])R(r[0],r[1],r[2],r[3],'#292d2e',5);
+
+// speed rack
+R(-775,710,82,210,'#555c5e',4);
+for(let y=730;y<900;y+=28)R(-762,y,56,12,'#d5d9d9',2);
+L('SPEED RACK',-734,938,8,'#1f2223');
+
+// produce boxes
+for(const b of [
+ [-875,820,'LETTUCE','#769f5f'],[-875,875,'TOMATO','#b85c4a'],
+ [-790,820,'ONION','#d7c47b'],[-790,875,'HERBS','#6e9a68']
+]){
+ R(b[0],b[1],72,42,'#8c6d49',4);R(b[0]+8,b[1]+8,56,19,b[3],3);L(b[2],b[0]+36,b[1]+35,7,'#29231e');
+}
+
+// hanging pans
+for(let x=-430;x<-270;x+=36){
+ ctx.strokeStyle='#adb2b3';ctx.lineWidth=3;
+ ctx.beginPath();ctx.arc(x-cam.x,320-cam.y,12,0,Math.PI*2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x-cam.x,308-cam.y);ctx.lineTo(x-cam.x,286-cam.y);ctx.stroke();
+}
+
+// ticket rail over real expo
+R(-55,300,150,12,'#c7c9c8',3);
+for(let x=-42;x<82;x+=24){
+ R(x,305,18,34,'#f4efe1',2);
+ R(x+4,312,10,2,'#b9a66c');
+ R(x+4,318,10,2,'#b9a66c');
+}
+
+// sanitizer buckets
+for(const b of [[-1010,940],[-650,930],[-275,940]]){
+ R(b[0],b[1],28,34,'#d63838',4);L('SAN',b[0]+14,b[1]+22,6,'#fff');
+}
+
+// rolling cart
+R(-260,1030,110,70,'#666d6f',5);
+for(let y=1042;y<1088;y+=20)R(-248,y,86,10,'#d3d7d7',2);
+for(const x of [-240,-170]){ctx.fillStyle='#242829';ctx.beginPath();ctx.arc(x-cam.x,1105-cam.y,8,0,Math.PI*2);ctx.fill()}
+
+// wall shelving with cambros
+R(-880,335,170,18,'#34393a',3);
+R(-880,460,170,18,'#34393a',3);
+for(const y of [348,395]){
+ for(let x=-862;x<-735;x+=42)R(x,y,32,36,['#d4c36e','#9bbca6','#d78c73'][Math.abs(Math.floor(x/42))%3],4);
+}
+
+// hood vent over hot line
+R(-450,225,215,52,'#454b4d',8);
+for(let x=-430;x<-255;x+=28)R(x,238,18,26,'#747b7c',2);
+L('HOOD',-342,286,8,'#1c1f20');
+
+
 // kitchen crew with station-specific placement
 const kitchenCrew=[
  {x:-350,y:455,name:'FRY COOK',col:'#4f5967'},
@@ -2355,12 +2430,12 @@ person(host,'#8b5c45','HOST');
 
 
 
-if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=24){
+if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=25){
  const ts=tourStops[tourIndex];
  if(ts){
   const pulse=8+Math.sin(life.minutes*4)*3;
   ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(ts.x-cam.x,ts.y-cam.y,34+pulse,0,Math.PI*2);ctx.stroke();
-  L(`TOUR ${tourIndex+1}/19`,ts.x,ts.y-55,11,'#ffdc69');
+  L(`TOUR ${tourIndex+1}/20`,ts.x,ts.y-55,11,'#ffdc69');
  }
 }
 
@@ -2376,7 +2451,7 @@ if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
  else if(['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(phase)&&target){mx=target.x;my=target.y;label='TABLE '+target.id}
  else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(phase)){mx=500;my=720;label='POS 2'}
  else if(phase==='PICKUP_DRINKS'){mx=800;my=430;label='SERVICE WELL'}
- else if(phase==='PICKUP_FOOD'){mx=-4;my=648;label='KITCHEN PASS'}
+ else if(phase==='PICKUP_FOOD'){mx=kellen.x;my=kellen.y;label='KITCHEN PASS'}
  if(mx!==undefined){ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(mx-cam.x,my-cam.y,42+Math.sin(life.minutes*5)*4,0,Math.PI*2);ctx.stroke();L(label,mx,my-58,10,'#ffdc69')}
  L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · TURN ${shiftEngine.turn}/${shiftEngine.totalTurns}`,1050,1120,13,'#fff3d2');
 }
@@ -2447,9 +2522,7 @@ const solidRects=[
  {x:700,y:395,w:35,h:82},{x:700,y:585,w:35,h:140},
  {x:1315,y:395,w:35,h:330},
  {x:790,y:445,w:470,h:230},
- {x:330,y:355,w:82,h:390},
- {x:75,y:430,w:75,h:330},
- {x:205,y:530,w:70,h:190},{x:455,y:530,w:70,h:190}
+ {x:215,y:545,w:70,h:190},{x:455,y:530,w:70,h:190}
 
 
 ,
@@ -2458,6 +2531,9 @@ const solidRects=[
  {x:70,y:1035,w:22,h:14},
  {x:158,y:1035,w:192,h:14},
  {x:70,y:1172,w:280,h:13}
+,
+ {x:320,y:345,w:112,h:430},
+ {x:82,y:420,w:198,h:410}
 ];
 const tableBlocks=[
  [140,290],[325,290],[510,290],[180,435],[380,435],
@@ -2490,6 +2566,7 @@ function interact(){
    ['Enhance.',()=>say('SKI PHOTO','The pixels refuse to cooperate, but spiritually? Nick Winn.',[['Case closed.',null]])]
   ]);return;
  }
+
  if(orientationInteract())return;
  if(dynamicShiftInteract())return;
  if(fridayShiftInteract())return;
@@ -2498,6 +2575,13 @@ function interact(){
  if(kitchenInteract())return;
  if(walkInInteraction())return;
  if(recoveryInteraction())return;
+ if(stage>=6&&inKitchen()&&dist(p,kellen)<165){
+  say('KELLEN — KITCHEN PASS','This is the real pickup point. Check the ticket, verify every modifier, call the table number, and move before expo needs the lane.',[
+   ['Where is the old pass?',()=>say('KELLEN','That is a BOH viewing window now. You can look through it. You cannot wait there for food.',[['Crystal clear.',null]])],
+   ['Check the current ticket.',()=>say('KELLEN','Table 32: no onion, extra ranch, side salad. Read it twice and run it hot.',[['HANDS!',null]])],
+   ['Get out of expo’s way.',null]
+  ]);return;
+ }
  if(stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150){
   dietCokeDaveTalk();return;
  }
@@ -2718,7 +2802,7 @@ if(shiftEngine.active){
  else if(t&&['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(shiftEngine.phase)&&Math.hypot(p.x-t.x,p.y-t.y)<165)pr=`INTERACT · Table ${t.id}`;
  else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(shiftEngine.phase)&&Math.hypot(p.x-500,p.y-720)<170)pr='INTERACT · POS 2 / Side Station';
  else if(shiftEngine.phase==='PICKUP_DRINKS'&&Math.hypot(p.x-800,p.y-430)<175)pr='INTERACT · Pick up drinks';
- else if(shiftEngine.phase==='PICKUP_FOOD'&&Math.hypot(p.x+4,p.y-648)<180)pr='INTERACT · Answer HANDS';
+ else if(shiftEngine.phase==='PICKUP_FOOD'&&dist(p,kellen)<180)pr='INTERACT · Pick up food from Kellen';
 }
 if(fridayShift.active){
  const F=fridayShift,A=fridayTable('31'),B=fridayTable('32'),C=fridayTable('33');
@@ -2730,8 +2814,8 @@ if(fridayShift.active){
  else if([6,12,14,16,17].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
  else if(F.step===31&&Math.hypot(p.x-500,p.y-720)<180)pr='INTERACT · ENTER TIPS & CLOSE CHECKS';
  else if(F.step===7&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
- else if([19,22].includes(F.step)&&Math.hypot(p.x+4,p.y-648)<170)pr='INTERACT · Kitchen pass';
- else if([21,26].includes(F.step)&&Math.hypot(p.x-180,p.y-980)<155)pr='INTERACT · Bussing station';
+ else if([19,22].includes(F.step)&&dist(p,kellen)<170)pr='INTERACT · Pick up food from Kellen';
+ else if([21,26].includes(F.step)&&Math.hypot(p.x+80,p.y-1148)<155)pr='INTERACT · Bussing station';
  else if(F.step===32&&dist(p,desarae)<220)pr='INTERACT · COMPLETE FRIDAY REVIEW';
 }
 
@@ -2742,7 +2826,7 @@ if(serverTraining.active){
  else if([2,3,6,7,10,11,13,14].includes(serverTraining.step)&&Math.hypot(p.x-T.x,p.y-T.y)<160)pr='INTERACT · Table 62';
  else if([4,8,12,15].includes(serverTraining.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · Server POS / Station';
  else if(serverTraining.step===5&&Math.hypot(p.x-800,p.y-430)<160)pr='INTERACT · Pick up drinks';
- else if(serverTraining.step===9&&Math.hypot(p.x+4,p.y-648)<165)pr='INTERACT · Answer HANDS call';
+ else if(serverTraining.step===9&&dist(p,kellen)<165)pr='INTERACT · Answer HANDS call';
  else if(serverTraining.step===16&&dist(p,desarae)<180)pr='INTERACT · Shift review';
 }
 
@@ -2751,7 +2835,7 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep===4&&jayFollow)pr=dist(p,jay)<210?'FOLLOW JAY · POS 2':'FOLLOW JAY';
  else if(orientationStep===4&&!jayFollow&&dist(p,jay)<175)pr='INTERACT · Talk to Jay at POS 2';
  else if(orientationStep===5&&Math.hypot(p.x-500,p.y-720)<130)pr='INTERACT · Clock in';
- else if(orientationStep>=6&&orientationStep<=24){
+ else if(orientationStep>=6&&orientationStep<=25){
   const ts=tourStops[tourIndex];
   if(tourJayLeading)pr=dist(p,jay)<220?`FOLLOW JAY · ${ts.name}`:'FOLLOW JAY';
   else if(dist(p,jay)<180)pr='INTERACT · Learn about '+ts.name;
@@ -2767,6 +2851,7 @@ if(!pr&&inWalkIn()&&Math.hypot(p.x-125,p.y-1125)<68)pr='INTERACT · Take walk-in
 if(!pr&&stage>=6&&dist(p,maverick)<160)pr='INTERACT · Talk to Maverick';
 if(!pr && stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150)pr='INTERACT · Talk to Diet Coke Dave';
 if(!pr&&!inKitchen()&&p.x<110&&p.x>35&&((p.y>280&&p.y<435)||(p.y>870&&p.y<1025)))pr='WALK WEST · Enter kitchen';
+if(!pr&&inKitchen()&&dist(p,kellen)<165)pr='INTERACT · Pick up food from Kellen at Expo';
 if(!pr&&inKitchen()&&p.x<-910&&p.x>-1095&&p.y>210&&p.y<400)pr='INTERACT · Mechanical / Crawl Space';
 if(!pr&&inKitchen()&&p.x>-185&&p.x<35&&p.y>990&&p.y<1300)pr='INTERACT · Dish Corridor';
 if(!pr&&inKitchen()){
