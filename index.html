@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v9.6</title><style>
+<title>406 Life v9.7</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · STABLE SAVE & CLEAN EXPO v9.6</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · TRAFFIC FLOW RESET v9.7</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -696,7 +696,7 @@ const kyle={x:820,y:500,name:'KYLE'};
 
 
 const maverick={
- name:'MAVERICK',x:-790,y:790,col:'#6f6e82',
+ name:'MAVERICK',x:-620,y:1060,col:'#6f6e82',
  skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',
  moving:false,walkPhase:0,facing:'down',bandana:true,paintClothes:true
 };
@@ -2110,6 +2110,11 @@ R(875,180,150,65,'#33251f');L('FRONT ENTRANCE',950,220,13,'#ffd09c');
 
 
 // West-side kitchen entrances and pass connection
+// clear north kitchen-door arrival lane
+R(42,285,160,145,'#b58d69',4);
+for(let x=65;x<185;x+=38)R(x,355,25,3,'#d8bb95');
+L('CLEAR ENTRY',122,410,8,'#f5ddbd');
+
 R(40,295,22,125,'#17191a',2);R(40,885,22,125,'#17191a',2);
 R(48,310,16,95,'#76583f',2);R(48,900,16,95,'#76583f',2);
 L('KITCHEN',86,352,8,'#f6d6af');L('KITCHEN',86,942,8,'#f6d6af');
@@ -2121,16 +2126,14 @@ for(let y=378;y<750;y+=62)R(339,y,74,4,'#d8e5e7',2);
 ctx.fillStyle='#ffffff18';ctx.fillRect(342-cam.x,366-cam.y,68,385);
 L('BOH WINDOW',376,790,10,'#e5eff1');
 
-// compact FOH expo/server station with an open traffic lane
-R(105,500,165,185,'#332c28',8);
-R(116,512,143,45,'#7b8587',5);
-L('SERVER EXPO',187,540,11,'#f4d09c');
-R(118,572,62,72,'#b7bfc0',5);
-R(190,572,67,72,'#92a4a8',5);
-L('PLATES',149,616,8,'#243033');
-L('SUPPLIES',223,616,8,'#243033');
-R(118,654,139,20,'#d9dede',4);
-L('OPEN LANE →',187,704,8,'#efe1c8');
+// clean, low-profile server expo
+R(125,535,145,120,'#332c28',8);
+R(137,548,121,30,'#7b8587',5);
+L('SERVER EXPO',197,568,10,'#f4d09c');
+R(140,590,52,50,'#b7bfc0',4);
+R(202,590,53,50,'#92a4a8',4);
+L('PLATES',166,620,7,'#243033');
+L('SUPPLIES',228,620,7,'#243033');
 
 // service well
 R(700,350,110,78,'#496ca8',5);L('SERVICE',755,382,10,'#eef6ff');L('WELL',755,400,10,'#eef6ff');
@@ -2172,8 +2175,9 @@ R(215,545,70,190,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,62
 R(455,530,70,190,'#6d6258',6);L('DRINK',490,605,10,'#f1e1ca');L('STATION',490,620,9,'#f1e1ca');
 
 // tables per supplied plan
-[[140,290],[325,290],[510,290],[180,435],[380,435],
- [145,850],[330,850],[515,850],
+[[235,300],[440,300],[645,300],
+ [285,465],[530,465],
+ [210,850],[410,850],[610,850],
  [1435,300],[1435,455],
  [760,835],[1000,835],[1240,835],
  [760,980],[1000,980],[1240,980]].forEach(a=>table(a[0],a[1]));
@@ -2335,8 +2339,8 @@ for(let y=365;y<925;y+=62){
  ctx.strokeStyle='#c5b27c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16-cam.x,y+7-cam.y);ctx.lineTo(7-cam.x,y+7-cam.y);ctx.stroke();
 }
 
-L('PASS',-4,735,10,'#ffe1b1');
-L('KELLEN · EXPO',58,565,9,'#33291f');
+L('PASS',-4,760,8,'#ffe1b1');
+
 
 // one clean expo heat rail
 R(-28,535,105,14,'#17191a',5);
@@ -2390,15 +2394,10 @@ for(const r of [
  [-182,960,130,32],[-50,960,85,32]
 ])R(r[0],r[1],r[2],r[3],'#292d2e',5);
 
-// speed rack
-R(-775,710,82,210,'#555c5e',4);
-for(let y=730;y<900;y+=28)R(-762,y,56,12,'#d5d9d9',2);
-L('SPEED RACK',-734,938,8,'#1f2223');
 
 // produce boxes
 for(const b of [
- [-875,820,'LETTUCE','#769f5f'],[-875,875,'TOMATO','#b85c4a'],
- [-790,820,'ONION','#d7c47b'],[-790,875,'HERBS','#6e9a68']
+ [-1015,905,'LETTUCE','#769f5f'],[-930,905,'ONION','#d7c47b']
 ]){
  R(b[0],b[1],72,42,'#8c6d49',4);R(b[0]+8,b[1]+8,56,19,b[3],3);L(b[2],b[0]+36,b[1]+35,7,'#29231e');
 }
@@ -2423,10 +2422,6 @@ for(const b of [[-1010,940],[-650,930],[-275,940]]){
  R(b[0],b[1],28,34,'#d63838',4);L('SAN',b[0]+14,b[1]+22,6,'#fff');
 }
 
-// rolling cart
-R(-260,1030,110,70,'#666d6f',5);
-for(let y=1042;y<1088;y+=20)R(-248,y,86,10,'#d3d7d7',2);
-for(const x of [-240,-170]){ctx.fillStyle='#242829';ctx.beginPath();ctx.arc(x-cam.x,1105-cam.y,8,0,Math.PI*2);ctx.fill()}
 
 // wall shelving with cambros
 R(-880,335,170,18,'#34393a',3);
@@ -2440,6 +2435,13 @@ R(-450,225,215,52,'#454b4d',8);
 for(let x=-430;x<-255;x+=28)R(x,238,18,26,'#747b7c',2);
 L('HOOD',-342,286,8,'#1c1f20');
 
+
+// Maverick's obvious paint-splattered break/prep spot
+R(-700,1015,160,55,'#474d4f',6);
+L('MAVERICK',-620,1042,10,'#f4d4a8');
+R(-685,1050,24,10,'#e86da4',3);
+R(-650,1050,24,10,'#5bb7e8',3);
+R(-615,1050,24,10,'#f0c34f',3);
 
 // kitchen crew with station-specific placement
 const kitchenCrew=[
@@ -2469,7 +2471,7 @@ L('SKI PHOTO',1844,720,8,'#65777d');
 
 // animated kitchen crew
 // ambient staff/guests
-[[1400,800],[620,340],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#76515d','#4b657b'][i%3],''));
+[[1400,800],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#4b657b'][i%2],''));
 person(host,'#8b5c45','HOST');
 
 
@@ -2582,11 +2584,12 @@ const solidRects=[
  {x:70,y:1172,w:280,h:13}
 ,
  {x:320,y:345,w:112,h:430},
- {x:105,y:500,w:165,h:185}
+ {x:125,y:535,w:145,h:120}
 ];
 const tableBlocks=[
- [140,290],[325,290],[510,290],[180,435],[380,435],
- [145,850],[330,850],[515,850],
+ [235,300],[440,300],[645,300],
+ [285,465],[530,465],
+ [210,850],[410,850],[610,850],
  [1435,300],[1435,455],
  [760,835],[1000,835],[1240,835],
  [760,980],[1000,980],[1240,980],
@@ -2630,6 +2633,9 @@ function interact(){
    ['Check the current ticket.',()=>say('KELLEN','Table 32: no onion, extra ranch, side salad. Read it twice and run it hot.',[['HANDS!',null]])],
    ['Get out of expo’s way.',null]
   ]);return;
+ }
+ if(stage>=6&&dist(p,maverick)<180){
+  maverickTalk();return;
  }
  if(stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150){
   dietCokeDaveTalk();return;
@@ -2816,7 +2822,7 @@ updateTaskPanel();
 updateWorkers(dt);updateGuestFlow(dt);advanceJayTour(dt);
 
 if(stage>=6&&!dialogue){
- const mx=-790+Math.sin(life.minutes*.25)*55,my=790+Math.cos(life.minutes*.21)*85;
+ const mx=-620+Math.sin(life.minutes*.25)*45,my=1060+Math.cos(life.minutes*.21)*28;
  moveEntityToward(maverick,mx,my,24,dt);
 }
 
