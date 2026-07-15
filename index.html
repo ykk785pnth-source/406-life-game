@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v9.7</title><style>
+<title>406 Life v9.8</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · TRAFFIC FLOW RESET v9.7</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · ARCHITECTURAL POLISH & MAVERICK AI v9.8</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -566,7 +566,11 @@ addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('key
 function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.fill()}
 function R(x,y,w,h,col,r=0){rr(x-cam.x,y-cam.y,w,h,r,col)}
 function L(t,x,y,size=13,col='#fff'){ctx.fillStyle=col;ctx.font='800 '+size+'px system-ui';ctx.textAlign='center';ctx.fillText(t,x-cam.x,y-cam.y)}
-function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48,0],[48,0],[0,-36],[0,36]].forEach(a=>{ctx.beginPath();ctx.arc(x+a[0]-cam.x,y+a[1]-cam.y,10,0,Math.PI*2);ctx.fill()})}
+function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48,0],[48,0],[0,-36],[0,36]].forEach(a=>{ctx.beginPath();ctx.arc(x+a[0]-cam.x,y+a[1]-cam.y,10,0,Math.PI*2);ctx.fill()
+ // subtle tabletop details
+ R(x-10,y-6,8,14,'#d8c18e',2);
+ R(x+8,y-4,10,8,'#ede6d6',2);
+})}
 
 const staffLooks={
  TUFF:{skin:'#d69a70',hair:'#2b1a13',style:'Short',shirt:'#56705a',pants:'#252a31',apron:false,beard:true,height:1.12,brows:true,build:1.12},
@@ -691,12 +695,12 @@ const workers=[
 let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
 updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
-const kellen={x:48,y:610,name:'KELLEN'};
+const kellen={x:70,y:605,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
 
 
 const maverick={
- name:'MAVERICK',x:-620,y:1060,col:'#6f6e82',
+ name:'MAVERICK',x:-780,y:520,col:'#6f6e82',
  skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',
  moving:false,walkPhase:0,facing:'down',bandana:true,paintClothes:true
 };
@@ -720,7 +724,7 @@ function maverickTalk(){
   'You are now my official relationship consultant. The position is unpaid because of the student loans.',
   'One day I’m going to ask someone out. Statistically. Probably.'
  ];
- say('MAVERICK — PAINTER / RELUCTANT SERVER',rand(lines),[
+ say(`MAVERICK — ${maverick.workStation||'KITCHEN'}`,rand(lines),[
   ['Ask about painting.',()=>say('MAVERICK','Painting is the real job. Craggy is the “please stop accruing interest” job.',[['Student loans are evil.',null]])],
   ['Ask about his love life.',()=>say('MAVERICK',rel<2?'I am actively talking to several girls and asking out exactly zero of them.':'I have made progress. I drafted a message and then sent her a reel instead.',[['Strong strategy.',null]])],
   ['Ask what reel he sent last.',()=>say('MAVERICK','A raccoon stealing a sandwich with the caption “me taking your heart.” I deleted it before sending. Growth.',[['Proud of you.',null]])],
@@ -1189,7 +1193,7 @@ const kitchenWorld={
   {id:'fryers',name:'FRYERS',x:-420,y:370,w:140,h:155,color:'#c14382'},
   {id:'grill',name:'GRILL',x:-420,y:595,w:140,h:155,color:'#c14382'},
   {id:'saute',name:'SAUTÉ',x:-420,y:815,w:140,h:140,color:'#c14382'},
-  {id:'coldLine',name:'COLD LINE',x:-170,y:330,w:105,h:625,color:'#58c8b8'},
+  {id:'coldLine',name:'COLD LINE',x:-170,y:380,w:105,h:520,color:'#58c8b8'},
   {id:'kitchenPass',name:'KITCHEN PASS',x:-38,y:330,w:68,h:625,color:'#b78855'}
  ],
  walls:[
@@ -2110,10 +2114,11 @@ R(875,180,150,65,'#33251f');L('FRONT ENTRANCE',950,220,13,'#ffd09c');
 
 
 // West-side kitchen entrances and pass connection
-// clear north kitchen-door arrival lane
-R(42,285,160,145,'#b58d69',4);
-for(let x=65;x<185;x+=38)R(x,355,25,3,'#d8bb95');
-L('CLEAR ENTRY',122,410,8,'#f5ddbd');
+// subtle north kitchen-door traffic arrows
+for(let x=65;x<205;x+=42){
+ ctx.strokeStyle='#d4b58e';ctx.lineWidth=3;
+ ctx.beginPath();ctx.moveTo(x-cam.x,380-cam.y);ctx.lineTo(x+20-cam.x,380-cam.y);ctx.stroke();
+}
 
 R(40,295,22,125,'#17191a',2);R(40,885,22,125,'#17191a',2);
 R(48,310,16,95,'#76583f',2);R(48,900,16,95,'#76583f',2);
@@ -2126,14 +2131,14 @@ for(let y=378;y<750;y+=62)R(339,y,74,4,'#d8e5e7',2);
 ctx.fillStyle='#ffffff18';ctx.fillRect(342-cam.x,366-cam.y,68,385);
 L('BOH WINDOW',376,790,10,'#e5eff1');
 
-// clean, low-profile server expo
-R(125,535,145,120,'#332c28',8);
-R(137,548,121,30,'#7b8587',5);
-L('SERVER EXPO',197,568,10,'#f4d09c');
-R(140,590,52,50,'#b7bfc0',4);
-R(202,590,53,50,'#92a4a8',4);
-L('PLATES',166,620,7,'#243033');
-L('SUPPLIES',228,620,7,'#243033');
+// open expo/server station — no hidden furniture, no choke point
+R(118,555,138,92,'#332c28',8);
+R(130,565,114,26,'#7b8587',5);
+L('SERVER EXPO',187,584,9,'#f4d09c');
+R(132,601,48,34,'#b7bfc0',4);
+R(190,601,48,34,'#92a4a8',4);
+L('PLATES',156,624,7,'#243033');
+L('SUPPLIES',214,624,7,'#243033');
 
 // service well
 R(700,350,110,78,'#496ca8',5);L('SERVICE',755,382,10,'#eef6ff');L('WELL',755,400,10,'#eef6ff');
@@ -2171,13 +2176,13 @@ for(const q of [[455,340,'POS 1'],[255,470,'POS 3'],[500,720,'POS 2']]){
 R(536,692,24,42,'#17191b',5);R(541,698,14,12,'#79c79b',2);L('TIME',548,726,7,'#f3ad67');
 
 // two server drink stations flanking pass
-R(215,545,70,190,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,620,9,'#f1e1ca');
+R(275,565,58,150,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,620,9,'#f1e1ca');
 R(455,530,70,190,'#6d6258',6);L('DRINK',490,605,10,'#f1e1ca');L('STATION',490,620,9,'#f1e1ca');
 
 // tables per supplied plan
-[[235,300],[440,300],[645,300],
- [285,465],[530,465],
- [210,850],[410,850],[610,850],
+[[300,300],[520,300],[740,300],
+ [360,500],[600,500],
+ [220,850],[440,850],[660,850],
  [1435,300],[1435,455],
  [760,835],[1000,835],[1240,835],
  [760,980],[1000,980],[1240,980]].forEach(a=>table(a[0],a[1]));
@@ -2272,9 +2277,9 @@ for(const id of ['prep1','prep2','prep3']){
   R(s.x+22,y+6,28,12,['#d1be73','#9ec5ad','#d89175'][Math.abs(Math.floor(y/36))%3],2);
  }
 }
-L('PREP',-960,585,11,'#251d22');
-L('PREP',-960,885,11,'#251d22');
-L('PREP',-628,530,11,'#251d22');
+
+
+
 
 // prep stove
 R(-690,625,125,170,'#c14382',8);
@@ -2288,7 +2293,7 @@ L('PREP STOVE',-628,815,11,'#251d22');
 // solid black prep wall
 R(-500,335,50,620,'#181a1b',5);
 for(let y=365;y<930;y+=55)R(-493,y,36,5,'#34383a');
-L('PREP WALL',-475,650,12,'#e0e3e3');
+
 
 // fry station
 R(-420,370,140,155,'#c14382',8);
@@ -2319,16 +2324,16 @@ L('SAUTÉ',-350,972,12,'#251d22');
 // hot-line working aisle
 R(-255,330,68,625,'#858b8c',3);
 for(let y=365;y<940;y+=48)R(-242,y,42,3,'#bfc3c4');
-L('AISLE',-221,650,10,'#202324');
+
 
 // separate cold line
-R(-170,330,105,625,'#58c8b8',8);
-R(-157,344,79,596,'#b9e6df',5);
-for(let y=370;y<920;y+=68){
+R(-170,380,105,520,'#58c8b8',8);
+R(-157,394,79,490,'#b9e6df',5);
+for(let y=420;y<860;y+=68){
  R(-147,y,59,41,['#86c56d','#e0c35e','#ce815d','#ede5d4'][Math.floor(y/68)%4],5);
  R(-142,y+6,49,4,'#ffffff75',2);
 }
-L('COLD LINE',-118,650,12,'#153a33');
+L('COLD LINE',-118,915,10,'#153a33');
 
 // separate vertical kitchen pass on far right/shared wall
 R(-38,330,68,625,'#9a6e45',6);
@@ -2340,6 +2345,15 @@ for(let y=365;y<925;y+=62){
 }
 
 L('PASS',-4,760,8,'#ffe1b1');
+
+// vertical ticket rail mounted along the real expo/pass wall
+R(34,360,12,500,'#c7c9c8',3);
+for(let y=375;y<845;y+=42){
+ R(39,y,34,20,'#f4efe1',2);
+ R(46,y+5,18,2,'#b9a66c');
+ R(46,y+10,18,2,'#b9a66c');
+}
+
 
 
 // one clean expo heat rail
@@ -2384,8 +2398,8 @@ for(const light of [[-350,450],[-350,665],[-350,875],[-115,650],[-4,650]]){
 for(const a of [[-380,400],[-320,400],[-380,625],[-330,625],[-350,840]]){
  ctx.fillStyle='#ffffff35';ctx.beginPath();ctx.arc(a[0]-cam.x,a[1]-cam.y+Math.sin(life.minutes+a[0]) * 7,7,0,Math.PI*2);ctx.fill();
 }
-L('BEHIND!',-228,450,9,'#f5ce79');
-L('HANDS!',70,520,10,'#f5ce79');
+
+
 
 // extra commercial detail pass
 // anti-fatigue mats
@@ -2409,13 +2423,6 @@ for(let x=-430;x<-270;x+=36){
  ctx.beginPath();ctx.moveTo(x-cam.x,308-cam.y);ctx.lineTo(x-cam.x,286-cam.y);ctx.stroke();
 }
 
-// ticket rail over real expo
-R(-55,300,150,12,'#c7c9c8',3);
-for(let x=-42;x<82;x+=24){
- R(x,305,18,34,'#f4efe1',2);
- R(x+4,312,10,2,'#b9a66c');
- R(x+4,318,10,2,'#b9a66c');
-}
 
 // sanitizer buckets
 for(const b of [[-1010,940],[-650,930],[-275,940]]){
@@ -2433,15 +2440,9 @@ for(const y of [348,395]){
 // hood vent over hot line
 R(-450,225,215,52,'#454b4d',8);
 for(let x=-430;x<-255;x+=28)R(x,238,18,26,'#747b7c',2);
-L('HOOD',-342,286,8,'#1c1f20');
 
 
-// Maverick's obvious paint-splattered break/prep spot
-R(-700,1015,160,55,'#474d4f',6);
-L('MAVERICK',-620,1042,10,'#f4d4a8');
-R(-685,1050,24,10,'#e86da4',3);
-R(-650,1050,24,10,'#5bb7e8',3);
-R(-615,1050,24,10,'#f0c34f',3);
+
 
 // kitchen crew with station-specific placement
 const kitchenCrew=[
@@ -2573,7 +2574,7 @@ const solidRects=[
  {x:700,y:395,w:35,h:82},{x:700,y:585,w:35,h:140},
  {x:1315,y:395,w:35,h:330},
  {x:790,y:445,w:470,h:230},
- {x:215,y:545,w:70,h:190},{x:455,y:530,w:70,h:190}
+ {x:275,y:565,w:58,h:150},{x:455,y:530,w:70,h:190}
 
 
 ,
@@ -2584,12 +2585,12 @@ const solidRects=[
  {x:70,y:1172,w:280,h:13}
 ,
  {x:320,y:345,w:112,h:430},
- {x:125,y:535,w:145,h:120}
+ {x:118,y:555,w:138,h:92}
 ];
 const tableBlocks=[
- [235,300],[440,300],[645,300],
- [285,465],[530,465],
- [210,850],[410,850],[610,850],
+ [300,300],[520,300],[740,300],
+ [360,500],[600,500],
+ [220,850],[440,850],[660,850],
  [1435,300],[1435,455],
  [760,835],[1000,835],[1240,835],
  [760,980],[1000,980],[1240,980],
@@ -2634,7 +2635,7 @@ function interact(){
    ['Get out of expo’s way.',null]
   ]);return;
  }
- if(stage>=6&&dist(p,maverick)<180){
+ if(dist(p,maverick)<190){
   maverickTalk();return;
  }
  if(stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150){
@@ -2822,8 +2823,16 @@ updateTaskPanel();
 updateWorkers(dt);updateGuestFlow(dt);advanceJayTour(dt);
 
 if(stage>=6&&!dialogue){
- const mx=-620+Math.sin(life.minutes*.25)*45,my=1060+Math.cos(life.minutes*.21)*28;
- moveEntityToward(maverick,mx,my,24,dt);
+ const mPhase=Math.floor(life.minutes/18)%4;
+ const mTargets=[
+  {x:-360,y:455,label:'FRY'},
+  {x:-360,y:680,label:'GRILL'},
+  {x:-360,y:885,label:'SAUTÉ'},
+  {x:48,y:610,label:'EXPO'}
+ ];
+ const mt=mTargets[mPhase];
+ moveEntityToward(maverick,mt.x,mt.y,26,dt);
+ maverick.workStation=mt.label;
 }
 
 if(clockedIn&&!dialogue){
