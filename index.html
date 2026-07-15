@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v9.4</title><style>
+<title>406 Life v9.6</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · KITCHEN POLISH & EXPO SERVICE v9.4</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · STABLE SAVE & CLEAN EXPO v9.6</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -241,12 +241,54 @@ const life={
  mistakes:0,goodActions:0
 };
 
-const CHECKPOINT_KEY='406life_checkpoint_v5';
+const CHECKPOINT_KEY='406life_checkpoint_v6';
 function playerSnapshot(){return {name:p.name,pronouns:p.pronouns,skin:p.skin,hair:p.hair,outfit:p.outfit,style:p.style,accessory:p.accessory}}
+function runtimeSnapshot(){
+ return {
+  stage,gameDay,orientationStep,clockedIn,tutorialDone,postShiftStep,
+  tourIndex,tourJayLeading,jayFollow,follow,
+  objective:document.getElementById('obj').textContent,
+  player:{x:p.x,y:p.y,facing:p.facing},
+  tuff:{x:tuff.x,y:tuff.y},
+  jay:{x:jay.x,y:jay.y},
+  kellen:{x:kellen.x,y:kellen.y},
+  maverick:{x:maverick.x,y:maverick.y},
+  serverTraining:JSON.parse(JSON.stringify(serverTraining)),
+  fridayShift:JSON.parse(JSON.stringify(fridayShift)),
+  shiftEngine:JSON.parse(JSON.stringify(shiftEngine))
+ };
+}
+function restoreRuntime(r){
+ if(!r)return false;
+ stage=r.stage??stage;gameDay=r.gameDay||gameDay;orientationStep=r.orientationStep??orientationStep;
+ clockedIn=!!r.clockedIn;tutorialDone=!!r.tutorialDone;postShiftStep=r.postShiftStep||0;
+ tourIndex=r.tourIndex||0;tourJayLeading=!!r.tourJayLeading;jayFollow=!!r.jayFollow;follow=!!r.follow;
+ if(r.player){p.x=r.player.x;p.y=r.player.y;p.facing=r.player.facing||'down'}
+ if(r.tuff)Object.assign(tuff,r.tuff);if(r.jay)Object.assign(jay,r.jay);
+ if(r.kellen)Object.assign(kellen,r.kellen);if(r.maverick)Object.assign(maverick,r.maverick);
+ if(r.serverTraining)Object.assign(serverTraining,r.serverTraining);
+ if(r.fridayShift)Object.assign(fridayShift,r.fridayShift);
+ if(r.shiftEngine)Object.assign(shiftEngine,r.shiftEngine);
+ dialogue=false;document.getElementById('dlg').style.display='none';
+ document.getElementById('creator').style.display='none';
+ document.getElementById('obj').textContent=r.objective||'Continue your current objective';
+ updateLifeHud();updateTaskPanel();
+ return true;
+}
+function currentCheckpointPoint(){
+ if(shiftEngine.active)return 'DYNAMIC_SHIFT';
+ if(fridayShift.active)return 'FRIDAY_SHIFT';
+ if(serverTraining.active)return 'TRAINING';
+ if(postShiftStep>0)return 'POST_SHIFT';
+ if(gameDay==='ORIENTATION')return 'ORIENTATION';
+ if(stage>=6)return 'HIRED';
+ return 'INTERVIEW';
+}
 function saveCheckpoint(point){
  const data={point,player:playerSnapshot(),
- life:{cash:life.cash,checking:life.checking,rent:life.rent,rentDue:life.rentDue,energy:life.energy,hunger:life.hunger,stress:life.stress,rep:life.rep,achievements:life.achievements,minutes:life.minutes},
- career:JSON.parse(JSON.stringify(career)),socialWorld:JSON.parse(JSON.stringify(socialWorld)),job:getSavedJob(),savedAt:Date.now()};
+ life:JSON.parse(JSON.stringify(life)),
+ career:JSON.parse(JSON.stringify(career)),socialWorld:JSON.parse(JSON.stringify(socialWorld)),
+ runtime:runtimeSnapshot(),job:getSavedJob(),savedAt:Date.now()};
  localStorage.setItem(CHECKPOINT_KEY,JSON.stringify(data));refreshContinueButton();
 }
 function getCheckpoint(){
@@ -262,14 +304,14 @@ function applySavedPlayer(s){if(!s)return;Object.assign(p,s);p.walkPhase=0;p.mov
 function applySavedLife(s){if(!s)return;Object.assign(life,s);updateLifeHud()}
 
 function resetEntireGame(){
- ['406life_checkpoint_v5','406life_v23','406life_career_v1','406life_task_collapsed'].forEach(k=>localStorage.removeItem(k));
+ ['406life_checkpoint_v6','406life_checkpoint_v5','406life_v23','406life_career_v1','406life_task_collapsed'].forEach(k=>localStorage.removeItem(k));
  location.reload();
 }
 
 function refreshContinueButton(){
  const cp=getCheckpoint(),btn=document.getElementById('continueGame'),reset=document.getElementById('resetSave');
  if(!cp){btn.style.display='none';reset.style.display='none';return}
- const names={ORIENTATION:'CONTINUE FROM ORIENTATION',TRAINING:'CONTINUE FROM SERVER TRAINING',POST_SHIFT:'CONTINUE FROM SHIFT REVIEW',FRIDAY_SHIFT:'CONTINUE TO FRIDAY SHIFT',FRIDAY_DONE:'CONTINUE AFTER FIRST FRIDAY',DYNAMIC_SHIFT:'CONTINUE CURRENT SHIFT',DYNAMIC_DONE:'CONTINUE NEXT DAY'};
+ const names={FULL_STATE:'RESUME EXACTLY WHERE YOU LEFT OFF',HIRED:'CONTINUE AFTER INTERVIEW',INTERVIEW:'CONTINUE INTERVIEW',ORIENTATION:'CONTINUE FROM ORIENTATION',TRAINING:'CONTINUE FROM SERVER TRAINING',POST_SHIFT:'CONTINUE FROM SHIFT REVIEW',FRIDAY_SHIFT:'CONTINUE TO FRIDAY SHIFT',FRIDAY_DONE:'CONTINUE AFTER FIRST FRIDAY',DYNAMIC_SHIFT:'CONTINUE CURRENT SHIFT',DYNAMIC_DONE:'CONTINUE NEXT DAY'};
  btn.textContent=cp.migrated?'CONTINUE WITH YOUR EXISTING CHARACTER':(names[cp.point]||'CONTINUE LATEST CHECKPOINT');btn.style.display='block';reset.style.display='block';
 }
 function continueCheckpoint(e){
@@ -277,6 +319,7 @@ function continueCheckpoint(e){
  const cp=getCheckpoint();if(!cp)return;
  applySavedPlayer(cp.player);applySavedLife(cp.life);if(cp.career)Object.assign(career,cp.career);if(cp.socialWorld)Object.assign(socialWorld,cp.socialWorld);ensureCareerState();ensureRelationships();saveCareer();
  document.getElementById('creator').style.display='none';
+ if(cp.runtime&&restoreRuntime(cp.runtime)){return}
  if(cp.point==='ORIENTATION'){startOrientation();return}
  if(cp.point==='TRAINING'){
   gameDay='ORIENTATION';stage=10;orientationStep=13;clockedIn=true;life.phoneUnlocked=true;life.walletUnlocked=true;life.scheduleUnlocked=true;
@@ -648,12 +691,12 @@ const workers=[
 let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
 updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
-const kellen={x:-6,y:610,name:'KELLEN'};
+const kellen={x:48,y:610,name:'KELLEN'};
 const kyle={x:820,y:500,name:'KYLE'};
 
 
 const maverick={
- name:'MAVERICK',x:-320,y:560,col:'#6f6e82',
+ name:'MAVERICK',x:-790,y:790,col:'#6f6e82',
  skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',
  moving:false,walkPhase:0,facing:'down',bandana:true,paintClothes:true
 };
@@ -789,7 +832,7 @@ function orientationInteract(){
   document.getElementById('obj').textContent='Orientation: Walk the restaurant with Jay';
   say('TIME CLOCK','CLOCKED IN · 4:00 PM',[['Start the building tour.',()=>startBuildingTour()]]);return true;
  }
- if(orientationStep>=6&&orientationStep<=25){return tourInteract()}
+ if(orientationStep>=6&&orientationStep<=24){return tourInteract()}
  if(orientationStep===26){
   const trainer=getTrainer();
   if(dist(p,trainer)<175){
@@ -815,7 +858,7 @@ const tourStops=[
  {x:760,y:300,name:'HOST STAND',text:'This is the host stand: wait list, reservations, seating rotation, and the first person blamed for a table that chose to sit themselves.'},
  {x:800,y:430,name:'SERVICE WELL & BAR ENTRY',text:'Servers pick up drinks here. Keep the lane clear and never make Jelena hunt for her bar rag.'},
  {x:500,y:720,name:'POS 2 & TIME CLOCK',text:'POS 2 contains the time clock. Ring accurately and clock in before Tuff notices you working for free.'},
-{x:-6,y:610,name:'EXPO & SERVER STATION',text:'This is the real expo pickup line. Kellen coordinates finished food here; plates, supplies, and server traffic feed into this area. Plates, ramekins, supplies, side work, and server traffic live here. Food pickup does not happen at the window.'},
+{x:48,y:610,name:'EXPO & SERVER STATION',text:'This is the real expo pickup line. Kellen coordinates finished food here; plates, supplies, and server traffic feed into this area. Plates, ramekins, supplies, side work, and server traffic live here. Food pickup does not happen at the window.'},
  {x:1080,y:520,name:'CENTER BAR',text:'The bar has a guest rail, staff entry, bartender walkway, taps, bottles, and Diet Coke Dave’s permanent ecosystem.'},
  {x:980,y:1040,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. Summer money lives out there, along with twelve thousand steps.'},
  {x:38,y:352,name:'NORTH KITCHEN ENTRY',text:'The kitchen is west of the dining room through this entrance beside the BOH viewing window and expo station. We are not crossing the street to make a burger.'},
@@ -828,7 +871,6 @@ const tourStops=[
  {x:-350,y:972,name:'SAUTÉ',text:'Sauté is hot pans, steam, sauces, and a very sincere need for everyone to call behind.'},
  {x:-221,y:650,name:'HOT-LINE AISLE',text:'This narrow aisle belongs to cooks working fry, grill, and sauté. Do not stand here contemplating your life.'},
  {x:-118,y:650,name:'COLD LINE',text:'The cold line is its own vertical station against the wall. It is separate from the kitchen pass.'},
- {x:-4,y:648,name:'KITCHEN PASS',text:'The separate vertical kitchen pass is on the far-right edge beside the dining room. Kellen runs expo here and hands finished food to servers.'},
  {x:-590,y:312,name:'FRY FREEZER',text:'The fry freezer sits against the road wall. Restock before the rush instead of discovering the problem during it.'},
  {x:-70,y:1210,name:'DISH CORRIDOR',text:'This corridor leads to dish: dirty plates in, clean racks out, and the heartbeat everybody ignores until it stops.'},
  {x:38,y:942,name:'SOUTH KITCHEN ENTRY',text:'This lower entrance reconnects the kitchen’s main walkway to the dining room and keeps traffic flowing both directions.'}
@@ -837,10 +879,10 @@ let tourIndex=0,tourJayLeading=false;
 function startBuildingTour(){
  tourIndex=0;orientationStep=6;tourJayLeading=true;
  const s=tourStops[0];
- document.getElementById('obj').textContent='Tour 1/20: Follow Jay to '+s.name;
+ document.getElementById('obj').textContent='Tour 1/19: Follow Jay to '+s.name;
 }
 function advanceJayTour(dt){
- if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>25||!tourJayLeading)return;
+ if(gameDay!=='ORIENTATION'||orientationStep<6||orientationStep>24||!tourJayLeading)return;
  const s=tourStops[tourIndex],dx=s.x-jay.x,dy=s.y-jay.y,m=Math.hypot(dx,dy);
  if(m>12){
   jay.moving=true;jay.walkPhase=(jay.walkPhase||0)+dt*9;
@@ -848,7 +890,7 @@ function advanceJayTour(dt){
   jay.x+=dx/m*78*dt;jay.y+=dy/m*78*dt;
  }else{
   jay.x=s.x;jay.y=s.y;jay.moving=false;tourJayLeading=false;
-  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/20: Interact with Jay at ${s.name}`;
+  document.getElementById('obj').textContent=`Tour ${tourIndex+1}/19: Interact with Jay at ${s.name}`;
  }
 }
 function tourInteract(){
@@ -858,7 +900,7 @@ function tourInteract(){
    tourIndex++;orientationStep++;
    if(tourIndex<tourStops.length){
     tourJayLeading=true;
-    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/20: Follow Jay to ${tourStops[tourIndex].name}`;
+    document.getElementById('obj').textContent=`Tour ${tourIndex+1}/19: Follow Jay to ${tourStops[tourIndex].name}`;
    }else finishTour();
   }]]);
   return true;
@@ -1174,8 +1216,13 @@ function nearStation(id,r=130){
  const cx=s.x+s.w/2,cy=s.y+s.h/2;
  return Math.hypot(p.x-cx,p.y-cy)<r;
 }
+function activeExpoPickup(){
+ return (serverTraining.active&&serverTraining.step===9)||
+        (fridayShift.active&&[19,23].includes(fridayShift.step))||
+        (shiftEngine.active&&shiftEngine.phase==='PICKUP_FOOD');
+}
 function kitchenInteract(){
- if(dialogue||!inKitchen())return false;
+ if(dialogue||!inKitchen()||activeExpoPickup())return false;
  if(nearStation('salad',150)){
   say('SALAD LINE','Cold bowls, chopped greens, dressings, garnishes, and tickets that somehow all say “no onion.”',[
    ['Inspect the ticket rail.',()=>say('SALAD LINE','Caesar, house, Cobb, side salad. Everything looks organized until the rush starts.',[['Back away slowly.',null]])],
@@ -1458,7 +1505,7 @@ ${shiftEngine.tables.map(x=>'Table '+x.id+' · '+x.party+' top').join('\n')}`,[
   shiftEngine.carrying='';t.status='COOKING';setDynamicPhase('PICKUP_FOOD',`Pick up food from Kellen at Expo`);
   say(`TABLE ${t.id}`,'Drinks delivered. The order is cooking. Expo calls for hands.',[['Head to the pass.',null]]);return true;
  }
- if(shiftEngine.phase==='PICKUP_FOOD'&&dist(p,kellen)<175){
+ if(shiftEngine.phase==='PICKUP_FOOD'&&dist(p,kellen)<215){
   shiftEngine.carrying='food';setDynamicPhase('DELIVER_FOOD',`Run hot food to Table ${t.id}`);
   say('KELLEN — EXPO',`Table ${t.id} is up. Verify the modifiers before leaving the window.`,[
    ['Verify every plate.',()=>{shiftEngine.score+=2}],
@@ -1699,84 +1746,89 @@ function fridayShiftInteract(){
    ['“It came from the exact same container.”',()=>fridayMistake(1,'Destroyed the ranch illusion')]
   ]);return true;
  }
- if(fridayShift.step===19&&dist(p,kellen)<165){
+ if(fridayShift.step===19&&dist(p,kellen)<215){
   fridayShift.carrying='food';fridayShift.step=20;setFridayObjective('Run Table 31 food');
   achievement('FRIDAY HANDS','Answer the pass during your first real rush.');
-  say('EXPO','31 is up. Classic Cheese no onion and Baja Tacos. Read the ticket before you move.',[
+  say('KELLEN — EXPO','31 is up. Classic Cheese no onion and Baja Tacos. Read the ticket before you move.',[
    ['Verify both plates.',()=>fridayGood(3,'Verified Table 31')],
    ['Grab first, read later.',()=>fridayMistake(2,'Skipped plate verification')]
   ]);return true;
  }
  if(fridayShift.step===20&&Math.hypot(p.x-A.x,p.y-A.y)<155){
-  A.status='EATING';fridayShift.carrying='';fridayShift.step=21;setFridayObjective('Prebus Table 31 to the bussing station');
-  say('TABLE 31','Food is perfect. Their empty appetizer plate and glasses are ready to clear.',[
-   ['Prebus now.',()=>fridayGood(3,'Proactive prebussing')],
-   ['Leave everything until they are done.',()=>fridayMistake(2,'Skipped easy prebus')]
+  A.status='EATING';fridayShift.carrying='';fridayShift.step=21;setFridayObjective('Prebus Table 31');
+  say('TABLE 31','Food is down. Their empty appetizer plate and glasses are ready to clear once you check the table.',[
+   ['Come back and prebus.',null]
   ]);return true;
  }
- if(fridayShift.step===21&&Math.hypot(p.x+80,p.y-1148)<150){
-  fridayShift.step=22;setFridayObjective('Run Tables 32 and 33 food');
+ if(fridayShift.step===21&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  fridayShift.carrying='dishes';fridayShift.step=22;setFridayObjective('Drop Table 31 dishes at the bussing station');
+  say('TABLE 31','You clear the appetizer plate and empty glasses without interrupting the meal.',[
+   ['Carry dishes to bussing.',()=>fridayGood(3,'Proactive prebussing')]
+  ]);return true;
+ }
+ if(fridayShift.step===22&&Math.hypot(p.x+80,p.y-1148)<150){
+  fridayShift.step=23;setFridayObjective('Run Tables 32 and 33 food');
   say('BUSSING STATION','Dishes dropped safely. Somewhere, a dishwasher briefly believes in teamwork.',[['Answer the next HANDS call.',null]]);return true;
  }
- if(fridayShift.step===22&&dist(p,kellen)<165){
-  fridayShift.carrying='food';fridayShift.step=23;setFridayObjective('Run Table 32 food');
-  say('EXPO','32 and 33 are both up. Table 32 first. Protect the salad modifier and the bison burger.',[['Verify everything.',()=>fridayGood(4,'Protected complex tickets')]]);return true;
+ if(fridayShift.step===23&&dist(p,kellen)<215){
+  fridayShift.carrying='food';fridayShift.step=24;setFridayObjective('Run Table 32 food');
+  say('KELLEN — EXPO','32 and 33 are both up. Table 32 first. Protect the salad modifier and the bison burger.',[['Verify everything.',()=>fridayGood(4,'Protected complex tickets')]]);return true;
  }
- if(fridayShift.step===23&&Math.hypot(p.x-B.x,p.y-B.y)<155){
-  B.status='EATING';fridayShift.step=24;setFridayObjective('Run Table 33 food');
+ if(fridayShift.step===24&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='EATING';fridayShift.step=25;setFridayObjective('Run Table 33 food');
   say('TABLE 32','Food landed. They need ketchup, extra tartar and one refill.',[
    ['Acknowledge every request.',()=>fridayGood(2,'Handled follow-up needs')],
    ['Say “anything else?” with visible fear.',()=>fridayGood(1,'Honest hospitality')]
   ]);return true;
  }
- if(fridayShift.step===24&&Math.hypot(p.x-C.x,p.y-C.y)<155){
-  fridayShift.carrying='';C.status='EATING';fridayShift.incident=true;fridayShift.step=25;setFridayObjective('Respond to the broken-plate incident at Table 33');
+ if(fridayShift.step===25&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.carrying='';C.status='EATING';fridayShift.incident=true;fridayShift.step=26;setFridayObjective('Respond to the broken-plate incident at Table 33');
   say('NARRATOR','A busser turns too tightly beside Table 33. Plates crash. A cup of ranch flips directly onto a guest’s pants.',[
    ['React immediately.',null]
   ]);return true;
  }
- if(fridayShift.step===25&&Math.hypot(p.x-C.x,p.y-C.y)<155){
-  fridayShift.step=26;setFridayObjective('Get towels from the bussing station');
+ if(fridayShift.step===26&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.step=27;setFridayObjective('Get towels from the bussing station');
   say('TABLE 33 — RANCH INCIDENT','The guest is startled but not hurt. Broken dishes are on the floor.',[
    ['Apologize, check for injury, block the area and get towels.',()=>fridayGood(6,'Excellent incident response')],
    ['Say “At least ranch matches everything.”',()=>{fridayMistake(4,'Bad incident joke');achievement('RANCH PANTS','Make the worst possible joke during the ranch incident.')}],
    ['Blame the busser immediately.',()=>fridayMistake(6,'Threw coworker under the bus')]
   ]);return true;
  }
- if(fridayShift.step===26&&Math.hypot(p.x+80,p.y-1148)<150){
-  fridayShift.carrying='towel';fridayShift.step=27;setFridayObjective('Return with towels and clean Table 33 area');
+ if(fridayShift.step===27&&Math.hypot(p.x+80,p.y-1148)<150){
+  fridayShift.carrying='towel';fridayShift.step=28;setFridayObjective('Return with towels and clean Table 33 area');
   say('BUSSING STATION','You grab towels, a wet-floor cone, gloves and a bus tub.',[['Return to Table 33.',null]]);return true;
  }
- if(fridayShift.step===27&&Math.hypot(p.x-C.x,p.y-C.y)<155){
-  fridayShift.carrying='';fridayShift.cleanup=true;fridayShift.step=28;setFridayObjective('Check back on all three tables');
+ if(fridayShift.step===28&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  fridayShift.carrying='';fridayShift.cleanup=true;fridayShift.step=29;setFridayObjective('Check back on all three tables');
   say('TABLE 33','The guest accepts the towels. Desarae comps an appetizer and thanks you for handling it without making things worse.',[
    ['Finish cleaning broken dishes safely.',()=>fridayGood(4,'Completed cleanup safely')],
    ['Kick one shard under the table.',()=>fridayMistake(7,'Absolutely unacceptable cleanup')]
   ]);return true;
  }
- if(fridayShift.step===28&&Math.hypot(p.x-A.x,p.y-A.y)<155){
-  A.status='CHECK';fridayShift.step=29;setFridayObjective('Check back on Table 32');
+ if(fridayShift.step===29&&Math.hypot(p.x-A.x,p.y-A.y)<155){
+  A.status='CHECK';fridayShift.step=30;setFridayObjective('Check back on Table 32');
   say('TABLE 31','They loved everything and are ready for the check.',[['Present check and thank them.',()=>fridayGood(2,'Closed easy table cleanly')]]);return true;
  }
- if(fridayShift.step===29&&Math.hypot(p.x-B.x,p.y-B.y)<155){
-  B.status='CHECK';fridayShift.step=30;setFridayObjective('Check back on Table 33');
+ if(fridayShift.step===30&&Math.hypot(p.x-B.x,p.y-B.y)<155){
+  B.status='CHECK';fridayShift.step=31;setFridayObjective('Check back on Table 33');
   say('TABLE 32','They are ready to pay and compliment your menu knowledge.',[['Thank them and prebus.',()=>fridayGood(3,'Closed four-top well')]]);return true;
  }
- if(fridayShift.step===30&&Math.hypot(p.x-C.x,p.y-C.y)<155){
-  C.status='CHECK';fridayShift.step=31;setFridayObjective('Process checks and enter tips at POS 2');
+ if(fridayShift.step===31&&Math.hypot(p.x-C.x,p.y-C.y)<155){
+  C.status='CHECK';fridayShift.step=32;setFridayObjective('Process checks and enter tips at POS 2');
   say('TABLE 33','Despite the ranch incident, they thank you for handling it and leave their signed receipt.',[['Collect all three checks.',null]]);return true;
  }
- if(fridayShift.step===31&&Math.hypot(p.x-500,p.y-720)<150){
+ if(fridayShift.step===32&&Math.hypot(p.x-500,p.y-720)<150){
   openTipEntry();return true;
  }
- if(fridayShift.step===32&&dist(p,desarae)<220){finishFridayShift();return true}
+ if(fridayShift.step===33&&dist(p,desarae)<220){finishFridayShift();return true}
  return false;
 }
 
 function forceCloseoutAdvance(){
  if(!fridayShift.active)return;
- if(fridayShift.step===31){openTipEntry();return}
- if(fridayShift.step===32){finishFridayShift();return}
+ if(fridayShift.step===32){openTipEntry();return}
+ if(fridayShift.step===33){finishFridayShift();return}
 }
 
 function openTipEntry(){
@@ -1794,7 +1846,7 @@ function openTipEntry(){
   const entered=vals.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
   fridayShift.tips=Math.max(0,Math.round(entered*100)/100);
   life.cash+=fridayShift.tips;life.checking+=economy.averageHourlyWages;updateLifeHud();
-  fridayShift.tables.forEach(t=>t.status='PAID');fridayShift.step=32;setFridayObjective('Return to Desarae for Friday review');
+  fridayShift.tables.forEach(t=>t.status='PAID');fridayShift.step=33;setFridayObjective('Return to Desarae for Friday review');
   say('CLOSEOUT COMPLETE','Hourly wages deposited: $62 · Tips entered: $'+fridayShift.tips.toFixed(2),[['Find Desarae.',null]]);
  };
  document.getElementById('posModal').style.display='flex';
@@ -1884,10 +1936,10 @@ function serverTrainingInteract(){
    ['Three bowls of ranch',()=>{serverMistake(3,'Ranch is not an entrée');serverTraining.step=9;setServerObjective('Pick up the actual food at the kitchen pass');}]
   ]);return true;
  }
- if(serverTraining.step===9&&dist(p,kellen)<160){
+ if(serverTraining.step===9&&dist(p,kellen)<215){
   serverTraining.carrying='food';serverTraining.step=10;setServerObjective('Run food to Table 62');
   achievement('I NEED HANDS!','Answer the expo call and pick up food.');
-  say('EXPO','HANDS! Table 62. Burger no onion, chicken sandwich, fries. Check the ticket before you leave.',[
+  say('KELLEN — EXPO','HANDS! Table 62. Burger no onion, chicken sandwich, fries. Check the ticket before you leave.',[
    ['Verify every plate.',()=>serverGood(2,'Verified food')],
    ['Grab and run without looking.',()=>serverMistake(1,'Skipped plate verification')]
   ]);return true;
@@ -2044,7 +2096,6 @@ R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
 // structural walls and trim
 R(40,190,1820,18,'#49362c');R(40,1192,1820,18,'#49362c');
 R(40,190,18,1020,'#49362c');R(1842,190,18,1020,'#49362c');
-R(320,340,105,425,'#59473b',5);
 // subtle floor planks and warm overhead pools
 for(let yy=210;yy<1200;yy+=34)R(45,yy,1810,2,'#8d6a4d');
 for(const light of [[760,310],[1025,520],[350,520],[980,930]]){ctx.fillStyle='#ffe0a512';ctx.beginPath();ctx.arc(light[0]-cam.x,light[1]-cam.y,115,0,Math.PI*2);ctx.fill()}
@@ -2070,19 +2121,16 @@ for(let y=378;y<750;y+=62)R(339,y,74,4,'#d8e5e7',2);
 ctx.fillStyle='#ffffff18';ctx.fillRect(342-cam.x,366-cam.y,68,385);
 L('BOH WINDOW',376,790,10,'#e5eff1');
 
-// FOH expo/server station between BOH window and real kitchen-pass route
-R(82,420,198,410,'#332c28',9);
-R(96,438,170,72,'#626b6d',6);
-L('EXPO',181,465,14,'#f4d09c');
-L('SERVER STATION',181,490,9,'#f4d09c');
-R(100,535,74,112,'#b4bcbc',5);
-R(188,535,74,112,'#91a4a8',5);
-L('PLATES',137,596,9,'#243033');
-L('SUPPLIES',225,596,9,'#243033');
-R(100,670,162,126,'#575e60',5);
-for(let y=687;y<784;y+=24)R(114,y,134,14,'#d9dede',3);
-L('SIDEWORK',181,816,9,'#f4d09c');
-R(282,420,28,410,'#8f6b4f',2);
+// compact FOH expo/server station with an open traffic lane
+R(105,500,165,185,'#332c28',8);
+R(116,512,143,45,'#7b8587',5);
+L('SERVER EXPO',187,540,11,'#f4d09c');
+R(118,572,62,72,'#b7bfc0',5);
+R(190,572,67,72,'#92a4a8',5);
+L('PLATES',149,616,8,'#243033');
+L('SUPPLIES',223,616,8,'#243033');
+R(118,654,139,20,'#d9dede',4);
+L('OPEN LANE →',187,704,8,'#efe1c8');
 
 // service well
 R(700,350,110,78,'#496ca8',5);L('SERVICE',755,382,10,'#eef6ff');L('WELL',755,400,10,'#eef6ff');
@@ -2286,15 +2334,13 @@ for(let y=365;y<925;y+=62){
  R(-20,y,31,27,'#e9e5dc',5);
  ctx.strokeStyle='#c5b27c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16-cam.x,y+7-cam.y);ctx.lineTo(7-cam.x,y+7-cam.y);ctx.stroke();
 }
-for(let y=350;y<930;y+=42)R(32,y,78,4,'#eadfc4',2);
-L('PASS',-4,648,11,'#ffe1b1');
-L('EXPO',72,630,10,'#33291f');
 
-// black heat lamps over pass
-for(let y=380;y<900;y+=105){
- R(22,y,70,17,'#17191a',5);
- ctx.fillStyle='#ff9a4440';ctx.beginPath();ctx.arc(57-cam.x,y+22-cam.y,30,0,Math.PI*2);ctx.fill();
-}
+L('PASS',-4,735,10,'#ffe1b1');
+L('KELLEN · EXPO',58,565,9,'#33291f');
+
+// one clean expo heat rail
+R(-28,535,105,14,'#17191a',5);
+ctx.fillStyle='#ff9a4430';ctx.beginPath();ctx.arc(25-cam.x,558-cam.y,35,0,Math.PI*2);ctx.fill();
 
 // main horizontal walkway
 R(-1095,1000,1125,160,'#777d7e',4);
@@ -2400,8 +2446,7 @@ const kitchenCrew=[
  {x:-350,y:455,name:'FRY COOK',col:'#4f5967'},
  {x:-350,y:675,name:'GRILL COOK',col:'#5d4c42'},
  {x:-350,y:880,name:'SAUTÉ COOK',col:'#586b56'},
- {x:-118,y:530,name:'COLD COOK',col:'#54766e'},
- {x:-5,y:575,name:'EXPO',col:'#755a46'}
+ {x:-120,y:445,name:'COLD COOK',col:'#54766e'},
 ];
 for(const kc of kitchenCrew){
  const bob=Math.sin(life.minutes*.8+kc.x)*2;
@@ -2430,12 +2475,12 @@ person(host,'#8b5c45','HOST');
 
 
 
-if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=25){
+if(gameDay==='ORIENTATION'&&orientationStep>=6&&orientationStep<=24){
  const ts=tourStops[tourIndex];
  if(ts){
   const pulse=8+Math.sin(life.minutes*4)*3;
   ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(ts.x-cam.x,ts.y-cam.y,34+pulse,0,Math.PI*2);ctx.stroke();
-  L(`TOUR ${tourIndex+1}/20`,ts.x,ts.y-55,11,'#ffdc69');
+  L(`TOUR ${tourIndex+1}/19`,ts.x,ts.y-55,11,'#ffdc69');
  }
 }
 
@@ -2451,7 +2496,7 @@ if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
  else if(['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(phase)&&target){mx=target.x;my=target.y;label='TABLE '+target.id}
  else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(phase)){mx=500;my=720;label='POS 2'}
  else if(phase==='PICKUP_DRINKS'){mx=800;my=430;label='SERVICE WELL'}
- else if(phase==='PICKUP_FOOD'){mx=kellen.x;my=kellen.y;label='KITCHEN PASS'}
+ else if(phase==='PICKUP_FOOD'){mx=kellen.x;my=kellen.y;label='KELLEN · EXPO'}
  if(mx!==undefined){ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(mx-cam.x,my-cam.y,42+Math.sin(life.minutes*5)*4,0,Math.PI*2);ctx.stroke();L(label,mx,my-58,10,'#ffdc69')}
  L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · TURN ${shiftEngine.turn}/${shiftEngine.totalTurns}`,1050,1120,13,'#fff3d2');
 }
@@ -2470,10 +2515,10 @@ if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
 
 
 
-if(fridayShift.active&&fridayShift.step===31){
+if(fridayShift.active&&fridayShift.step===32){
  ctx.strokeStyle='#ffdc69';ctx.lineWidth=5;ctx.strokeRect(450-cam.x,680-cam.y,105,90);L('ENTER TIPS HERE',502,668,11,'#ffdc69')
 }
-if(fridayShift.active&&fridayShift.step===32){
+if(fridayShift.active&&fridayShift.step===33){
  ctx.strokeStyle='#ff9dcc';ctx.lineWidth=4;ctx.strokeRect(desarae.x-35-cam.x,desarae.y-55-cam.y,70,90);L('SHIFT REVIEW',desarae.x,desarae.y-68,11,'#ff9dcc')
 }
 
@@ -2493,7 +2538,11 @@ if(serverTraining.active){
  // Training highlights use the permanent POS 2 and permanent service well.
  // Pickup zones.
  if(serverTraining.step===5){ctx.strokeStyle='#65d5ff';ctx.lineWidth=4;ctx.strokeRect(700-cam.x,350-cam.y,110,78);L('DRINK PICKUP',755,340,11,'#65d5ff')}
- if(serverTraining.step===9){ctx.strokeStyle='#ffcf67';ctx.lineWidth=4;ctx.strokeRect(330-cam.x,355-cam.y,82,390);L('FOOD READY',371,345,11,'#ffcf67')}
+ if(serverTraining.step===9){
+ ctx.strokeStyle='#ffcf67';ctx.lineWidth=4;ctx.beginPath();
+ ctx.arc(kellen.x-cam.x,kellen.y-cam.y,52,0,Math.PI*2);ctx.stroke();
+ L('FOOD READY · KELLEN',kellen.x,kellen.y-65,11,'#ffcf67')
+}
 }
 
 for(const party of guestFlow.parties)for(const g of party.members)drawCharacter(g,g.col,'');
@@ -2533,7 +2582,7 @@ const solidRects=[
  {x:70,y:1172,w:280,h:13}
 ,
  {x:320,y:345,w:112,h:430},
- {x:82,y:420,w:198,h:410}
+ {x:105,y:500,w:165,h:185}
 ];
 const tableBlocks=[
  [140,290],[325,290],[510,290],[180,435],[380,435],
@@ -2556,7 +2605,7 @@ function blocked(nx,ny){
  return false;
 }
 
-function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel()};box.appendChild(b)})}
+function say(sp,text,choices){dialogue=true;document.getElementById('dlg').style.display='block';document.getElementById('speaker').textContent=sp;document.getElementById('text').textContent=text;let box=document.getElementById('choices');box.innerHTML='';choices.forEach(ch=>{let b=document.createElement('button');b.className='choice';b.textContent=ch[0];b.onclick=()=>{document.getElementById('dlg').style.display='none';dialogue=false;if(ch[1])ch[1]();updateTaskPanel();autosaveNow()};box.appendChild(b)})}
 function interact(){
  if(dialogue)return;
  if(stage>=6&&dist(p,tuff)<165&&socialWorld.gossipClues.length>0){tuffGossipTalk();return}
@@ -2575,7 +2624,7 @@ function interact(){
  if(kitchenInteract())return;
  if(walkInInteraction())return;
  if(recoveryInteraction())return;
- if(stage>=6&&inKitchen()&&dist(p,kellen)<165){
+ if(stage>=6&&dist(p,kellen)<215){
   say('KELLEN — KITCHEN PASS','This is the real pickup point. Check the ticket, verify every modifier, call the table number, and move before expo needs the lane.',[
    ['Where is the old pass?',()=>say('KELLEN','That is a BOH viewing window now. You can look through it. You cannot wait there for food.',[['Crystal clear.',null]])],
    ['Check the current ticket.',()=>say('KELLEN','Table 32: no onion, extra ranch, side salad. Read it twice and run it hot.',[['HANDS!',null]])],
@@ -2717,6 +2766,7 @@ function enterWorld(e){
  p.accessory=document.getElementById('charAccessory').value;
  document.getElementById('creator').style.display='none';
  document.getElementById('obj').textContent='Objective: Walk through the front entrance';
+ saveCheckpoint('FULL_STATE');
  return false;
 }
 ['charSkin','charHair','charOutfit','charStyle','charAccessory'].forEach(id=>document.getElementById(id).addEventListener('change',syncPreview));
@@ -2751,13 +2801,22 @@ document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefau
 const je=document.getElementById('joy'),st=document.getElementById('stick');
 function jm(e){let r=je.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,lim=r.width*.32,m=Math.hypot(dx,dy);if(m>lim){dx*=lim/m;dy*=lim/m}joy.x=dx/lim;joy.y=dy/lim;st.style.transform='translate('+dx+'px,'+dy+'px)'}
 je.addEventListener('pointerdown',e=>{je.setPointerCapture(e.pointerId);jm(e)});je.addEventListener('pointermove',e=>{if(e.buttons)jm(e)});je.addEventListener('pointerup',()=>{joy={x:0,y:0};st.style.transform=''});
+let autosaveAccumulator=0;
+function autosaveNow(){
+ const creator=document.getElementById('creator');
+ if(creator&&creator.style.display==='none')saveCheckpoint('FULL_STATE');
+}
+window.addEventListener('pagehide',autosaveNow);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autosaveNow()});
 function update(dt){
+ autosaveAccumulator+=dt;
+ if(autosaveAccumulator>=4){autosaveAccumulator=0;autosaveNow()}
 document.getElementById('closeoutBtn').style.display=(fridayShift.active&&fridayShift.step>=31)?'block':'none';
 updateTaskPanel();
 updateWorkers(dt);updateGuestFlow(dt);advanceJayTour(dt);
 
 if(stage>=6&&!dialogue){
- const mx=-320+Math.sin(life.minutes*.25)*75,my=590+Math.cos(life.minutes*.21)*165;
+ const mx=-790+Math.sin(life.minutes*.25)*55,my=790+Math.cos(life.minutes*.21)*85;
  moveEntityToward(maverick,mx,my,24,dt);
 }
 
@@ -2802,21 +2861,21 @@ if(shiftEngine.active){
  else if(t&&['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(shiftEngine.phase)&&Math.hypot(p.x-t.x,p.y-t.y)<165)pr=`INTERACT · Table ${t.id}`;
  else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(shiftEngine.phase)&&Math.hypot(p.x-500,p.y-720)<170)pr='INTERACT · POS 2 / Side Station';
  else if(shiftEngine.phase==='PICKUP_DRINKS'&&Math.hypot(p.x-800,p.y-430)<175)pr='INTERACT · Pick up drinks';
- else if(shiftEngine.phase==='PICKUP_FOOD'&&dist(p,kellen)<180)pr='INTERACT · Pick up food from Kellen';
+ else if(shiftEngine.phase==='PICKUP_FOOD'&&dist(p,kellen)<215)pr='INTERACT · Pick up food from Kellen';
 }
 if(fridayShift.active){
  const F=fridayShift,A=fridayTable('31'),B=fridayTable('32'),C=fridayTable('33');
  if(F.step===1&&Math.hypot(p.x-500,p.y-720)<145)pr='INTERACT · Clock in';
  else if(F.step===2&&dist(p,host)<155)pr='INTERACT · Seating chart';
- else if([3,8,11,20,28].includes(F.step)&&Math.hypot(p.x-A.x,p.y-A.y)<160)pr='INTERACT · Table 31';
- else if([4,9,13,23,29].includes(F.step)&&Math.hypot(p.x-B.x,p.y-B.y)<160)pr='INTERACT · Table 32';
- else if([5,10,15,18,24,25,27,30].includes(F.step)&&Math.hypot(p.x-C.x,p.y-C.y)<160)pr='INTERACT · Table 33';
+ else if([3,8,11,20,21,29].includes(F.step)&&Math.hypot(p.x-A.x,p.y-A.y)<160)pr='INTERACT · Table 31';
+ else if([4,9,13,24,30].includes(F.step)&&Math.hypot(p.x-B.x,p.y-B.y)<160)pr='INTERACT · Table 32';
+ else if([5,10,15,18,25,26,28,31].includes(F.step)&&Math.hypot(p.x-C.x,p.y-C.y)<160)pr='INTERACT · Table 33';
  else if([6,12,14,16,17].includes(F.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · POS 2';
- else if(F.step===31&&Math.hypot(p.x-500,p.y-720)<180)pr='INTERACT · ENTER TIPS & CLOSE CHECKS';
+ else if(F.step===32&&Math.hypot(p.x-500,p.y-720)<180)pr='INTERACT · ENTER TIPS & CLOSE CHECKS';
  else if(F.step===7&&Math.hypot(p.x-800,p.y-430)<165)pr='INTERACT · Service well';
- else if([19,22].includes(F.step)&&dist(p,kellen)<170)pr='INTERACT · Pick up food from Kellen';
- else if([21,26].includes(F.step)&&Math.hypot(p.x+80,p.y-1148)<155)pr='INTERACT · Bussing station';
- else if(F.step===32&&dist(p,desarae)<220)pr='INTERACT · COMPLETE FRIDAY REVIEW';
+ else if([19,23].includes(F.step)&&dist(p,kellen)<215)pr='INTERACT · Pick up food from Kellen';
+ else if([22,27].includes(F.step)&&Math.hypot(p.x+80,p.y-1148)<155)pr='INTERACT · Bussing station';
+ else if(F.step===33&&dist(p,desarae)<220)pr='INTERACT · COMPLETE FRIDAY REVIEW';
 }
 
 if(postShiftStep===1&&Math.hypot(p.x-500,p.y-720)<140)pr='INTERACT · Clock out at POS 2';
@@ -2826,7 +2885,7 @@ if(serverTraining.active){
  else if([2,3,6,7,10,11,13,14].includes(serverTraining.step)&&Math.hypot(p.x-T.x,p.y-T.y)<160)pr='INTERACT · Table 62';
  else if([4,8,12,15].includes(serverTraining.step)&&Math.hypot(p.x-500,p.y-720)<155)pr='INTERACT · Server POS / Station';
  else if(serverTraining.step===5&&Math.hypot(p.x-800,p.y-430)<160)pr='INTERACT · Pick up drinks';
- else if(serverTraining.step===9&&dist(p,kellen)<165)pr='INTERACT · Answer HANDS call';
+ else if(serverTraining.step===9&&dist(p,kellen)<215)pr='INTERACT · Answer HANDS call';
  else if(serverTraining.step===16&&dist(p,desarae)<180)pr='INTERACT · Shift review';
 }
 
@@ -2835,7 +2894,7 @@ if(gameDay==='ORIENTATION'){
  else if(orientationStep===4&&jayFollow)pr=dist(p,jay)<210?'FOLLOW JAY · POS 2':'FOLLOW JAY';
  else if(orientationStep===4&&!jayFollow&&dist(p,jay)<175)pr='INTERACT · Talk to Jay at POS 2';
  else if(orientationStep===5&&Math.hypot(p.x-500,p.y-720)<130)pr='INTERACT · Clock in';
- else if(orientationStep>=6&&orientationStep<=25){
+ else if(orientationStep>=6&&orientationStep<=24){
   const ts=tourStops[tourIndex];
   if(tourJayLeading)pr=dist(p,jay)<220?`FOLLOW JAY · ${ts.name}`:'FOLLOW JAY';
   else if(dist(p,jay)<180)pr='INTERACT · Learn about '+ts.name;
@@ -2851,7 +2910,7 @@ if(!pr&&inWalkIn()&&Math.hypot(p.x-125,p.y-1125)<68)pr='INTERACT · Take walk-in
 if(!pr&&stage>=6&&dist(p,maverick)<160)pr='INTERACT · Talk to Maverick';
 if(!pr && stage>=6 && gameDay!=='ORIENTATION' && !serverTraining.active && !fridayShift.active && !shiftEngine.active && dist(p,dietCokeDave)<150)pr='INTERACT · Talk to Diet Coke Dave';
 if(!pr&&!inKitchen()&&p.x<110&&p.x>35&&((p.y>280&&p.y<435)||(p.y>870&&p.y<1025)))pr='WALK WEST · Enter kitchen';
-if(!pr&&inKitchen()&&dist(p,kellen)<165)pr='INTERACT · Pick up food from Kellen at Expo';
+if(!pr&&dist(p,kellen)<215)pr='INTERACT · Pick up food from Kellen at Expo';
 if(!pr&&inKitchen()&&p.x<-910&&p.x>-1095&&p.y>210&&p.y<400)pr='INTERACT · Mechanical / Crawl Space';
 if(!pr&&inKitchen()&&p.x>-185&&p.x<35&&p.y>990&&p.y<1300)pr='INTERACT · Dish Corridor';
 if(!pr&&inKitchen()){
