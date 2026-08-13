@@ -692,6 +692,112 @@ const workers=[
  {id:'desarae',role:'SUPERVISOR',name:'DESARAE',x:610,y:760,col:'#9b527a',route:[[610,760],[800,850],[1040,850],[1280,820],[1200,620],[980,500],[600,700],[430,610]],ri:0,s:82,dance:true,line:'I can serve, bartend, cook, expo, train, and apparently remind grown adults to do their side work.'}
 ];
 
+
+
+// v10.0 LIVING RESTAURANT OPS — ambient service has purpose, not random wandering.
+const ambientOps={
+  tables:[
+    {id:'A1',x:360,y:500,seats:2,server:'SERVER 1',state:'DINING',timer:16,party:2},
+    {id:'A2',x:600,y:500,seats:4,server:'SERVER 1',state:'ORDERING',timer:8,party:3},
+    {id:'B1',x:1435,y:455,seats:2,server:'SERVER 2',state:'DINING',timer:18,party:2},
+    {id:'B2',x:760,y:980,seats:4,server:'SERVER 2',state:'NEEDS_CLEAR',timer:7,party:4},
+    {id:'C1',x:1000,y:980,seats:4,server:'SERVER 3',state:'WAIT_FOOD',timer:11,party:3},
+    {id:'C2',x:1240,y:980,seats:4,server:'SERVER 3',state:'DINING',timer:22,party:2}
+  ],
+  actors:[],nextGuest:1,spawnClock:0
+};
+const ambientColors=['#7d5872','#4c6d7a','#65754c','#8a6755','#5f6f8a','#8b6f4e'];
+function makeAmbientActor(name,role,x,y,col,home){return {name,role,x,y,col,home,task:'IDLE',target:null,pause:Math.random()*2,carry:'',moving:false,walkPhase:0,facing:'down',table:null}}
+ambientOps.actors=[
+ makeAmbientActor('SERVER 1','SERVER',510,720,'#526c86',[510,720]),
+ makeAmbientActor('SERVER 2','SERVER',650,720,'#6a507b',[650,720]),
+ makeAmbientActor('SERVER 3','SERVER',575,700,'#4d775f',[575,700]),
+ makeAmbientActor('FOOD RUNNER','RUNNER',70,610,'#8b5f49',[70,610]),
+ makeAmbientActor('BUSSER 2','BUSSER',180,930,'#5f725e',[180,930])
+];
+function ambientGuestAt(t,i){
+ const pos=tableSeatPositions(t,t.party||2)[i]||[t.x,t.y];
+ return {x:pos[0],y:pos[1],col:ambientColors[(ambientOps.nextGuest+i)%ambientColors.length],moving:false,walkPhase:0,facing:'down'};
+}
+function resetAmbientParty(t,arriving=true){
+ t.party=1+Math.floor(Math.random()*Math.max(2,Math.min(4,t.seats)));
+ t.guests=Array.from({length:t.party},(_,i)=>{const g=ambientGuestAt(t,i);if(arriving){g.x=950+i*12;g.y=230;g.target=tableSeatPositions(t,t.party)[i]}return g});
+ t.state=arriving?'ARRIVING':'ORDERING';t.timer=4+Math.random()*5;ambientOps.nextGuest+=t.party;
+}
+ambientOps.tables.forEach(t=>resetAmbientParty(t,false));
+function actorGo(a,x,y,task,carry='',table=null){a.target={x,y};a.task=task;a.carry=carry;a.table=table;a.pause=0}
+function chooseAmbientTask(a){
+ const assigned=ambientOps.tables.filter(t=>t.server===a.name);
+ if(a.role==='SERVER'){
+   let t=assigned.find(t=>t.state==='ORDERING'); if(t){actorGo(a,t.x-70,t.y-55,'TAKE ORDER','',t);return}
+   t=assigned.find(t=>t.state==='DRINKS_READY'); if(t){actorGo(a,755,420,'GET DRINKS','drinks',t);return}
+   t=assigned.find(t=>t.state==='CHECKBACK'); if(t){actorGo(a,t.x-65,t.y-50,'CHECK BACK','',t);return}
+   t=assigned.find(t=>t.state==='CHECK'); if(t){actorGo(a,t.x-65,t.y-50,'DROP CHECK','check',t);return}
+   actorGo(a,a.home[0],a.home[1],'SIDEWORK','towel');return;
+ }
+ if(a.role==='RUNNER'){
+   const t=ambientOps.tables.find(t=>t.state==='FOOD_READY');
+   if(t){actorGo(a,-5,610,'PICKUP FOOD','food',t);return}
+   actorGo(a,70,610,'WAIT EXPO','');return;
+ }
+ if(a.role==='BUSSER'){
+   const t=ambientOps.tables.find(t=>t.state==='DIRTY');
+   if(t){actorGo(a,t.x-55,t.y+50,'BUS TABLE','bus',t);return}
+   actorGo(a,180,930,'RESET STATION','towel');return;
+ }
+}
+function updateAmbientOps(dt){
+ if(stage<6)return;
+ for(const t of ambientOps.tables){
+   t.timer-=dt;
+   if(t.state==='ARRIVING'){
+     let done=true;const seats=tableSeatPositions(t,t.party);
+     t.guests.forEach((g,i)=>{if(!moveEntityToward(g,seats[i][0],seats[i][1],55,dt))done=false});
+     if(done){t.state='ORDERING';t.timer=3+Math.random()*4}
+   } else if(t.state==='ORDERING'&&t.timer<=0){t.timer=999}
+   else if(t.state==='WAIT_DRINKS'&&t.timer<=0){t.state='DRINKS_READY';t.timer=999}
+   else if(t.state==='WAIT_FOOD'&&t.timer<=0){t.state='FOOD_READY';t.timer=999}
+   else if(t.state==='DINING'&&t.timer<=0){t.state='CHECKBACK';t.timer=999}
+   else if(t.state==='CHECKBACK'&&t.timer<=0){t.state='CHECK';t.timer=999}
+   else if(t.state==='PAID'&&t.timer<=0){t.state='LEAVING';t.timer=999}
+   else if(t.state==='LEAVING'){
+     let done=true;t.guests.forEach((g,i)=>{if(!moveEntityToward(g,950+i*12,220,60,dt))done=false});
+     if(done){t.state='DIRTY';t.timer=999}
+   } else if(t.state==='CLEAN'&&t.timer<=0){resetAmbientParty(t,true)}
+ }
+ for(const a of ambientOps.actors){
+   if(a.pause>0){a.pause-=dt;continue}
+   if(!a.target){chooseAmbientTask(a);continue}
+   const reached=moveEntityToward(a,a.target.x,a.target.y,a.role==='RUNNER'?82:68,dt); if(!reached)continue;
+   const t=a.table;
+   if(a.task==='TAKE ORDER'&&t){t.state='WAIT_DRINKS';t.timer=3+Math.random()*3;a.pause=.8}
+   else if(a.task==='GET DRINKS'&&t){actorGo(a,t.x-60,t.y-45,'DELIVER DRINKS','drinks',t);continue}
+   else if(a.task==='DELIVER DRINKS'&&t){t.state='WAIT_FOOD';t.timer=5+Math.random()*5;a.pause=.7}
+   else if(a.task==='PICKUP FOOD'&&t){actorGo(a,t.x-55,t.y-45,'RUN FOOD','food',t);continue}
+   else if(a.task==='RUN FOOD'&&t){t.state='DINING';t.timer=10+Math.random()*10;a.pause=.6}
+   else if(a.task==='CHECK BACK'&&t){t.state='CHECK';t.timer=4+Math.random()*5;a.pause=.7}
+   else if(a.task==='DROP CHECK'&&t){t.state='PAID';t.timer=4+Math.random()*4;a.pause=.6}
+   else if(a.task==='BUS TABLE'&&t){t.state='CLEAN';t.timer=3+Math.random()*4;a.pause=1}
+   else a.pause=1+Math.random()*2;
+   a.target=null;a.table=null;a.carry='';
+ }
+}
+function drawAmbientCarry(a){
+ const sx=a.x-cam.x,sy=a.y-cam.y;
+ if(a.carry==='food'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+20,sy+4,17,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c68039';ctx.beginPath();ctx.arc(sx+20,sy+1,7,0,Math.PI*2);ctx.fill()}
+ if(a.carry==='drinks'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+20,sy+5,17,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#7b4c2f';ctx.fillRect(sx+13,sy-7,5,11);ctx.fillStyle='#d8efff';ctx.fillRect(sx+23,sy-7,5,11)}
+ if(a.carry==='bus'){ctx.fillStyle='#777';ctx.fillRect(sx+12,sy-2,22,12);ctx.fillStyle='#eee';ctx.beginPath();ctx.arc(sx+20,sy-4,5,0,Math.PI*2);ctx.fill()}
+ if(a.carry==='towel'){ctx.fillStyle='#d7ecf2';ctx.fillRect(sx+14,sy-5,20,11)}
+}
+function drawAmbientOps(){
+ if(stage<6)return;
+ for(const t of ambientOps.tables){
+   (t.guests||[]).forEach(g=>drawCharacter(g,g.col,''));
+   if(t.state==='DINING'){const sx=t.x-cam.x,sy=t.y-cam.y;ctx.fillStyle='#eee';ctx.beginPath();ctx.ellipse(sx,sy,18,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b76f32';ctx.beginPath();ctx.arc(sx,sy-2,7,0,Math.PI*2);ctx.fill()}
+ }
+ ambientOps.actors.forEach(a=>{drawCharacter(a,a.col,'');drawAmbientCarry(a)});
+}
+
 let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
 updateTaskPanel();
 const jay={x:860,y:305,name:'JAY'};
@@ -1096,14 +1202,17 @@ function updateGuestFlow(dt){
  }
  guestFlow.parties=guestFlow.parties.filter(p=>p.state!=='GONE');
  for(const bg of guestFlow.barGuests){
-  if(bg.state==='ARRIVING'){if(moveEntityToward(bg,bg.seatX,bg.seatY,68,dt))bg.state='SEATED'}
+  if(bg.state==='ARRIVING'){if(moveEntityToward(bg,bg.seatX,bg.seatY,68,dt)){bg.state='SEATED';bg.dwell=14+Math.random()*18}}
+  else if(bg.state==='SEATED'){bg.dwell=(bg.dwell||16)-dt;if(bg.dwell<=0)bg.state='LEAVING'}
   else if(bg.state==='LEAVING'){if(moveEntityToward(bg,940,220,72,dt))bg.state='GONE'}
  }
- guestFlow.barGuests=guestFlow.barGuests.filter(g=>g.state!=='GONE')
+ const emptySeats=guestFlow.barGuests.filter(g=>g.state==='GONE').map(g=>[g.seatX,g.seatY]);
+ guestFlow.barGuests=guestFlow.barGuests.filter(g=>g.state!=='GONE');
+ for(const seat of emptySeats)addBarGuest(seat[0],seat[1])
 }
 function addBarGuest(seatX,seatY){
  const g=makeGuest(940,230,['#776080','#4d6d79','#6a7550'][guestFlow.barGuests.length%3]);
- Object.assign(g,{seatX,seatY,state:'ARRIVING'});guestFlow.barGuests.push(g)
+ Object.assign(g,{seatX,seatY,state:'ARRIVING',dwell:14+Math.random()*18});guestFlow.barGuests.push(g)
 }
 function startBarTraffic(){dietCokeDave.x=1245;dietCokeDave.y=335;if(guestFlow.barGuests.length)return;addBarGuest(760,350);addBarGuest(920,350);addBarGuest(1080,350)}
 
@@ -2451,9 +2560,15 @@ const kitchenCrew=[
  {x:-350,y:880,name:'SAUTÉ COOK',col:'#586b56'},
  {x:-120,y:445,name:'COLD COOK',col:'#54766e'},
 ];
-for(const kc of kitchenCrew){
- const bob=Math.sin(life.minutes*.8+kc.x)*2;
- drawCharacter({...kc,y:kc.y+bob,moving:false,style:'Short'},kc.col,kc.name);
+for(const [ki,kc] of kitchenCrew.entries()){
+ const phase=performance.now()/310+ki*1.8;
+ const workX=Math.sin(phase)*7,workY=Math.abs(Math.cos(phase))*3;
+ const cook={...kc,x:kc.x+workX,y:kc.y+workY,moving:true,walkPhase:phase,style:'Short',facing:Math.sin(phase)>0?'right':'left'};
+ drawCharacter(cook,kc.col,kc.name);
+ const sx=kc.x-cam.x,sy=kc.y-cam.y;
+ // tiny station animation: utensil/plate movement and occasional steam.
+ ctx.strokeStyle='#d9dde0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx+12,sy-5);ctx.lineTo(sx+25+Math.sin(phase)*5,sy-16);ctx.stroke();
+ if(ki<3&&Math.sin(phase*.55)>0.65){ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;for(let st=0;st<2;st++){ctx.beginPath();ctx.arc(sx+22+st*8,sy-29-st*2,5+st*2,Math.PI,Math.PI*2);ctx.stroke()}}
 }
 
 // west wall 406 sign
@@ -2470,9 +2585,8 @@ ctx.strokeStyle='#30363b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1848-cam.x,
 L('SKI PHOTO',1844,720,8,'#65777d');
 
 
-// animated kitchen crew
-// ambient staff/guests
-[[1400,800],[1450,950]].forEach((a,i)=>person({x:a[0],y:a[1]},['#526f5c','#4b657b'][i%2],''));
+// living restaurant operations: guests turn, servers serve, runners run, bussers reset.
+drawAmbientOps();
 person(host,'#8b5c45','HOST');
 
 
@@ -2820,7 +2934,7 @@ function update(dt){
  if(autosaveAccumulator>=4){autosaveAccumulator=0;autosaveNow()}
 document.getElementById('closeoutBtn').style.display=(fridayShift.active&&fridayShift.step>=31)?'block':'none';
 updateTaskPanel();
-updateWorkers(dt);updateGuestFlow(dt);advanceJayTour(dt);
+updateWorkers(dt);updateGuestFlow(dt);updateAmbientOps(dt);advanceJayTour(dt);
 
 if(stage>=6&&!dialogue){
  const mPhase=Math.floor(life.minutes/18)%4;
