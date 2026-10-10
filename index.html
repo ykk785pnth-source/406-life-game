@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v9.8</title><style>
+<title>406 Life v10.1</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · ARCHITECTURAL POLISH & MAVERICK AI v9.8</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · CRAGGY FLOOR PLANS & BLAKE v10.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -107,6 +107,97 @@ const career={
  ],
  history:[]
 };
+
+
+// v10.1 CANONICAL CRAGGY SERVER FLOOR PLANS
+// These are the real table groupings used by Craggy Whitefish. 20s stay the preferred final closing zone.
+const craggyFloorPlans={
+  7:{
+    label:'PEAK / CLEAN SPLIT FLOOR',
+    sections:{
+      'TEENS A':[12,13,14],
+      'TEENS B':[15,16,17,18,19],
+      '20s + 31':[21,22,23,24,25,31],
+      'UPPER BOOTHS':[32,33,34],
+      'LOWER BOOTHS':[35,36,37],
+      '40s LEFT / MID':[41,42,46,47,49],
+      '40s RIGHT':[43,44,45]
+    },
+    nextCut:'Merge the two 40s sections.'
+  },
+  6:{
+    label:'FIRST CUT FROM PEAK',
+    sections:{
+      'TEENS A':[12,13,14],
+      'TEENS B':[15,16,17,18,19],
+      '20s + 31':[21,22,23,24,25,31],
+      'UPPER BOOTHS':[32,33,34],
+      'LOWER BOOTHS':[35,36,37],
+      '40s':[41,42,43,44,45,46,47,49]
+    },
+    nextCut:'Combine Upper + Lower Booths.'
+  },
+  5:{
+    label:'ONE EXTRA OVER CORE FOUR',
+    sections:{
+      'TEENS A':[12,13,14],
+      'TEENS B':[15,16,17,18,19],
+      '20s + 31':[21,22,23,24,25,31],
+      'BOOTHS 32-37':[32,33,34,35,36,37],
+      '40s':[41,42,43,44,45,46,47,49]
+    },
+    nextCut:'Merge Teens A + Teens B.'
+  },
+  4:{
+    label:'DEFAULT FULL-FLOOR PLAN',
+    sections:{
+      'TEENS 12-19':[12,13,14,15,16,17,18,19],
+      '20s + 31':[21,22,23,24,25,31],
+      'BOOTHS 32-37':[32,33,34,35,36,37],
+      '40s':[41,42,43,44,45,46,47,49]
+    },
+    nextCut:'Cut standalone booth server and absorb booths geographically.'
+  },
+  3:{
+    label:'BOOTHS ABSORBED / 40s OPEN',
+    sections:{
+      'TEENS':[12,13,14,15,16,17,18,19],
+      'FRONT + UPPER BOOTHS':[21,22,23,24,25,31,32,33],
+      '40s + LOWER BOOTHS':[35,36,37,41,42,43,44,45,46,47,49],
+      'ROTATE / MOD ASSIGN':[34]
+    },
+    nextCut:'Close 40s first; move to Teens + front/20s.'
+  },
+  2:{
+    label:'CLOSE THE 40s FIRST',
+    sections:{
+      'TEENS':[12,13,14,15,16,17,18,19],
+      '20s + 31-32':[21,22,23,24,25,31,32]
+    },
+    closed:[33,34,35,36,37,41,42,43,44,45,46,47,49],
+    nextCut:'Close Teens; final closer stays in 20s.'
+  },
+  1:{
+    label:'FINAL CLOSING SECTION',
+    sections:{'20s + 31':[21,22,23,24,25,31]},
+    optional:[32],
+    closed:[12,13,14,15,16,17,18,19,33,34,35,36,37,41,42,43,44,45,46,47,49]
+  },
+  training:{
+    label:'6 SERVERS + TRAINEE',
+    sections:{
+      'TEENS A':[12,13,14],
+      'TEENS B':[15,16,17,18,19],
+      'TRAINEE':[21,24],
+      'MENTOR':[22,23,25,31],
+      'UPPER BOOTHS':[32,33,34],
+      'LOWER BOOTHS':[35,36,37],
+      '40s':[41,42,43,44,45,46,47,49]
+    }
+  }
+};
+let activeCraggyFloorPlan=4;
+function getCraggyFloorPlan(serverCount=activeCraggyFloorPlan){return craggyFloorPlans[serverCount]||craggyFloorPlans[4]}
 
 const weekdayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const shiftThemes=[
@@ -585,7 +676,8 @@ const staffLooks={
  SERVER:{skin:'#d69a70',hair:'#5b3525',style:'Ponytail',shirt:'#49657b',pants:'#25272d',apron:true,height:1},
  BUSSER:{skin:'#b87650',hair:'#201814',style:'Curly',shirt:'#55705d',pants:'#25272b',apron:true,height:1},
  DIET_COKE_DAVE:{skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',apron:false,height:1.02,build:1.05},
- MAVERICK:{skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',apron:true,height:1.03,build:1.0,redBandana:true,paintClothes:true}
+ MAVERICK:{skin:'#d69a70',hair:'#34241f',style:'Short',shirt:'#7b756a',pants:'#4a4d55',apron:true,height:1.03,build:1.0,redBandana:true,paintClothes:true},
+ BLAKE:{skin:'#d69a70',hair:'#4a3328',style:'Short',shirt:'#4b657b',pants:'#59606a',apron:true,height:1.05,build:1.02,accessory:'Round glasses',baseballCap:true,baggyJeans:true,fishingPole:true}
 };
 function colorFill(value,sx,sy,w=30,h=45){
  if(value==='tie-dye'){let g=ctx.createLinearGradient(sx-w/2,sy-h/2,sx+w/2,sy+h/2);g.addColorStop(0,'#ff69b4');g.addColorStop(.33,'#ffd84d');g.addColorStop(.66,'#32d6c7');g.addColorStop(1,'#8a5cff');ctx.fillStyle=g}else ctx.fillStyle=value;
@@ -650,6 +742,12 @@ if(look.hipKnife){
  ctx.beginPath();ctx.ellipse(sx-12*scale,sy-25*scale+bob,3*scale,5*scale,0,0,Math.PI*2);ctx.ellipse(sx+12*scale,sy-25*scale+bob,3*scale,5*scale,0,0,Math.PI*2);ctx.fill();
 
  drawHair(sx,sy+bob,look,scale);
+ if(look.baseballCap){
+  ctx.fillStyle='#252a31';
+  ctx.beginPath();ctx.ellipse(sx,sy-37*scale+bob,14*scale,7*scale,0,Math.PI,Math.PI*2);ctx.fill();
+  ctx.fillRect(sx-14*scale,sy-38*scale+bob,28*scale,5*scale);
+  ctx.fillRect(sx+8*scale,sy-36*scale+bob,13*scale,3*scale);
+ }
  if(look.redBandana){
   ctx.fillStyle='#a52b2b';ctx.fillRect(sx-14*scale,sy-35*scale+bob,28*scale,5*scale);
   ctx.beginPath();ctx.moveTo(sx+13*scale,sy-34*scale+bob);ctx.lineTo(sx+23*scale,sy-28*scale+bob);ctx.lineTo(sx+15*scale,sy-24*scale+bob);ctx.fill();
@@ -677,6 +775,15 @@ if(look.hipKnife){
   if(carryItem==='food'){ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx+22,sy+6,19,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c68039';ctx.beginPath();ctx.arc(sx+22,sy+3,8,0,Math.PI*2);ctx.fill()}
   if(carryItem==='ranch'||carryItem==='supplies'){ctx.fillStyle='#eee';ctx.fillRect(sx+17,sy-3,10,10)}if(carryItem==='towel'){ctx.fillStyle='#d7ecf2';ctx.fillRect(sx+13,sy-7,24,15)}
  }
+ if(look.fishingPole){
+  ctx.save();
+  ctx.strokeStyle='#5a3a22';ctx.lineWidth=2.2*scale;
+  ctx.beginPath();ctx.moveTo(sx+15*scale,sy+14*scale);ctx.lineTo(sx+42*scale,sy-52*scale);ctx.stroke();
+  ctx.strokeStyle='#c9d6df';ctx.lineWidth=.8*scale;
+  ctx.beginPath();ctx.moveTo(sx+42*scale,sy-52*scale);ctx.quadraticCurveTo(sx+58*scale,sy-20*scale,sx+48*scale,sy+13*scale);ctx.stroke();
+  ctx.fillStyle='#c94d45';ctx.beginPath();ctx.arc(sx+48*scale,sy+14*scale,2.5*scale,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+ }
  if(label)L(label,n.x,n.y-58*scale,12);
 }
 function person(n,col,label){drawCharacter(n,col,label)}
@@ -688,6 +795,7 @@ const workers=[
  {id:'bartender2',role:'BARTENDER',name:'BARTENDER',x:1180,y:610,col:'#455f72',route:[[1180,610],[1260,560],[1160,450],[980,430],[820,500]],ri:0,s:48,line:'First day? My professional advice is: learn where the ranch is and never say “it’s slow.”'},
  {id:'barback',role:'BARBACK',name:'BARBACK',x:1020,y:680,col:'#76545c',route:[[1020,680],[850,680],[760,610],[820,440],[1080,440],[1260,600]],ri:0,s:72,line:'I have ice, glassware, and seventeen things to do. What’s up?'},
  {id:'server',role:'SERVER',name:'SERVER',x:540,y:820,col:'#4b657b',route:[[540,820],[540,700],[420,610],[500,520],[620,720],[900,850],[760,850]],ri:0,s:78,carry:true,line:'I’m running food. If you see someone standing at the pass staring into space, yell “HANDS!”'},
+ {id:'blake',role:'SERVER',name:'BLAKE',x:520,y:760,col:'#4b657b',route:[[520,760],[420,610],[590,510],[760,850],[1040,850],[1280,820],[1510,700],[1640,500],[1510,350],[1280,620],[980,500],[800,850]],ri:0,s:86,alwaysRoam:true,line:'I have no idea why I brought a fishing pole to work, but I’m committed now.'},
  {id:'busser',role:'BUSSER',name:'BUSSER',x:1380,y:820,col:'#526f5c',route:[[1380,820],[1510,700],[1640,700],[1510,500],[1280,820],[1080,850],[800,850]],ri:0,s:70,bus:true,line:'I’m bussing this whole planet one ranch cup at a time.'},
  {id:'desarae',role:'SUPERVISOR',name:'DESARAE',x:610,y:760,col:'#9b527a',route:[[610,760],[800,850],[1040,850],[1280,820],[1200,620],[980,500],[600,700],[430,610]],ri:0,s:82,dance:true,line:'I can serve, bartend, cook, expo, train, and apparently remind grown adults to do their side work.'}
 ];
@@ -2122,7 +2230,7 @@ function updateWorkers(dt){
   n.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
   const sx=dx/m*n.s*dt,sy=dy/m*n.s*dt;
   // Bar staff stay on their authored interior routes. Floor staff obey the same geometry as the player.
-  if(['server','busser','desarae'].includes(n.id)){
+  if(['server','blake','busser','desarae'].includes(n.id)){
    let moved=false;
    if(!npcBlocked(n,n.x+sx,n.y)){n.x+=sx;moved=true}
    if(!npcBlocked(n,n.x,n.y+sy)){n.y+=sy;moved=true}
