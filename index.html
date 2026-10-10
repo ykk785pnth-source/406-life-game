@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v10.2</title><style>
+<title>406 Life v10.3</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · FLOOR / KITCHEN / NPC REPAIR v10.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · TRUE CRAGGY FLOOR REBUILD v10.3</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -94,7 +94,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.style.display='block';q.textContent='Game error: '+m+' · line '+l;};
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
-const world={w:1900,h:1340,minX:-1160};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
+const world={w:1900,h:1480,minX:-1160};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:780,y:500};const tuff={x:565,y:940};
 
 
 const career={
@@ -660,19 +660,19 @@ function L(t,x,y,size=13,col='#fff'){ctx.fillStyle=col;ctx.font='800 '+size+'px 
 
 // v10.2 PHYSICAL CRAGGY TABLE MAP — aligned to the finalized server floor-chart geometry.
 const craggyTables=[
- {id:14,x:300,y:300,seats:6,shape:'rect'},{id:13,x:480,y:300,seats:6,shape:'rect'},{id:12,x:660,y:300,seats:6,shape:'rect'},
- {id:17,x:350,y:500,seats:4,shape:'rect'},{id:16,x:520,y:500,seats:4,shape:'rect'},{id:15,x:670,y:500,seats:2,shape:'rect'},
- {id:19,x:300,y:675,seats:4,shape:'rect'},{id:18,x:500,y:675,seats:4,shape:'rect'},
- {id:21,x:930,y:300,seats:6,shape:'rect'},{id:22,x:1110,y:300,seats:6,shape:'rect'},{id:23,x:1290,y:300,seats:6,shape:'rect'},
- {id:24,x:980,y:500,seats:4,shape:'rect'},{id:25,x:1160,y:500,seats:4,shape:'rect'},
- {id:31,x:1480,y:500,seats:6,shape:'booth'},{id:32,x:1480,y:625,seats:6,shape:'booth'},
- {id:33,x:1480,y:750,seats:6,shape:'booth'},{id:34,x:1480,y:895,seats:10,shape:'boothTall'},
- {id:35,x:1480,y:1015,seats:6,shape:'booth'},{id:36,x:1480,y:1110,seats:6,shape:'booth'},
- {id:37,x:1480,y:1190,seats:6,shape:'booth'},
- {id:41,x:820,y:805,seats:4,shape:'rect'},{id:42,x:1020,y:805,seats:4,shape:'rect'},{id:43,x:1220,y:805,seats:4,shape:'rect'},
- {id:47,x:720,y:1010,seats:4,shape:'diamond'},{id:46,x:900,y:1010,seats:4,shape:'diamond'},
- {id:45,x:1080,y:1010,seats:4,shape:'diamond'},{id:44,x:1260,y:1010,seats:4,shape:'diamond'},
- {id:49,x:610,y:1120,seats:2,shape:'diamond'}
+ {id:14,x:280,y:335,seats:6,shape:'rect'},{id:13,x:455,y:335,seats:6,shape:'rect'},{id:12,x:625,y:335,seats:6,shape:'rect'},
+ {id:17,x:330,y:500,seats:4,shape:'rect'},{id:16,x:500,y:500,seats:4,shape:'rect'},{id:15,x:650,y:500,seats:2,shape:'rect'},
+ {id:19,x:300,y:660,seats:4,shape:'rect'},{id:18,x:500,y:660,seats:4,shape:'rect'},
+ {id:21,x:960,y:335,seats:6,shape:'rect'},{id:22,x:1135,y:335,seats:6,shape:'rect'},{id:23,x:1310,y:335,seats:6,shape:'rect'},
+ {id:24,x:1010,y:500,seats:4,shape:'rect'},{id:25,x:1190,y:500,seats:4,shape:'rect'},
+ {id:31,x:1480,y:500,seats:6,shape:'booth'},{id:32,x:1480,y:630,seats:6,shape:'booth'},
+ {id:33,x:1480,y:755,seats:6,shape:'booth'},{id:34,x:1480,y:900,seats:10,shape:'boothTall'},
+ {id:35,x:1480,y:1040,seats:6,shape:'booth'},{id:36,x:1480,y:1150,seats:6,shape:'booth'},
+ {id:37,x:1480,y:1250,seats:6,shape:'booth'},
+ {id:41,x:835,y:955,seats:4,shape:'rect'},{id:42,x:1045,y:955,seats:4,shape:'rect'},{id:43,x:1255,y:955,seats:4,shape:'rect'},
+ {id:47,x:750,y:1125,seats:4,shape:'diamond'},{id:46,x:930,y:1125,seats:4,shape:'diamond'},
+ {id:45,x:1110,y:1125,seats:4,shape:'diamond'},{id:44,x:1290,y:1125,seats:4,shape:'diamond'},
+ {id:49,x:650,y:1245,seats:2,shape:'diamond'}
 ];
 function craggyTable(id){return craggyTables.find(t=>String(t.id)===String(id))}
 function drawCraggyTable(t){
@@ -824,28 +824,24 @@ function playerPerson(n){drawCharacter(n,n.outfit,n.name)}
 
 
 const workers=[
- {id:'bartender1',role:'BARTENDER',name:'JELENA',x:800,y:430,col:'#6c4b3b',route:[[800,430],[980,430],[1180,430],[1280,520],[1180,650],[900,650]],ri:0,s:58,friendship:0,line:'If you need Tuff, he is probably walking very fast toward a problem.'},
- {id:'bartender2',role:'BARTENDER',name:'BARTENDER',x:1180,y:610,col:'#455f72',route:[[1180,610],[1260,560],[1160,450],[980,430],[820,500]],ri:0,s:48,line:'First day? My professional advice is: learn where the ranch is and never say “it’s slow.”'},
- {id:'barback',role:'BARBACK',name:'BARBACK',x:1020,y:680,col:'#76545c',route:[[1020,680],[850,680],[760,610],[820,440],[1080,440],[1260,600]],ri:0,s:72,line:'I have ice, glassware, and seventeen things to do. What’s up?'},
- {id:'server',role:'SERVER',name:'SERVER',x:540,y:820,col:'#4b657b',route:[[540,820],[540,700],[420,610],[500,520],[620,720],[900,850],[760,850]],ri:0,s:78,carry:true,line:'I’m running food. If you see someone standing at the pass staring into space, yell “HANDS!”'},
- {id:'blake',role:'SERVER',name:'BLAKE',x:585,y:760,col:'#4b657b',
-  route:[[585,760],[585,585],[820,585],[900,690],[1130,690],[1375,690],[1375,560],[1375,875],[1325,930],[1120,930],[900,930],[700,930],[585,875]],
-  ri:0,s:76,alwaysRoam:true,line:'I have no idea why I brought a fishing pole to work, but I’m committed now.'},
- {id:'busser',role:'BUSSER',name:'BUSSER',x:1380,y:820,col:'#526f5c',route:[[1380,820],[1510,700],[1640,700],[1510,500],[1280,820],[1080,850],[800,850]],ri:0,s:70,bus:true,line:'I’m bussing this whole planet one ranch cup at a time.'},
- {id:'desarae',role:'SUPERVISOR',name:'DESARAE',x:610,y:760,col:'#9b527a',route:[[610,760],[800,850],[1040,850],[1280,820],[1200,620],[980,500],[600,700],[430,610]],ri:0,s:82,dance:true,line:'I can serve, bartend, cook, expo, train, and apparently remind grown adults to do their side work.'}
+ {id:'bartender1',role:'BARTENDER',name:'JELENA',x:950,y:760,col:'#6c4b3b',route:[[950,760],[1100,760],[1225,760],[1225,850],[1050,850],[900,850]],ri:0,s:58,friendship:0,line:'If you need Tuff, he is probably walking very fast toward a problem.'},
+ {id:'bartender2',role:'BARTENDER',name:'BARTENDER',x:1160,y:820,col:'#455f72',route:[[1160,820],[1220,760],[1100,720],[950,720],[880,820]],ri:0,s:48,line:'First day? My professional advice is: learn where the ranch is and never say “it’s slow.”'},
+ {id:'barback',role:'BARBACK',name:'BARBACK',x:1010,y:850,col:'#76545c',route:[[1010,850],[900,850],[850,780],[900,720],[1120,720],[1240,820]],ri:0,s:72,line:'I have ice, glassware, and seventeen things to do. What’s up?'},
+ {id:'server',role:'SERVER',name:'SERVER',x:610,y:790,col:'#4b657b',route:[[610,790],[610,720],[700,650],[820,585],[900,590],[1375,590],[1375,720],[1375,900],[1325,1020],[1140,1040],[920,1040],[700,980]],ri:0,s:78,carry:true,line:'I’m running food. If you see someone standing at the pass staring into space, yell “HANDS!”'},
+ {id:'blake',role:'SERVER',name:'BLAKE',x:620,y:815,col:'#4b657b',route:[[620,815],[650,735],[735,620],[860,585],[1030,585],[1210,585],[1370,585],[1370,735],[1370,930],[1325,1025],[1180,1045],[980,1045],[790,1045],[680,970]],ri:0,s:74,alwaysRoam:true,line:'I have no idea why I brought a fishing pole to work, but I’m committed now.'},
+ {id:'busser',role:'BUSSER',name:'BUSSER',x:1370,y:1000,col:'#526f5c',route:[[1370,1000],[1370,860],[1370,700],[1370,585],[1280,590],[1180,1040],[980,1040],[760,1040],[650,1180],[820,1260]],ri:0,s:70,bus:true,line:'I’m bussing this whole planet one ranch cup at a time.'},
+ {id:'desarae',role:'SUPERVISOR',name:'DESARAE',x:720,y:900,col:'#9b527a',route:[[720,900],[760,820],[760,650],[880,590],[1050,590],[1240,590],[1370,700],[1370,900],[1240,1040],[1020,1040],[800,1040],[650,930]],ri:0,s:82,dance:true,line:'I can serve, bartend, cook, expo, train, and apparently remind grown adults to do their side work.'}
 ];
-
-
 
 // v10.0 LIVING RESTAURANT OPS — ambient service has purpose, not random wandering.
 const ambientOps={
   tables:[
-    {id:'17',x:350,y:500,seats:4,server:'SERVER 1',state:'DINING',timer:16,party:2},
-    {id:'21',x:930,y:300,seats:6,server:'SERVER 1',state:'ORDERING',timer:8,party:3},
+    {id:'17',x:330,y:500,seats:4,server:'SERVER 1',state:'DINING',timer:16,party:2},
+    {id:'21',x:960,y:335,seats:6,server:'SERVER 1',state:'ORDERING',timer:8,party:3},
     {id:'31',x:1480,y:500,seats:6,server:'SERVER 2',state:'DINING',timer:18,party:2},
-    {id:'41',x:820,y:805,seats:4,server:'SERVER 2',state:'NEEDS_CLEAR',timer:7,party:4},
-    {id:'45',x:1080,y:1010,seats:4,server:'SERVER 3',state:'WAIT_FOOD',timer:11,party:3},
-    {id:'44',x:1260,y:1010,seats:4,server:'SERVER 3',state:'DINING',timer:22,party:2}
+    {id:'41',x:835,y:955,seats:4,server:'SERVER 2',state:'NEEDS_CLEAR',timer:7,party:4},
+    {id:'45',x:1110,y:1125,seats:4,server:'SERVER 3',state:'WAIT_FOOD',timer:11,party:3},
+    {id:'44',x:1290,y:1125,seats:4,server:'SERVER 3',state:'DINING',timer:22,party:2}
   ],
   actors:[],nextGuest:1,spawnClock:0
 };
@@ -943,9 +939,9 @@ function drawAmbientOps(){
 
 let gameDay='INTERVIEW', orientationStep=0, clockedIn=false, tutorialDone=false;
 updateTaskPanel();
-const jay={x:860,y:305,name:'JAY'};
-const kellen={x:70,y:605,name:'KELLEN'};
-const kyle={x:820,y:500,name:'KYLE'};
+const jay={x:780,y:500,name:'JAY'};
+const kellen={x:120,y:760,name:'KELLEN'};
+const kyle={x:860,y:760,name:'KYLE'};
 
 
 const maverick={
@@ -982,7 +978,7 @@ function maverickTalk(){
 }
 
 const dietCokeDave={
- name:'DIET COKE DAVE',x:1245,y:335,col:'#7d755f',
+ name:'DIET COKE DAVE',x:1325,y:615,col:'#7d755f',
  skin:'#d3a07c',hair:'#d9d2c8',style:'Bald',shirt:'#6d7561',pants:'#3a3b40',
  accessory:'Sunglasses',moving:false,walkPhase:0,regular:true
 };
@@ -1108,25 +1104,25 @@ function orientationInteract(){
  return false;
 }
 const tourStops=[
- {x:760,y:300,name:'HOST STAND',text:'This is the host stand: wait list, reservations, seating rotation, and the first person blamed for a table that chose to sit themselves.'},
- {x:800,y:430,name:'SERVICE WELL & BAR ENTRY',text:'Servers pick up drinks here. Keep the lane clear and never make Jelena hunt for her bar rag.'},
- {x:500,y:720,name:'POS 2 & TIME CLOCK',text:'POS 2 contains the time clock. Ring accurately and clock in before Tuff notices you working for free.'},
-{x:48,y:610,name:'EXPO & SERVER STATION',text:'This is the real expo pickup line. Kellen coordinates finished food here; plates, supplies, and server traffic feed into this area. Plates, ramekins, supplies, side work, and server traffic live here. Food pickup does not happen at the window.'},
- {x:1080,y:520,name:'CENTER BAR',text:'The bar has a guest rail, staff entry, bartender walkway, taps, bottles, and Diet Coke Dave’s permanent ecosystem.'},
- {x:980,y:1040,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. Summer money lives out there, along with twelve thousand steps.'},
- {x:38,y:352,name:'NORTH KITCHEN ENTRY',text:'The kitchen is west of the dining room through this entrance beside the BOH viewing window and expo station. We are not crossing the street to make a burger.'},
- {x:-912,y:310,name:'SALAD LINE',text:'The salad line runs horizontally against the road wall. Salads, cold bowls, dressings, garnishes, and an unreasonable number of modifications.'},
- {x:-960,y:585,name:'PREP TABLES',text:'Prep tables handle slicing, portioning, labeling, and everything that keeps dinner service from collapsing.'},
- {x:-628,y:815,name:'PREP STOVE',text:'The prep stove handles soup, sauces, and stock. Eyeballing eighteen quarts is how legends and write-ups are created.'},
- {x:-475,y:650,name:'PREP WALL',text:'This is a solid black wall separating prep from the hot line. It is not a walkway.'},
- {x:-350,y:545,name:'FRYERS',text:'The fry station runs vertically beside the prep wall. Timers, baskets, fries, tots, and somebody asking if their food is up.'},
- {x:-350,y:770,name:'GRILL',text:'The grill handles burgers, bison, chicken, temperatures, and enough modifiers to test everyone’s reading comprehension.'},
- {x:-350,y:972,name:'SAUTÉ',text:'Sauté is hot pans, steam, sauces, and a very sincere need for everyone to call behind.'},
- {x:-221,y:650,name:'HOT-LINE AISLE',text:'This narrow aisle belongs to cooks working fry, grill, and sauté. Do not stand here contemplating your life.'},
- {x:-118,y:650,name:'COLD LINE',text:'The cold line is its own vertical station against the wall. It is separate from the kitchen pass.'},
- {x:-590,y:312,name:'FRY FREEZER',text:'The fry freezer sits against the road wall. Restock before the rush instead of discovering the problem during it.'},
- {x:-70,y:1210,name:'DISH CORRIDOR',text:'This corridor leads to dish: dirty plates in, clean racks out, and the heartbeat everybody ignores until it stops.'},
- {x:38,y:942,name:'SOUTH KITCHEN ENTRY',text:'This lower entrance reconnects the kitchen’s main walkway to the dining room and keeps traffic flowing both directions.'}
+ {x:780,y:500,name:'HOST STAND',text:'This is the host stand: wait list, reservations, seating rotation, and the first person blamed for a table that chose to sit themselves.'},
+ {x:775,y:645,name:'SERVICE WELL & BAR ENTRY',text:'Servers pick up drinks here. Keep the lane clear and never make Jelena hunt for her bar rag.'},
+ {x:587,y:770,name:'POS 2 & TIME CLOCK',text:'POS 2 contains the time clock. Ring accurately and clock in before Tuff notices you working for free.'},
+ {x:120,y:760,name:'EXPO & SERVER STATION',text:'This is the real expo pickup line. Kellen coordinates finished food here; plates, supplies, and server traffic feed into this area.'},
+ {x:1050,y:790,name:'CENTER BAR',text:'The bar has a guest rail, staff entry, bartender walkway, taps, bottles, and Diet Coke Dave’s permanent ecosystem.'},
+ {x:1130,y:1330,name:'PATIO GARAGE DOORS',text:'These south-wall garage doors lead to the patio. Summer money lives out there, along with twelve thousand steps.'},
+ {x:38,y:445,name:'NORTH KITCHEN ENTRY',text:'The kitchen is west of the dining room through this entrance beside expo. We are not crossing the street to make a burger.'},
+ {x:-750,y:330,name:'SALAD LINE',text:'The salad line runs horizontally against the road wall. Salads, cold bowls, dressings, garnishes, and an unreasonable number of modifications.'},
+ {x:-940,y:535,name:'PREP TABLES',text:'Prep tables handle slicing, portioning, labeling, and everything that keeps dinner service from collapsing.'},
+ {x:-688,y:750,name:'PREP STOVE',text:'The prep stove handles soup, sauces, and stock. Eyeballing eighteen quarts is how legends and write-ups are created.'},
+ {x:-532,y:700,name:'PREP WALL',text:'This is a solid black wall separating prep from the hot line. It is not a walkway.'},
+ {x:-375,y:505,name:'FRYERS',text:'The fry station runs vertically beside the prep wall. Timers, baskets, fries, tots, and somebody asking if their food is up.'},
+ {x:-375,y:700,name:'GRILL',text:'The grill handles burgers, bison, chicken, temperatures, and enough modifiers to test everyone’s reading comprehension.'},
+ {x:-375,y:895,name:'SAUTÉ',text:'Sauté is hot pans, steam, sauces, and a very sincere need for everyone to call behind.'},
+ {x:-240,y:700,name:'HOT-LINE AISLE',text:'This narrow aisle belongs to cooks working fry, grill, and sauté. Do not stand here contemplating your life.'},
+ {x:-125,y:700,name:'COLD LINE',text:'The cold line is its own vertical station against the wall. It is separate from the kitchen pass.'},
+ {x:-460,y:330,name:'FRY FREEZER',text:'The fry freezer sits against the road wall. Restock before the rush instead of discovering the problem during it.'},
+ {x:-80,y:1230,name:'DISH CORRIDOR',text:'This corridor leads to dish: dirty plates in, clean racks out, and the heartbeat everybody ignores until it stops.'},
+ {x:38,y:965,name:'SOUTH KITCHEN ENTRY',text:'This lower entrance reconnects the kitchen’s main walkway to the dining room and keeps traffic flowing both directions.'}
 ];
 let tourIndex=0,tourJayLeading=false;
 function startBuildingTour(){
@@ -1421,8 +1417,8 @@ const fridayShift={
  active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,incident:false,cleanup:false,
  tables:[
   {id:'31',x:1480,y:500,status:'EMPTY',happiness:100},
-  {id:'32',x:1480,y:625,status:'EMPTY',happiness:100},
-  {id:'33',x:1480,y:750,status:'EMPTY',happiness:100}
+  {id:'32',x:1480,y:630,status:'EMPTY',happiness:100},
+  {id:'33',x:1480,y:755,status:'EMPTY',happiness:100}
  ]
 };
 function fridayTable(id){return fridayShift.tables.find(t=>t.id===id)}
@@ -1436,37 +1432,37 @@ const kitchenWorld={
  unlocked:true,
  minX:-1160,
  stations:[
-  {id:'salad',name:'SALAD LINE',x:-900,y:300,w:300,h:92,color:'#c14382'},
-  {id:'fryFreezer',name:'FRY FREEZER',x:-570,y:300,w:170,h:92,color:'#c14382'},
-  {id:'prep1',name:'PREP TABLE',x:-1030,y:390,w:140,h:180,color:'#c14382'},
-  {id:'prep2',name:'PREP TABLE',x:-1030,y:690,w:140,h:180,color:'#c14382'},
-  {id:'prep3',name:'PREP TABLE',x:-690,y:410,w:125,h:150,color:'#c14382'},
-  {id:'prepStove',name:'PREP STOVE',x:-690,y:625,w:125,h:170,color:'#c14382'},
-  {id:'fryers',name:'FRYERS',x:-420,y:370,w:140,h:155,color:'#c14382'},
-  {id:'grill',name:'GRILL',x:-420,y:595,w:140,h:155,color:'#c14382'},
-  {id:'saute',name:'SAUTÉ',x:-420,y:815,w:140,h:140,color:'#c14382'},
-  {id:'coldLine',name:'COLD LINE',x:-170,y:380,w:105,h:520,color:'#58c8b8'},
-  {id:'kitchenPass',name:'KITCHEN PASS',x:-38,y:330,w:68,h:625,color:'#b78855'}
+  {id:'salad',name:'SALAD LINE',x:-900,y:280,w:300,h:100,color:'#c14382'},
+  {id:'fryFreezer',name:'FRY FREEZER',x:-555,y:280,w:190,h:100,color:'#c14382'},
+  {id:'prep1',name:'PREP TABLE',x:-1030,y:450,w:180,h:155,color:'#c14382'},
+  {id:'prep2',name:'PREP TABLE',x:-1030,y:675,w:180,h:155,color:'#c14382'},
+  {id:'prep3',name:'PREP TABLE',x:-770,y:450,w:165,h:155,color:'#c14382'},
+  {id:'prepStove',name:'PREP STOVE',x:-770,y:675,w:165,h:155,color:'#c14382'},
+  {id:'fryers',name:'FRYERS',x:-455,y:430,w:160,h:150,color:'#c14382'},
+  {id:'grill',name:'GRILL',x:-455,y:625,w:160,h:150,color:'#c14382'},
+  {id:'saute',name:'SAUTÉ',x:-455,y:820,w:160,h:150,color:'#c14382'},
+  {id:'coldLine',name:'COLD LINE',x:-180,y:430,w:110,h:520,color:'#58c8b8'},
+  {id:'kitchenPass',name:'KITCHEN PASS',x:-48,y:430,w:65,h:520,color:'#b78855'}
  ],
  walls:[
-  {x:-500,y:335,w:50,h:620},           // prep wall
-  {x:-1120,y:190,w:1150,h:24},         // road/street wall
-  {x:-1120,y:190,w:24,h:1000},         // west outer wall
-  {x:-1120,y:1160,w:390,h:24},         // south wall left
-  {x:-630,y:1160,w:660,h:24},          // south wall right
-  {x:18,y:190,w:22,h:105},             // dining-room shared wall top
-  {x:18,y:1010,w:22,h:180}             // dining-room shared wall bottom
+  {x:-555,y:420,w:45,h:565},
+  {x:-1120,y:190,w:1150,h:24},
+  {x:-1120,y:190,w:24,h:1110},
+  {x:-1120,y:1280,w:420,h:24},
+  {x:-620,y:1280,w:650,h:24},
+  {x:18,y:190,w:22,h:190},
+  {x:18,y:1030,w:22,h:274}
  ],
- hallway:{x:-1095,y:1000,w:1125,h:160},
- dishCorridor:{x:-170,y:1000,w:200,h:300},
+ hallway:{x:-1095,y:1030,w:1125,h:220},
+ dishCorridor:{x:-180,y:1030,w:210,h:320},
  doors:[
-  {x:18,y:295,w:55,h:125,name:'NORTH KITCHEN ENTRY'},
-  {x:18,y:885,w:55,h:125,name:'SOUTH KITCHEN ENTRY'}
+  {x:18,y:380,w:55,h:130,name:'NORTH KITCHEN ENTRY'},
+  {x:18,y:900,w:55,h:130,name:'SOUTH KITCHEN ENTRY'}
  ],
- mechanical:{x:-1090,y:215,w:165,h:175}
+ mechanical:{x:-1090,y:225,w:165,h:165}
 };
 function kitchenStation(id){return kitchenWorld.stations.find(s=>s.id===id)}
-function inKitchen(){return p.x>-1120&&p.x<40&&p.y>190&&p.y<1300}
+function inKitchen(){return p.x>-1120&&p.x<40&&p.y>190&&p.y<1400}
 function nearStation(id,r=130){
  const s=kitchenStation(id);if(!s)return false;
  const cx=s.x+s.w/2,cy=s.y+s.h/2;
@@ -2253,7 +2249,7 @@ function npcBlocked(n,nx,ny){
  const radius=14;
  for(const s of solidRects)if(nx+radius>s.x&&nx-radius<s.x+s.w&&ny+radius>s.y&&ny-radius<s.y+s.h)return true;
  for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<(t[2]||45)+radius)return true;
- return nx<55||ny<200||nx>1845||ny>1260;
+ return nx<55||ny<200||nx>1845||ny>1360;
 }
 function updateWorkers(dt){
  for(const n of workers){
@@ -2354,374 +2350,128 @@ function talkWorker(n){
 
 function draw(){
 ctx.fillStyle='#4a4d4e';ctx.fillRect(0,0,W,H);
-R(40,190,1820,1020,'#a17b59');R(0,0,1900,190,'#4a4d4e');
-// structural walls and trim
-R(40,190,1820,18,'#49362c');R(40,1192,1820,18,'#49362c');
-R(40,190,18,1020,'#49362c');R(1842,190,18,1020,'#49362c');
-// subtle floor planks and warm overhead pools
-for(let yy=210;yy<1200;yy+=34)R(45,yy,1810,2,'#8d6a4d');
-for(const light of [[760,310],[1025,520],[350,520],[980,930]]){ctx.fillStyle='#ffe0a512';ctx.beginPath();ctx.arc(light[0]-cam.x,light[1]-cam.y,115,0,Math.PI*2);ctx.fill()}
+
+// TRUE CRAGGY DINING ROOM
+R(40,190,1820,1180,'#a17b59');R(0,0,1900,190,'#4a4d4e');
+R(40,190,1820,18,'#49362c');R(40,1352,1820,18,'#49362c');
+R(40,190,18,1180,'#49362c');R(1842,190,18,1180,'#49362c');
+for(let yy=210;yy<1350;yy+=34)R(45,yy,1810,2,'#8d6a4d');
 for(let i=0;i<1900;i+=130)R(i,95,75,5,'#d9ca86');
 
-
-
-// north garage windows + entrance
-R(80,195,560,25,'#83b9cb');R(1260,195,560,25,'#83b9cb');
+R(90,195,540,25,'#83b9cb');R(1270,195,540,25,'#83b9cb');
 L('GARAGE WINDOWS',360,245,13,'#eaf9ff');L('GARAGE WINDOWS',1540,245,13,'#eaf9ff');
-R(875,180,150,65,'#33251f');L('FRONT ENTRANCE',950,220,13,'#ffd09c');
+R(875,180,150,70,'#33251f');L('FRONT ENTRANCE',950,222,13,'#ffd09c');
 
+R(40,380,22,130,'#17191a',2);R(40,900,22,130,'#17191a',2);
+R(48,390,16,110,'#76583f',2);R(48,910,16,110,'#76583f',2);
+L('KITCHEN ENTRY',92,445,8,'#f6d6af');L('KITCHEN ENTRY',92,965,8,'#f6d6af');
 
-// West-side kitchen entrances and pass connection
-// subtle north kitchen-door traffic arrows
-for(let x=65;x<205;x+=42){
- ctx.strokeStyle='#d4b58e';ctx.lineWidth=3;
- ctx.beginPath();ctx.moveTo(x-cam.x,380-cam.y);ctx.lineTo(x+20-cam.x,380-cam.y);ctx.stroke();
-}
+R(95,685,175,135,'#332c28',8);R(108,698,150,30,'#7b8587',5);
+L('SERVER EXPO',183,719,9,'#f4d09c');R(110,740,62,48,'#b7bfc0',4);R(184,740,62,48,'#92a4a8',4);
+L('PLATES',141,770,7,'#243033');L('SUPPLIES',215,770,7,'#243033');
 
-R(40,295,22,125,'#17191a',2);R(40,885,22,125,'#17191a',2);
-R(48,310,16,95,'#76583f',2);R(48,900,16,95,'#76583f',2);
-L('KITCHEN',86,352,8,'#f6d6af');L('KITCHEN',86,942,8,'#f6d6af');
+R(540,735,95,64,'#292d30',8);R(552,746,71,31,'#9dc1c7',4);L('POS 2',587,785,10,'#1e3338');
+R(645,690,62,145,'#6d6258',6);L('DRINK',676,746,9,'#f1e1ca');L('STATION',676,760,8,'#f1e1ca');
 
-// large decorative BOH viewing window — no interaction or pickup purpose
-R(320,345,112,430,'#151718',7);
-R(331,356,90,408,'#9fb4b9',4);
-for(let y=378;y<750;y+=62)R(339,y,74,4,'#d8e5e7',2);
-ctx.fillStyle='#ffffff18';ctx.fillRect(342-cam.x,366-cam.y,68,385);
-L('BOH WINDOW',376,790,10,'#e5eff1');
+R(730,455,100,70,'#4a2f21',7);R(737,462,86,10,'#b68458',4);
+R(748,480,64,28,'#2d201a',3);R(755,485,50,17,'#d7c9ad',2);L('HOST',780,516,9,'#493629');
 
-// open expo/server station — no hidden furniture, no choke point
-R(118,555,138,92,'#332c28',8);
-R(130,565,114,26,'#7b8587',5);
-L('SERVER EXPO',187,584,9,'#f4d09c');
-R(132,601,48,34,'#b7bfc0',4);
-R(190,601,48,34,'#92a4a8',4);
-L('PLATES',156,624,7,'#243033');
-L('SUPPLIES',214,624,7,'#243033');
+R(790,645,520,34,'#3a2820',12);R(790,885,520,34,'#3a2820',12);
+R(1276,679,34,206,'#3a2820',12);R(790,679,34,72,'#3a2820',12);R(790,817,34,68,'#3a2820',12);
+R(824,679,452,206,'#9a6a47',14);R(824,751,60,66,'#a17b59',0);
+R(890,710,320,140,'#2a211d',10);L('STAFF ENTRY',855,790,9,'#f6d9b7');L('BAR',1050,805,24,'#f4c38c');
+R(720,610,110,70,'#496ca8',5);L('SERVICE',775,640,10,'#eef6ff');L('WELL',775,657,10,'#eef6ff');
 
-// service well
-R(700,350,110,78,'#496ca8',5);L('SERVICE',755,382,10,'#eef6ff');L('WELL',755,400,10,'#eef6ff');
+for(let x=920;x<=1180;x+=52){R(x,730,8,27,'#c4a469',3);ctx.fillStyle='#eee';ctx.beginPath();ctx.arc(x+4-cam.x,727-cam.y,5,0,Math.PI*2);ctx.fill()}
+for(let x=910;x<=1190;x+=36)R(x,835,18,14,['#8c5b3f','#5c704f','#6c4b66'][Math.floor(x/36)%3],2);
+for(let x=850;x<=1250;x+=72){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(x-cam.x,625-cam.y,13,0,Math.PI*2);ctx.fill();R(x-4,637,8,18,'#2d2421',3)}
+for(let x=850;x<=1250;x+=72){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(x-cam.x,938-cam.y,13,0,Math.PI*2);ctx.fill();R(x-4,950,8,18,'#2d2421',3)}
+for(let y=710;y<=850;y+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(1330-cam.x,y-cam.y,13,0,Math.PI*2);ctx.fill();R(1326,y+12,8,18,'#2d2421',3)}
 
-// wraparound bar with an open staff entrance on the kitchen-pass/service-well side
-R(700,360,650,35,'#3a2820',12);
-R(700,725,650,35,'#3a2820',12);
-R(1315,395,35,330,'#3a2820',12);
-R(700,395,35,82,'#3a2820',12);
-R(700,585,35,140,'#3a2820',12);
-R(735,395,580,330,'#9a6a47',14);
-// cut the staff doorway back out of the inner rail
-R(735,477,58,108,'#a17b59',0);
-R(790,445,470,230,'#2a211d',10);
-L('STAFF ENTRY',765,548,9,'#f6d9b7');
-L('BAR',1025,575,24,'#f4c38c');
-// center island taps + bottles
-for(let x=835;x<=1215;x+=48){R(x,458,8,28,'#c4a469',3);ctx.fillStyle='#eee';ctx.beginPath();ctx.arc(x+4-cam.x,455-cam.y,5,0,Math.PI*2);ctx.fill()}
-for(let x=825;x<=1225;x+=34)R(x,640,17,15,['#8c5b3f','#5c704f','#6c4b66'][Math.floor(x/34)%3],2);
-
-
-// actual bar stools around the outer rail
-for(let x=760;x<=1290;x+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(x-cam.x,335-cam.y,13,0,Math.PI*2);ctx.fill();R(x-4,347,8,18,'#2d2421',3)}
-for(let x=760;x<=1290;x+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(x-cam.x,785-cam.y,13,0,Math.PI*2);ctx.fill();R(x-4,797,8,18,'#2d2421',3)}
-for(let y=430;y<=680;y+=70){ctx.fillStyle='#4a2724';ctx.beginPath();ctx.arc(1375-cam.x,y-cam.y,13,0,Math.PI*2);ctx.fill();R(1371,y+12,8,18,'#2d2421',3)}
-
-// host stand
-R(710,270,100,62,'#4a2f21',7);R(716,276,88,9,'#b68458',4);R(726,290,68,26,'#2d201a',3);
-R(734,293,52,18,'#d7c9ad',2);L('HOST',760,306,9,'#493629');
-
-// POS 1 / POS 3 / POS 2
-for(const q of [[455,340,'POS 1'],[255,470,'POS 3'],[500,720,'POS 2']]){
- R(q[0]-42,q[1]-30,84,60,'#292d30',8);R(q[0]-30,q[1]-20,60,30,'#9dc1c7',4);L(q[2],q[0],q[1]+22,11,'#1e3338');
-}
-R(536,692,24,42,'#17191b',5);R(541,698,14,12,'#79c79b',2);L('TIME',548,726,7,'#f3ad67');
-
-// two server drink stations flanking pass
-R(275,565,58,150,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,620,9,'#f1e1ca');
-R(455,530,70,190,'#6d6258',6);L('DRINK',490,605,10,'#f1e1ca');L('STATION',490,620,9,'#f1e1ca');
-
-// tables — canonical Craggy physical floor
 craggyTables.forEach(drawCraggyTable);
+R(1540,445,95,850,'#5c493c',6);L('BOOTH ROW',1588,425,13,'#f5d2a9');
 
-// east booth wall / backing for canonical tables 31–37
-R(1540,420,105,790,'#5c493c',6);
-L('BOOTH ROW',1592,405,13,'#f5d2a9');
+R(820,1300,620,48,'#5f8d9d',5);
+for(let x=830;x<1430;x+=120){R(x,1307,110,34,'#88b9c8',3);R(x,1307,4,34,'#dce7e8')}
+L('PATIO GARAGE DOORS',1130,1330,13,'#f7e4c9');
 
-// patio garage doors along south wall
-R(620,1080,720,90,'#5f8d9d');for(let x=630;x<1330;x+=115){R(x,1088,105,72,'#88b9c8');R(x,1088,4,72,'#dce7e8')}
-L('PATIO GARAGE DOORS',980,1130,15,'#f7e4c9');
+R(110,1035,165,105,'#4b5559',7);R(122,1047,141,30,'#9aa4a7',4);
+L('BUSSING',192,1066,10,'#eef4f5');L('STATION',192,1122,9,'#eef4f5');
+R(90,1160,300,145,'#6f7d82',8);R(105,1175,82,115,'#c6d2d6',2);
+L('OPEN DOOR',146,1192,8,'#36464b');R(198,1175,175,115,'#aeb9bd',5);L('WALK-IN COOLER',285,1193,11,'#263238');
+R(210,1210,70,65,'#66777d',4);L('KEGS',245,1248,9,'#eef4f5');
 
+// TRUE CRAGGY KITCHEN: ONE GEOMETRY SYSTEM
+R(-1120,190,1160,1140,'#9fa4a5',8);
+for(let yy=215;yy<1310;yy+=54){for(let xx=-1095;xx<25;xx+=82){const alt=(Math.floor(xx/82)+Math.floor(yy/54))%2;R(xx,yy,79,51,alt?'#aeb3b4':'#989e9f',2);R(xx+6,yy+5,67,2,'#c7cbcc')}}
+R(-1120,190,1160,24,'#151718');R(-1120,190,24,1115,'#151718');
+R(-1120,1280,420,24,'#151718');R(-620,1280,660,24,'#151718');
+R(18,190,22,190,'#151718');R(18,1030,22,274,'#151718');L('ROAD / STREET WALL',-540,180,14,'#f0f2f2');
 
-// bussing station beside future kitchen/dish area
-R(105,930,150,95,'#4b5559',7);R(115,940,130,28,'#9aa4a7',4);R(125,978,45,32,'#747d80',4);R(180,978,55,32,'#747d80',4);
-L('BUSSING',180,957,10,'#eef4f5');L('STATION',180,1018,9,'#eef4f5');
+R(-1090,225,165,165,'#263d73',12);R(-1075,240,135,135,'#17284f',7);
+L('MECHANICAL',-1008,282,11,'#e7efff');L('CRAWL SPACE',-1008,303,10,'#e7efff');
+R(-900,222,690,24,'#3c4244',8);R(-870,255,635,8,'#62686a',4);
 
-
-// walk-in cooler behind the bussing station
-R(70,1035,280,150,'#6f7d82',8);
-R(82,1048,76,124,'#c6d2d6',2);L('OPEN DOOR',120,1066,8,'#36464b');
-R(170,1048,165,124,'#aeb9bd',5);L('WALK-IN COOLER',252,1067,11,'#263238');
-R(178,1080,66,76,'#66777d',4);L('KEGS',211,1122,9,'#eef4f5');
-R(252,1080,36,76,'#d94141',4);L('RED',270,1112,7,'#fff');L('BULL',270,1123,7,'#fff');
-R(296,1080,30,76,'#5ea6cf',4);L('H2O',311,1121,8,'#fff');
-R(94,1080,58,76,'#829095',4);L('BREAK',123,1115,8,'#fff');L('SPOT',123,1127,8,'#fff');
-R(145,1042,10,28,'#4d585c',3);
-L('WALK THROUGH DOOR',120,1028,8,'#f4dfad');
-
-
-// WEST CRAGGY KITCHEN — silver commercial floor, black walls
-R(-1120,190,1160,1110,'#9fa4a5',8);
-
-// brushed silver metal floor panels
-for(let yy=215;yy<1160;yy+=54){
- for(let xx=-1095;xx<30;xx+=82){
-  const alt=(Math.floor(xx/82)+Math.floor(yy/54))%2;
-  R(xx,yy,79,51,alt?'#aeb3b4':'#989e9f',2);
-  R(xx+6,yy+5,67,2,'#c7cbcc');
- }
-}
-
-// black perimeter and structural walls
-R(-1120,190,1160,24,'#151718');
-R(-1120,190,24,994,'#151718');
-R(-1120,1160,390,24,'#151718');
-R(-630,1160,670,24,'#151718');
-R(18,190,22,105,'#151718');
-R(18,1010,22,174,'#151718');
-L('ROAD / STREET WALL',-540,180,14,'#f0f2f2');
-
-// mechanical / crawl-space room
-R(-1090,215,165,175,'#263d73',12);
-R(-1075,230,135,142,'#17284f',7);
-L('MECHANICAL',-1008,275,11,'#e7efff');
-L('CRAWL SPACE',-1008,296,10,'#e7efff');
-R(-1050,326,84,28,'#0e1830',4);
-for(let x=-1025;x<-960;x+=20)R(x,333,8,14,'#778ab9',2);
-
-// overhead ductwork and black ceiling beams
-R(-880,220,750,22,'#3c4244',8);
-for(let x=-840;x<-150;x+=115)R(x,215,18,26,'#262b2d',3);
-R(-860,248,700,8,'#62686a',4);
-
-// salad line + fry freezer — separated, station-driven geometry
-{
- const s=kitchenStation('salad');
- R(s.x,s.y,s.w,s.h,'#c14382',9);R(s.x+12,s.y+12,s.w-24,42,'#dfe4e4',6);
- for(let x=s.x+22;x<s.x+s.w-30;x+=42)R(x,s.y+22,31,24,['#6fac60','#d6bf55','#c76e5a','#e8dfc8','#83aaca'][Math.abs(Math.floor(x/42))%5],4);
- L('SALAD LINE',s.x+s.w/2,s.y+s.h-10,12,'#251d22');
+function drawPrepStation(id){
+ const s=kitchenStation(id);R(s.x,s.y,s.w,s.h,s.color,9);R(s.x+10,s.y+10,s.w-20,32,'#d8dddd',4);
+ for(let y=s.y+54;y<s.y+s.h-14;y+=35){R(s.x+16,y,s.w-32,23,'#ecefed',3);R(s.x+23,y+6,30,11,['#d1be73','#9ec5ad','#d89175'][Math.abs(Math.floor(y/35))%3],2)}
 }
 {
- const s=kitchenStation('fryFreezer');
- R(s.x,s.y,s.w,s.h,'#c14382',8);R(s.x+12,s.y+12,s.w-24,48,'#c8d4d7',5);
- for(let x=s.x+22;x<s.x+s.w-28;x+=40)R(x,s.y+22,29,28,'#ecf1f2',3);
- L('FRY FREEZER',s.x+s.w/2,s.y+s.h-10,11,'#251d22');
+ const s=kitchenStation('salad');R(s.x,s.y,s.w,s.h,s.color,9);R(s.x+12,s.y+12,s.w-24,45,'#dfe4e4',6);
+ for(let x=s.x+24;x<s.x+s.w-30;x+=44)R(x,s.y+24,32,24,['#6fac60','#d6bf55','#c76e5a','#e8dfc8','#83aaca'][Math.abs(Math.floor(x/44))%5],4);
+ L('SALAD LINE',s.x+s.w/2,s.y+s.h-11,12,'#251d22');
 }
-
-// prep tables with metal tops, cambros, cutting boards
-for(const id of ['prep1','prep2','prep3']){
- const s=kitchenStation(id);
- R(s.x,s.y,s.w,s.h,'#c14382',9);
- R(s.x+10,s.y+10,s.w-20,33,'#d8dddd',4);
- for(let y=s.y+54;y<s.y+s.h-18;y+=36){
-  R(s.x+16,y,s.w-32,24,'#ecefed',3);
-  R(s.x+22,y+6,28,12,['#d1be73','#9ec5ad','#d89175'][Math.abs(Math.floor(y/36))%3],2);
- }
+{
+ const s=kitchenStation('fryFreezer');R(s.x,s.y,s.w,s.h,s.color,8);R(s.x+12,s.y+12,s.w-24,50,'#c8d4d7',5);
+ for(let x=s.x+24;x<s.x+s.w-28;x+=42)R(x,s.y+24,30,29,'#ecf1f2',3);L('FRY FREEZER',s.x+s.w/2,s.y+s.h-11,11,'#251d22');
 }
-
-
-
-
-// prep stove
-R(-690,625,125,170,'#c14382',8);
-R(-677,638,99,139,'#444a4c',5);
-for(const a of [[-650,670],[-607,670],[-650,730],[-607,730]]){
- ctx.fillStyle='#15191a';ctx.beginPath();ctx.arc(a[0]-cam.x,a[1]-cam.y,17,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle='#7e8586';ctx.lineWidth=2;ctx.stroke();
+drawPrepStation('prep1');drawPrepStation('prep2');drawPrepStation('prep3');
+{
+ const s=kitchenStation('prepStove');R(s.x,s.y,s.w,s.h,s.color,8);R(s.x+14,s.y+14,s.w-28,s.h-28,'#444a4c',5);
+ for(const [dx,dy] of [[45,48],[108,48],[45,108],[108,108]]){ctx.fillStyle='#15191a';ctx.beginPath();ctx.arc(s.x+dx-cam.x,s.y+dy-cam.y,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#7e8586';ctx.lineWidth=2;ctx.stroke()}
+ L('PREP STOVE',s.x+s.w/2,s.y+s.h+20,11,'#251d22');
 }
-L('PREP STOVE',-628,815,11,'#251d22');
+R(-555,420,45,565,'#181a1b',5);for(let y=455;y<960;y+=56)R(-548,y,31,5,'#34383a');
 
-// solid black prep wall
-R(-500,335,50,620,'#181a1b',5);
-for(let y=365;y<930;y+=55)R(-493,y,36,5,'#34383a');
-
-
-// fry station
-R(-420,370,140,155,'#c14382',8);
-R(-405,387,52,115,'#3d4446',4);R(-342,387,48,115,'#3d4446',4);
-for(const x of [-379,-318]){
- ctx.strokeStyle='#d9b85f';ctx.lineWidth=3;ctx.strokeRect(x-19-cam.x,410-cam.y,38,50);
- for(let y=420;y<450;y+=9)R(x-15,y,30,2,'#70613e');
+for(const id of ['fryers','grill','saute']){
+ const s=kitchenStation(id);R(s.x,s.y,s.w,s.h,s.color,8);R(s.x+14,s.y+18,s.w-28,s.h-45,id==='grill'?'#33393a':'#444a4b',4);
+ L(id==='fryers'?'FRYERS':id==='grill'?'GRILL':'SAUTÉ',s.x+s.w/2,s.y+s.h+18,12,'#251d22');
 }
-L('FRYERS',-350,545,12,'#251d22');
+R(-265,410,65,585,'#858b8c',3);for(let y=445;y<970;y+=50)R(-250,y,40,3,'#bfc3c4');
 
-// grill station
-R(-420,595,140,155,'#c14382',8);
-R(-405,612,110,106,'#33393a',4);
-for(let y=625;y<705;y+=12)R(-395,y,90,3,'#777d7e');
-ctx.fillStyle='#e86c3f38';ctx.fillRect(-395-cam.x,625-cam.y,90,78);
-L('GRILL',-350,770,12,'#251d22');
-
-// saute
-R(-420,815,140,140,'#c14382',8);
-R(-405,830,110,96,'#444a4b',4);
-for(const x of [-380,-350,-320]){
- ctx.fillStyle='#1f2425';ctx.beginPath();ctx.arc(x-cam.x,870-cam.y,18,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle='#969d9e';ctx.lineWidth=2;ctx.stroke();
- ctx.beginPath();ctx.moveTo(x+12-cam.x,870-cam.y);ctx.lineTo(x+32-cam.x,860-cam.y);ctx.stroke();
+{
+ const s=kitchenStation('coldLine');R(s.x,s.y,s.w,s.h,s.color,8);R(s.x+12,s.y+12,s.w-24,s.h-24,'#b9e6df',5);
+ for(let y=s.y+35;y<s.y+s.h-35;y+=72)R(s.x+22,y,s.w-44,43,['#86c56d','#e0c35e','#ce815d','#ede5d4'][Math.floor(y/72)%4],5);
+ L('COLD LINE',s.x+s.w/2,s.y+s.h+18,10,'#153a33');
 }
-L('SAUTÉ',-350,972,12,'#251d22');
-
-// hot-line working aisle
-R(-255,330,68,625,'#858b8c',3);
-for(let y=365;y<940;y+=48)R(-242,y,42,3,'#bfc3c4');
-
-
-// separate cold line
-R(-170,380,105,520,'#58c8b8',8);
-R(-157,394,79,490,'#b9e6df',5);
-for(let y=420;y<860;y+=68){
- R(-147,y,59,41,['#86c56d','#e0c35e','#ce815d','#ede5d4'][Math.floor(y/68)%4],5);
- R(-142,y+6,49,4,'#ffffff75',2);
+{
+ const s=kitchenStation('kitchenPass');R(s.x,s.y,s.w,s.h,'#9a6e45',6);R(s.x+9,s.y+10,s.w-18,s.h-20,'#2d2926',4);
+ for(let y=s.y+35;y<s.y+s.h-30;y+=62)R(s.x+18,y,s.w-36,27,'#e9e5dc',5);
+ L('PASS',s.x+s.w/2,s.y+s.h/2,8,'#ffe1b1');
 }
-L('COLD LINE',-118,915,10,'#153a33');
+R(28,470,12,430,'#c7c9c8',3);for(let y=485;y<885;y+=42){R(34,y,34,20,'#f4efe1',2);R(41,y+6,18,2,'#b9a66c')}
+R(-40,975,110,15,'#17191a',5);
 
-// separate vertical kitchen pass on far right/shared wall
-R(-38,330,68,625,'#9a6e45',6);
-R(-29,340,49,605,'#2d2926',4);
-for(let y=365;y<925;y+=62){
- if(y>565&&y<680)continue;
- R(-20,y,31,27,'#e9e5dc',5);
- ctx.strokeStyle='#c5b27c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16-cam.x,y+7-cam.y);ctx.lineTo(7-cam.x,y+7-cam.y);ctx.stroke();
-}
+R(-1095,1030,1125,220,'#777d7e',4);for(let x=-1050;x<0;x+=90)R(x,1135,58,4,'#aeb3b4');
+L('MAIN KITCHEN WALKWAY',-540,1140,14,'#17191a');
+R(-180,1030,210,320,'#707677',5);for(let y=1060;y<1330;y+=40)R(-105,y,62,4,'#9ca1a2');L('TO DISH',-75,1285,12,'#17191a');
 
-L('PASS',-4,760,8,'#ffe1b1');
+for(const d of kitchenWorld.doors){R(d.x,d.y,d.w,d.h,'#17191a',4);R(d.x+6,d.y+8,d.w-12,d.h-16,'#76583f',4);R(d.x+12,d.y+18,d.w-24,34,'#cfe0e2',3)}
 
-// vertical ticket rail mounted along the real expo/pass wall
-R(34,360,12,500,'#c7c9c8',3);
-for(let y=375;y<845;y+=42){
- R(39,y,34,20,'#f4efe1',2);
- R(46,y+5,18,2,'#b9a66c');
- R(46,y+10,18,2,'#b9a66c');
-}
+R(-1020,910,95,48,'#34393a',5);L('LABELS',-972,938,9,'#eef2f2');R(-1080,855,28,72,'#bd3f35',8);L('FIRE',-1066,940,8,'#f6d4ce');
+for(const r of [[-465,590,180,24],[-465,785,180,24],[-465,980,180,24],[-190,975,120,24]])R(r[0],r[1],r[2],r[3],'#292d2e',5);
 
-
-
-// one clean expo heat rail
-R(-28,535,105,14,'#17191a',5);
-ctx.fillStyle='#ff9a4430';ctx.beginPath();ctx.arc(25-cam.x,558-cam.y,35,0,Math.PI*2);ctx.fill();
-
-// main horizontal walkway
-R(-1095,1000,1125,160,'#777d7e',4);
-for(let x=-1050;x<0;x+=90){R(x,1078,58,4,'#aeb3b4')}
-L('MAIN KITCHEN WALKWAY',-540,1080,14,'#17191a');
-
-// dish corridor
-R(-170,1000,200,300,'#707677',5);
-for(let y=1025;y<1280;y+=40)R(-100,y,62,4,'#9ca1a2');
-L('TO DISH',-70,1210,12,'#17191a');
-
-// two actual entries from dining room/pass side
-for(const d of kitchenWorld.doors){
- R(d.x,d.y,d.w,d.h,'#17191a',4);
- R(d.x+6,d.y+8,d.w-12,d.h-16,'#76583f',4);
- R(d.x+12,d.y+18,d.w-24,34,'#cfe0e2',3);
-}
-L('KITCHEN ENTRY',38,282,9,'#ffe2bc');
-L('KITCHEN ENTRY',38,1028,9,'#ffe2bc');
-
-// ticket printer, shelves, pans, extinguisher, safety details
-R(-1020,930,95,48,'#34393a',5);L('LABELS',-972,958,9,'#eef2f2');
-R(-770,420,48,85,'#4d5355',4);L('KNIVES',-746,515,8,'#202324');
-for(let y=450;y<500;y+=12)R(-758,y,25,3,'#d6d8d8');
-R(-1080,855,28,72,'#bd3f35',8);L('FIRE',-1066,940,8,'#f6d4ce');
-R(-740,840,80,100,'#606668',4);
-for(let y=853;y<928;y+=22)R(-725,y,50,13,'#c7cbcb',2);
-
-// black upper walls / beams
-R(-1080,315,930,18,'#202324');
-for(let x=-1010;x<-150;x+=145)R(x,305,20,36,'#151718',3);
-
-// warm equipment glow and steam
-for(const light of [[-350,450],[-350,665],[-350,875],[-115,650],[-4,650]]){
- ctx.fillStyle='#ffb25a18';ctx.beginPath();ctx.arc(light[0]-cam.x,light[1]-cam.y,85,0,Math.PI*2);ctx.fill();
-}
-for(const a of [[-380,400],[-320,400],[-380,625],[-330,625],[-350,840]]){
- ctx.fillStyle='#ffffff35';ctx.beginPath();ctx.arc(a[0]-cam.x,a[1]-cam.y+Math.sin(life.minutes+a[0]) * 7,7,0,Math.PI*2);ctx.fill();
-}
-
-
-
-// extra commercial detail pass
-// anti-fatigue mats
-for(const r of [
- [-435,545,170,38],[-435,765,170,38],[-435,960,170,30],
- [-182,960,130,32],[-50,960,85,32]
-])R(r[0],r[1],r[2],r[3],'#292d2e',5);
-
-
-// produce boxes
-for(const b of [
- [-1015,905,'LETTUCE','#769f5f'],[-930,905,'ONION','#d7c47b']
-]){
- R(b[0],b[1],72,42,'#8c6d49',4);R(b[0]+8,b[1]+8,56,19,b[3],3);L(b[2],b[0]+36,b[1]+35,7,'#29231e');
-}
-
-// hanging pans
-for(let x=-430;x<-270;x+=36){
- ctx.strokeStyle='#adb2b3';ctx.lineWidth=3;
- ctx.beginPath();ctx.arc(x-cam.x,320-cam.y,12,0,Math.PI*2);ctx.stroke();
- ctx.beginPath();ctx.moveTo(x-cam.x,308-cam.y);ctx.lineTo(x-cam.x,286-cam.y);ctx.stroke();
-}
-
-
-// sanitizer buckets
-for(const b of [[-1010,940],[-650,930],[-275,940]]){
- R(b[0],b[1],28,34,'#d63838',4);L('SAN',b[0]+14,b[1]+22,6,'#fff');
-}
-
-
-// wall shelving with cambros
-R(-880,335,170,18,'#34393a',3);
-R(-880,460,170,18,'#34393a',3);
-for(const y of [348,395]){
- for(let x=-862;x<-735;x+=42)R(x,y,32,36,['#d4c36e','#9bbca6','#d78c73'][Math.abs(Math.floor(x/42))%3],4);
-}
-
-// hood vent over hot line
-R(-450,225,215,52,'#454b4d',8);
-for(let x=-430;x<-255;x+=28)R(x,238,18,26,'#747b7c',2);
-
-
-
-
-// kitchen crew with station-specific placement
 const kitchenCrew=[
- {x:-350,y:455,name:'FRY COOK',col:'#4f5967'},
- {x:-350,y:675,name:'GRILL COOK',col:'#5d4c42'},
- {x:-350,y:880,name:'SAUTÉ COOK',col:'#586b56'},
- {x:-120,y:445,name:'COLD COOK',col:'#54766e'},
+ {x:-500,y:505,name:'FRY COOK',col:'#4f5967'},
+ {x:-500,y:700,name:'GRILL COOK',col:'#5d4c42'},
+ {x:-500,y:895,name:'SAUTÉ COOK',col:'#586b56'},
+ {x:-235,y:700,name:'COLD COOK',col:'#54766e'}
 ];
-for(const [ki,kc] of kitchenCrew.entries()){
- const phase=performance.now()/310+ki*1.8;
- const workX=Math.sin(phase)*7,workY=Math.abs(Math.cos(phase))*3;
- const cook={...kc,x:kc.x+workX,y:kc.y+workY,moving:true,walkPhase:phase,style:'Short',facing:Math.sin(phase)>0?'right':'left'};
- drawCharacter(cook,kc.col,kc.name);
- const sx=kc.x-cam.x,sy=kc.y-cam.y;
- // tiny station animation: utensil/plate movement and occasional steam.
- ctx.strokeStyle='#d9dde0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx+12,sy-5);ctx.lineTo(sx+25+Math.sin(phase)*5,sy-16);ctx.stroke();
- if(ki<3&&Math.sin(phase*.55)>0.65){ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;for(let st=0;st<2;st++){ctx.beginPath();ctx.arc(sx+22+st*8,sy-29-st*2,5+st*2,Math.PI,Math.PI*2);ctx.stroke()}}
-}
+for(const [ki,kc] of kitchenCrew.entries()){const phase=performance.now()/310+ki*1.8;const cook={...kc,x:kc.x+Math.sin(phase)*5,y:kc.y+Math.abs(Math.cos(phase))*2,moving:true,walkPhase:phase,style:'Short',facing:'right'};drawCharacter(cook,kc.col,kc.name)}
 
-// west wall 406 sign
-R(85,790,220,90,'#26211d',6);R(93,798,204,74,'#6d6258',4);
-ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',195,845,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',195,860,9,'#f1d0a4');
-
-// decor
-for(const tv of [[850,300],[1050,300],[1250,300]]){R(tv[0],tv[1],120,62,'#15191c',5);R(tv[0]+6,tv[1]+6,108,50,'#334b59',3);L('LIVE SPORTS',tv[0]+60,tv[1]+35,9,'#d8edf5')}
-// east wall art beyond booth backs
-R(1810,505,72,108,'#24201d',5);R(1818,515,56,88,'#b9aa85',4);L('VGK',1846,565,15,'#2b2925');
-R(1804,635,80,90,'#2a2521',5);R(1812,644,64,72,'#d8e3e6',3);
-ctx.fillStyle='#8da4b0';ctx.beginPath();ctx.moveTo(1818-cam.x,706-cam.y);ctx.lineTo(1844-cam.x,658-cam.y);ctx.lineTo(1870-cam.x,706-cam.y);ctx.fill();
-ctx.strokeStyle='#30363b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1848-cam.x,674-cam.y);ctx.lineTo(1838-cam.x,693-cam.y);ctx.lineTo(1854-cam.x,699-cam.y);ctx.stroke();
-L('SKI PHOTO',1844,720,8,'#65777d');
-
+R(1600,540,72,108,'#24201d',5);R(1608,550,56,88,'#b9aa85',4);L('VGK',1636,600,15,'#2b2925');
+for(const tv of [[930,255],[1110,255],[1290,255]]){R(tv[0],tv[1],120,62,'#15191c',5);R(tv[0]+6,tv[1]+6,108,50,'#334b59',3);L('LIVE SPORTS',tv[0]+60,tv[1]+35,9,'#d8edf5')}
+R(300,860,220,90,'#26211d',6);R(308,868,204,74,'#6d6258',4);ctx.shadowBlur=18;ctx.shadowColor='#ffb25d';L('406',410,915,42,'#ffb25d');ctx.shadowBlur=0;L('MONTANA',410,930,9,'#f1d0a4');
 
 // living restaurant operations: guests turn, servers serve, runners run, bussers reset.
 drawAmbientOps();
@@ -2749,8 +2499,8 @@ if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
  let mx,my,label='';
  if(phase==='BRIEFING'){mx=host.x;my=host.y;label='HOST STAND'}
  else if(['GREET','DELIVER_DRINKS','DELIVER_FOOD','DELIVER_NEEDS','PRESENT_CHECK'].includes(phase)&&target){mx=target.x;my=target.y;label='TABLE '+target.id}
- else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(phase)){mx=500;my=720;label='POS 2'}
- else if(phase==='PICKUP_DRINKS'){mx=800;my=430;label='SERVICE WELL'}
+ else if(['RING_ORDER','GET_NEEDS','CLOSE_POS'].includes(phase)){mx=587;my=770;label='POS 2'}
+ else if(phase==='PICKUP_DRINKS'){mx=775;my=645;label='SERVICE WELL'}
  else if(phase==='PICKUP_FOOD'){mx=kellen.x;my=kellen.y;label='KELLEN · EXPO'}
  if(mx!==undefined){ctx.strokeStyle='#ffdc69';ctx.lineWidth=4;ctx.beginPath();ctx.arc(mx-cam.x,my-cam.y,42+Math.sin(life.minutes*5)*4,0,Math.PI*2);ctx.stroke();L(label,mx,my-58,10,'#ffdc69')}
  L(`${shiftEngine.day.toUpperCase()} · ${shiftEngine.section.name} · TURN ${shiftEngine.turn}/${shiftEngine.totalTurns}`,1050,1120,13,'#fff3d2');
@@ -2758,8 +2508,8 @@ if(gameDay==='DYNAMIC_SHIFT'&&shiftEngine.active){
 
 if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
  // Host seating chart
- R(805,270,120,92,'#2b3135',6);R(814,280,102,70,'#e6e0d2',3);L('SECTION 6',865,296,10,'#30343a');
- L('31 · 2 TOP',865,312,9,'#30343a');L('32 · 4 TOP',865,326,9,'#30343a');L('33 · 3 TOP',865,340,9,'#30343a');
+ R(1650,280,120,92,'#2b3135',6);R(1659,290,102,70,'#e6e0d2',3);L('SECTION 6',1710,306,10,'#30343a');
+ L('31 · 2 TOP',1710,322,9,'#30343a');L('32 · 4 TOP',1710,336,9,'#30343a');L('33 · 3 TOP',1710,350,9,'#30343a');
  for(const ft of fridayShift.tables){
   let col=ft.status==='EMPTY'?'#777':ft.status==='SAT'?'#f3ad67':ft.status==='PAID'?'#71b780':'#65b9d6';
   ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(ft.x-42-cam.x,ft.y-32-cam.y,84,64);
@@ -2771,7 +2521,7 @@ if(gameDay==='FRIDAY_SHIFT'||fridayShift.active){
 
 
 if(fridayShift.active&&fridayShift.step===32){
- ctx.strokeStyle='#ffdc69';ctx.lineWidth=5;ctx.strokeRect(450-cam.x,680-cam.y,105,90);L('ENTER TIPS HERE',502,668,11,'#ffdc69')
+ ctx.strokeStyle='#ffdc69';ctx.lineWidth=5;ctx.strokeRect(535-cam.x,730-cam.y,105,80);L('ENTER TIPS HERE',587,718,11,'#ffdc69')
 }
 if(fridayShift.active&&fridayShift.step===33){
  ctx.strokeStyle='#ff9dcc';ctx.lineWidth=4;ctx.strokeRect(desarae.x-35-cam.x,desarae.y-55-cam.y,70,90);L('SHIFT REVIEW',desarae.x,desarae.y-68,11,'#ff9dcc')
@@ -2792,7 +2542,7 @@ if(serverTraining.active){
  L('TABLE 62',T.x,T.y+58,12,'#f3ad67');
  // Training highlights use the permanent POS 2 and permanent service well.
  // Pickup zones.
- if(serverTraining.step===5){ctx.strokeStyle='#65d5ff';ctx.lineWidth=4;ctx.strokeRect(700-cam.x,350-cam.y,110,78);L('DRINK PICKUP',755,340,11,'#65d5ff')}
+ if(serverTraining.step===5){ctx.strokeStyle='#65d5ff';ctx.lineWidth=4;ctx.strokeRect(720-cam.x,610-cam.y,110,70);L('DRINK PICKUP',775,600,11,'#65d5ff')}
  if(serverTraining.step===9){
  ctx.strokeStyle='#ffcf67';ctx.lineWidth=4;ctx.beginPath();
  ctx.arc(kellen.x-cam.x,kellen.y-cam.y,52,0,Math.PI*2);ctx.stroke();
@@ -2822,22 +2572,13 @@ person(tuff,'#5b7658','TUFF');playerPerson(p);
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 
 const solidRects=[
- {x:700,y:360,w:650,h:35},{x:700,y:725,w:650,h:35},
- {x:700,y:395,w:35,h:82},{x:700,y:585,w:35,h:140},
- {x:1315,y:395,w:35,h:330},
- {x:790,y:445,w:470,h:230},
- {x:275,y:565,w:58,h:150},{x:455,y:530,w:70,h:190}
-
-
-,
- {x:70,y:1035,w:12,h:150},
- {x:338,y:1035,w:12,h:150},
- {x:70,y:1035,w:22,h:14},
- {x:158,y:1035,w:192,h:14},
- {x:70,y:1172,w:280,h:13}
-,
- {x:320,y:345,w:112,h:430},
- {x:118,y:555,w:138,h:92}
+ {x:95,y:685,w:175,h:135},{x:540,y:735,w:95,h:64},{x:645,y:690,w:62,h:145},
+ {x:730,y:455,w:100,h:70},
+ {x:790,y:645,w:520,h:34},{x:790,y:885,w:520,h:34},
+ {x:790,y:679,w:34,h:72},{x:790,y:817,w:34,h:68},
+ {x:1276,y:679,w:34,h:206},{x:890,y:710,w:320,h:140},
+ {x:1540,y:445,w:95,h:850},
+ {x:110,y:1035,w:165,h:105},{x:90,y:1160,w:300,h:145}
 ];
 const tableBlocks=craggyTables.map(t=>[t.x,t.y,t.shape==='boothTall'?58:(t.shape==='booth'?48:45)]);
 function blocked(nx,ny){
@@ -2846,8 +2587,8 @@ function blocked(nx,ny){
   for(const s of kitchenWorld.stations)if(nx>s.x&&nx<s.x+s.w&&ny>s.y&&ny<s.y+s.h)return true;
  }
 
- if((nx>20&&nx<90)&&((ny>280&&ny<435)||(ny>870&&ny<1025)))return false;
- if(nx<world.minX+20||ny<50||nx>1850||ny>1290)return true;
+ if((nx>20&&nx<90)&&((ny>370&&ny<520)||(ny>890&&ny<1040)))return false;
+ if(nx<world.minX+20||ny<50||nx>1850||ny>1420)return true;
  for(const s of solidRects)if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
  for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<(t[2]||45)+p.r)return true;
  return false;
