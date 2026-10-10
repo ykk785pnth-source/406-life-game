@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>406 Life v10.1</title><style>
+<title>406 Life v10.2</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:system-ui;color:white}canvas{width:100vw;height:100vh;display:block;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:14px;left:16px;background:#17120ddd;padding:12px 16px;border-radius:14px}
 #obj{font-size:14px;margin-top:3px}.joy{position:absolute;left:24px;bottom:25px;width:125px;height:125px;border-radius:50%;background:#ffffff18;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
@@ -85,7 +85,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 <div id="posModal"><div id="posCard"><h2 id="posTitle">POS 2</h2><div id="posInstructions"></div><div id="posFields"></div><button id="posSubmit">SEND ORDER</button><button id="posCancel">CANCEL</button></div></div>
 <div id="achievement"><div class="achTitle">ACHIEVEMENT UNLOCKED</div><div class="achName" id="achName"></div><div id="achDesc"></div></div>
 
-<div id="top"><b>406 LIFE · CRAGGY FLOOR PLANS & BLAKE v10.1</b><div id="obj">Objective: Walk through the front entrance</div></div>
+<div id="top"><b>406 LIFE · FLOOR / KITCHEN / NPC REPAIR v10.2</b><div id="obj">Objective: Walk through the front entrance</div></div>
 
 <div id="taskPanel"><button id="taskToggle">−</button><div id="taskTitle">CURRENT TASKS</div><div id="taskList"></div></div>
 <div id="error"></div><div id="prompt"></div><div id="dlg"><div id="speaker"></div><div id="text"></div><div id="choices"></div></div>
@@ -94,7 +94,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:syste
 window.onerror=function(m,s,l,c,e){let q=document.getElementById('error');q.style.display='block';q.textContent='Game error: '+m+' · line '+l;};
 const cv=document.getElementById('g'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}resize();addEventListener('resize',resize);
-const world={w:1900,h:1320,minX:-1160};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
+const world={w:1900,h:1340,minX:-1160};const p={x:950,y:100,r:16,s:220,name:'Applicant',pronouns:'he/him',skin:'#d69a70',hair:'#2b1a13',outfit:'#3f607f',style:'Short',accessory:'None',facing:'down',walkPhase:0,moving:false};const host={x:760,y:300};const tuff={x:360,y:820};
 
 
 const career={
@@ -657,6 +657,39 @@ addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('key
 function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.fill()}
 function R(x,y,w,h,col,r=0){rr(x-cam.x,y-cam.y,w,h,r,col)}
 function L(t,x,y,size=13,col='#fff'){ctx.fillStyle=col;ctx.font='800 '+size+'px system-ui';ctx.textAlign='center';ctx.fillText(t,x-cam.x,y-cam.y)}
+
+// v10.2 PHYSICAL CRAGGY TABLE MAP — aligned to the finalized server floor-chart geometry.
+const craggyTables=[
+ {id:14,x:300,y:300,seats:6,shape:'rect'},{id:13,x:480,y:300,seats:6,shape:'rect'},{id:12,x:660,y:300,seats:6,shape:'rect'},
+ {id:17,x:350,y:500,seats:4,shape:'rect'},{id:16,x:520,y:500,seats:4,shape:'rect'},{id:15,x:670,y:500,seats:2,shape:'rect'},
+ {id:19,x:300,y:675,seats:4,shape:'rect'},{id:18,x:500,y:675,seats:4,shape:'rect'},
+ {id:21,x:930,y:300,seats:6,shape:'rect'},{id:22,x:1110,y:300,seats:6,shape:'rect'},{id:23,x:1290,y:300,seats:6,shape:'rect'},
+ {id:24,x:980,y:500,seats:4,shape:'rect'},{id:25,x:1160,y:500,seats:4,shape:'rect'},
+ {id:31,x:1480,y:500,seats:6,shape:'booth'},{id:32,x:1480,y:625,seats:6,shape:'booth'},
+ {id:33,x:1480,y:750,seats:6,shape:'booth'},{id:34,x:1480,y:895,seats:10,shape:'boothTall'},
+ {id:35,x:1480,y:1015,seats:6,shape:'booth'},{id:36,x:1480,y:1110,seats:6,shape:'booth'},
+ {id:37,x:1480,y:1190,seats:6,shape:'booth'},
+ {id:41,x:820,y:805,seats:4,shape:'rect'},{id:42,x:1020,y:805,seats:4,shape:'rect'},{id:43,x:1220,y:805,seats:4,shape:'rect'},
+ {id:47,x:720,y:1010,seats:4,shape:'diamond'},{id:46,x:900,y:1010,seats:4,shape:'diamond'},
+ {id:45,x:1080,y:1010,seats:4,shape:'diamond'},{id:44,x:1260,y:1010,seats:4,shape:'diamond'},
+ {id:49,x:610,y:1120,seats:2,shape:'diamond'}
+];
+function craggyTable(id){return craggyTables.find(t=>String(t.id)===String(id))}
+function drawCraggyTable(t){
+ const x=t.x,y=t.y;
+ ctx.save();ctx.translate(x-cam.x,y-cam.y);
+ ctx.fillStyle='#755039';ctx.strokeStyle='#9b7658';ctx.lineWidth=3;
+ if(t.shape==='diamond'){
+  ctx.rotate(Math.PI/4);ctx.fillRect(-27,-27,54,54);ctx.strokeRect(-27,-27,54,54);ctx.rotate(-Math.PI/4);
+ }else{
+  const w=t.shape==='boothTall'?70:76,h=t.shape==='boothTall'?100:56;
+  ctx.beginPath();ctx.roundRect(-w/2,-h/2,w,h,8);ctx.fill();ctx.stroke();
+ }
+ ctx.fillStyle='#f6e5cc';ctx.font='900 14px system-ui';ctx.textAlign='center';ctx.fillText(String(t.id),0,5);
+ ctx.fillStyle='#ead4b4';ctx.font='700 8px system-ui';ctx.fillText(String(t.seats),27,t.shape==='boothTall'?43:23);
+ ctx.restore();
+}
+
 function table(x,y){R(x-34,y-23,68,46,'#755039',7);ctx.fillStyle='#28221e';[[-48,0],[48,0],[0,-36],[0,36]].forEach(a=>{ctx.beginPath();ctx.arc(x+a[0]-cam.x,y+a[1]-cam.y,10,0,Math.PI*2);ctx.fill()
  // subtle tabletop details
  R(x-10,y-6,8,14,'#d8c18e',2);
@@ -795,7 +828,9 @@ const workers=[
  {id:'bartender2',role:'BARTENDER',name:'BARTENDER',x:1180,y:610,col:'#455f72',route:[[1180,610],[1260,560],[1160,450],[980,430],[820,500]],ri:0,s:48,line:'First day? My professional advice is: learn where the ranch is and never say “it’s slow.”'},
  {id:'barback',role:'BARBACK',name:'BARBACK',x:1020,y:680,col:'#76545c',route:[[1020,680],[850,680],[760,610],[820,440],[1080,440],[1260,600]],ri:0,s:72,line:'I have ice, glassware, and seventeen things to do. What’s up?'},
  {id:'server',role:'SERVER',name:'SERVER',x:540,y:820,col:'#4b657b',route:[[540,820],[540,700],[420,610],[500,520],[620,720],[900,850],[760,850]],ri:0,s:78,carry:true,line:'I’m running food. If you see someone standing at the pass staring into space, yell “HANDS!”'},
- {id:'blake',role:'SERVER',name:'BLAKE',x:520,y:760,col:'#4b657b',route:[[520,760],[420,610],[590,510],[760,850],[1040,850],[1280,820],[1510,700],[1640,500],[1510,350],[1280,620],[980,500],[800,850]],ri:0,s:86,alwaysRoam:true,line:'I have no idea why I brought a fishing pole to work, but I’m committed now.'},
+ {id:'blake',role:'SERVER',name:'BLAKE',x:585,y:760,col:'#4b657b',
+  route:[[585,760],[585,585],[820,585],[900,690],[1130,690],[1375,690],[1375,560],[1375,875],[1325,930],[1120,930],[900,930],[700,930],[585,875]],
+  ri:0,s:76,alwaysRoam:true,line:'I have no idea why I brought a fishing pole to work, but I’m committed now.'},
  {id:'busser',role:'BUSSER',name:'BUSSER',x:1380,y:820,col:'#526f5c',route:[[1380,820],[1510,700],[1640,700],[1510,500],[1280,820],[1080,850],[800,850]],ri:0,s:70,bus:true,line:'I’m bussing this whole planet one ranch cup at a time.'},
  {id:'desarae',role:'SUPERVISOR',name:'DESARAE',x:610,y:760,col:'#9b527a',route:[[610,760],[800,850],[1040,850],[1280,820],[1200,620],[980,500],[600,700],[430,610]],ri:0,s:82,dance:true,line:'I can serve, bartend, cook, expo, train, and apparently remind grown adults to do their side work.'}
 ];
@@ -805,12 +840,12 @@ const workers=[
 // v10.0 LIVING RESTAURANT OPS — ambient service has purpose, not random wandering.
 const ambientOps={
   tables:[
-    {id:'A1',x:360,y:500,seats:2,server:'SERVER 1',state:'DINING',timer:16,party:2},
-    {id:'A2',x:600,y:500,seats:4,server:'SERVER 1',state:'ORDERING',timer:8,party:3},
-    {id:'B1',x:1435,y:455,seats:2,server:'SERVER 2',state:'DINING',timer:18,party:2},
-    {id:'B2',x:760,y:980,seats:4,server:'SERVER 2',state:'NEEDS_CLEAR',timer:7,party:4},
-    {id:'C1',x:1000,y:980,seats:4,server:'SERVER 3',state:'WAIT_FOOD',timer:11,party:3},
-    {id:'C2',x:1240,y:980,seats:4,server:'SERVER 3',state:'DINING',timer:22,party:2}
+    {id:'17',x:350,y:500,seats:4,server:'SERVER 1',state:'DINING',timer:16,party:2},
+    {id:'21',x:930,y:300,seats:6,server:'SERVER 1',state:'ORDERING',timer:8,party:3},
+    {id:'31',x:1480,y:500,seats:6,server:'SERVER 2',state:'DINING',timer:18,party:2},
+    {id:'41',x:820,y:805,seats:4,server:'SERVER 2',state:'NEEDS_CLEAR',timer:7,party:4},
+    {id:'45',x:1080,y:1010,seats:4,server:'SERVER 3',state:'WAIT_FOOD',timer:11,party:3},
+    {id:'44',x:1260,y:1010,seats:4,server:'SERVER 3',state:'DINING',timer:22,party:2}
   ],
   actors:[],nextGuest:1,spawnClock:0
 };
@@ -1275,11 +1310,11 @@ function createParty(tableId,count){
 }
 function partyForTable(id){return guestFlow.parties.find(g=>g.tableId===id)}
 function resolveTableLocation(tableId){
- if(String(tableId)==='62')return serverTraining&&serverTraining.table?serverTraining.table:{id:'62',x:1240,y:835};
+ if(String(tableId)==='62')return serverTraining&&serverTraining.table?serverTraining.table:{id:'62',x:1220,y:805};
+ const canonical=craggyTable(tableId);if(canonical)return canonical;
  const friday=(typeof fridayTable==='function')?fridayTable(String(tableId)):null;if(friday)return friday;
  const generated=(typeof shiftEngine!=='undefined'&&shiftEngine.tables)?shiftEngine.tables.find(t=>String(t.id)===String(tableId)):null;if(generated)return generated;
- const fallback={31:{id:'31',x:760,y:835},32:{id:'32',x:1000,y:835},33:{id:'33',x:1240,y:835},34:{id:'34',x:760,y:980}};
- return fallback[String(tableId)]||{id:String(tableId),x:1000,y:835};
+ return {id:String(tableId),x:1020,y:805};
 }
 function tableSeatPositions(t,count){
  t=t||{x:1000,y:835};
@@ -1385,9 +1420,9 @@ function endDayRecovery(){
 const fridayShift={
  active:false,step:0,score:0,mistakes:0,tips:0,carrying:'',started:false,incident:false,cleanup:false,
  tables:[
-  {id:'31',x:760,y:820,status:'EMPTY',happiness:100},
-  {id:'32',x:980,y:820,status:'EMPTY',happiness:100},
-  {id:'33',x:1200,y:820,status:'EMPTY',happiness:100}
+  {id:'31',x:1480,y:500,status:'EMPTY',happiness:100},
+  {id:'32',x:1480,y:625,status:'EMPTY',happiness:100},
+  {id:'33',x:1480,y:750,status:'EMPTY',happiness:100}
  ]
 };
 function fridayTable(id){return fridayShift.tables.find(t=>t.id===id)}
@@ -1401,11 +1436,11 @@ const kitchenWorld={
  unlocked:true,
  minX:-1160,
  stations:[
-  {id:'salad',name:'SALAD LINE',x:-850,y:225,w:285,h:92,color:'#c14382'},
-  {id:'fryFreezer',name:'FRY FREEZER',x:-700,y:225,w:220,h:72,color:'#c14382'},
+  {id:'salad',name:'SALAD LINE',x:-900,y:300,w:300,h:92,color:'#c14382'},
+  {id:'fryFreezer',name:'FRY FREEZER',x:-570,y:300,w:170,h:92,color:'#c14382'},
   {id:'prep1',name:'PREP TABLE',x:-1030,y:390,w:140,h:180,color:'#c14382'},
   {id:'prep2',name:'PREP TABLE',x:-1030,y:690,w:140,h:180,color:'#c14382'},
-  {id:'prep3',name:'PREP TABLE',x:-690,y:365,w:125,h:150,color:'#c14382'},
+  {id:'prep3',name:'PREP TABLE',x:-690,y:410,w:125,h:150,color:'#c14382'},
   {id:'prepStove',name:'PREP STOVE',x:-690,y:625,w:125,h:170,color:'#c14382'},
   {id:'fryers',name:'FRYERS',x:-420,y:370,w:140,h:155,color:'#c14382'},
   {id:'grill',name:'GRILL',x:-420,y:595,w:140,h:155,color:'#c14382'},
@@ -2217,8 +2252,8 @@ function finishServerTraining(){
 function npcBlocked(n,nx,ny){
  const radius=14;
  for(const s of solidRects)if(nx+radius>s.x&&nx-radius<s.x+s.w&&ny+radius>s.y&&ny-radius<s.y+s.h)return true;
- for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<38)return true;
- return nx<55||ny<200||nx>1845||ny>1180;
+ for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<(t[2]||45)+radius)return true;
+ return nx<55||ny<200||nx>1845||ny>1260;
 }
 function updateWorkers(dt){
  for(const n of workers){
@@ -2234,8 +2269,14 @@ function updateWorkers(dt){
    let moved=false;
    if(!npcBlocked(n,n.x+sx,n.y)){n.x+=sx;moved=true}
    if(!npcBlocked(n,n.x,n.y+sy)){n.y+=sy;moved=true}
-   if(!moved){n.stuck=(n.stuck||0)+dt;if(n.stuck>.7){n.ri=(n.ri+1)%n.route.length;n.stuck=0}}
-   else n.stuck=0;
+   if(!moved){
+    n.stuck=(n.stuck||0)+dt;
+    if(n.stuck>.45){
+      const prev=n.route[(n.ri-1+n.route.length)%n.route.length];
+      if(prev&&!npcBlocked(n,prev[0],prev[1])){n.x=prev[0];n.y=prev[1]}
+      n.ri=(n.ri+1)%n.route.length;n.stuck=0;n.moving=false;
+    }
+   }else n.stuck=0;
   }else{n.x+=sx;n.y+=sy}
  }
 }
@@ -2396,22 +2437,12 @@ R(536,692,24,42,'#17191b',5);R(541,698,14,12,'#79c79b',2);L('TIME',548,726,7,'#f
 R(275,565,58,150,'#6d6258',6);L('DRINK',240,605,10,'#f1e1ca');L('STATION',240,620,9,'#f1e1ca');
 R(455,530,70,190,'#6d6258',6);L('DRINK',490,605,10,'#f1e1ca');L('STATION',490,620,9,'#f1e1ca');
 
-// tables per supplied plan
-[[300,300],[520,300],[740,300],
- [360,500],[600,500],
- [220,850],[440,850],[660,850],
- [1435,300],[1435,455],
- [760,835],[1000,835],[1240,835],
- [760,980],[1000,980],[1240,980]].forEach(a=>table(a[0],a[1]));
+// tables — canonical Craggy physical floor
+craggyTables.forEach(drawCraggyTable);
 
-// east booth row
-// east wall and booth row
-R(1788,250,72,860,'#5c493c',6);
-for(let yy=300;yy<=1030;yy+=120){
- R(1545,yy,218,72,'#693b32',12);R(1560,yy+12,188,48,'#834b40',9);
- R(1488,yy+18,54,36,'#704c34',6);R(1504,yy+8,4,12,'#f1c27a',2);
-}
-L('BOOTH ROW',1655,275,13,'#f5d2a9');
+// east booth wall / backing for canonical tables 31–37
+R(1540,420,105,790,'#5c493c',6);
+L('BOOTH ROW',1592,405,13,'#f5d2a9');
 
 // patio garage doors along south wall
 R(620,1080,720,90,'#5f8d9d');for(let x=630;x<1330;x+=115){R(x,1088,105,72,'#88b9c8');R(x,1088,4,72,'#dce7e8')}
@@ -2465,24 +2496,23 @@ R(-1050,326,84,28,'#0e1830',4);
 for(let x=-1025;x<-960;x+=20)R(x,333,8,14,'#778ab9',2);
 
 // overhead ductwork and black ceiling beams
-R(-880,240,750,25,'#3c4244',8);
-for(let x=-840;x<-150;x+=115)R(x,235,18,34,'#262b2d',3);
-R(-860,272,700,9,'#62686a',4);
+R(-880,220,750,22,'#3c4244',8);
+for(let x=-840;x<-150;x+=115)R(x,215,18,26,'#262b2d',3);
+R(-860,248,700,8,'#62686a',4);
 
-// salad line: stainless counter, ingredient pans, shelves
-R(-850,225,285,92,'#c14382',9);
-R(-836,239,257,42,'#dfe4e4',6);
-for(let x=-820;x<-590;x+=39){
- R(x,248,29,24,['#6fac60','#d6bf55','#c76e5a','#e8dfc8','#83aaca'][Math.abs(Math.floor(x/39))%5],4);
+// salad line + fry freezer — separated, station-driven geometry
+{
+ const s=kitchenStation('salad');
+ R(s.x,s.y,s.w,s.h,'#c14382',9);R(s.x+12,s.y+12,s.w-24,42,'#dfe4e4',6);
+ for(let x=s.x+22;x<s.x+s.w-30;x+=42)R(x,s.y+22,31,24,['#6fac60','#d6bf55','#c76e5a','#e8dfc8','#83aaca'][Math.abs(Math.floor(x/42))%5],4);
+ L('SALAD LINE',s.x+s.w/2,s.y+s.h-10,12,'#251d22');
 }
-R(-832,291,249,12,'#5c6264',3);
-L('SALAD LINE',-708,310,12,'#251d22');
-
-// fry freezer
-R(-700,225,220,72,'#c14382',8);
-R(-685,238,190,42,'#c8d4d7',5);
-for(let x=-670;x<-510;x+=38)R(x,247,28,24,'#ecf1f2',3);
-L('FRY FREEZER',-590,312,12,'#251d22');
+{
+ const s=kitchenStation('fryFreezer');
+ R(s.x,s.y,s.w,s.h,'#c14382',8);R(s.x+12,s.y+12,s.w-24,48,'#c8d4d7',5);
+ for(let x=s.x+22;x<s.x+s.w-28;x+=40)R(x,s.y+22,29,28,'#ecf1f2',3);
+ L('FRY FREEZER',s.x+s.w/2,s.y+s.h-10,11,'#251d22');
+}
 
 // prep tables with metal tops, cambros, cutting boards
 for(const id of ['prep1','prep2','prep3']){
@@ -2809,15 +2839,7 @@ const solidRects=[
  {x:320,y:345,w:112,h:430},
  {x:118,y:555,w:138,h:92}
 ];
-const tableBlocks=[
- [300,300],[520,300],[740,300],
- [360,500],[600,500],
- [220,850],[440,850],[660,850],
- [1435,300],[1435,455],
- [760,835],[1000,835],[1240,835],
- [760,980],[1000,980],[1240,980],
- [1660,336],[1660,456],[1660,576],[1660,696],[1660,816],[1660,936],[1660,1056]
-];
+const tableBlocks=craggyTables.map(t=>[t.x,t.y,t.shape==='boothTall'?58:(t.shape==='booth'?48:45)]);
 function blocked(nx,ny){
  if(kitchenWorld.unlocked){
   for(const w of kitchenWorld.walls)if(nx>w.x&&nx<w.x+w.w&&ny>w.y&&ny<w.y+w.h)return true;
@@ -2827,7 +2849,7 @@ function blocked(nx,ny){
  if((nx>20&&nx<90)&&((ny>280&&ny<435)||(ny>870&&ny<1025)))return false;
  if(nx<world.minX+20||ny<50||nx>1850||ny>1290)return true;
  for(const s of solidRects)if(nx+p.r>s.x&&nx-p.r<s.x+s.w&&ny+p.r>s.y&&ny-p.r<s.y+s.h)return true;
- for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<40)return true;
+ for(const t of tableBlocks)if(Math.hypot(nx-t[0],ny-t[1])<(t[2]||45)+p.r)return true;
  return false;
 }
 
